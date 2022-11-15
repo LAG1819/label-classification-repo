@@ -376,7 +376,10 @@ class Scraper:
 #Main - Init a crawler with given searchlist Searchlist.xsls. Crawls and saves all information (run).
 if __name__ == "__main__":
     start = time.process_time()
-    searchList = pd.read_excel(r'../data/Searchlist.xlsx',header = None)
+    seeds = pd.read_excel(r'../ml-classification-repo/files/URL_Seed.xlsx',header = 0)
+    print(seeds.head(-1))
+    seeds_url = seeds["URL"].tolist()
+    # seeds_topics = seeds[]
     
     # searchList = searchList[0].tolist()
 
