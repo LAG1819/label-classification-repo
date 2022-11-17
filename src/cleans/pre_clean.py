@@ -13,15 +13,16 @@ class textFilter:
     def regex_remove(self,row):
         output = []
         for text in row.split("|"):
-            out = re.sub(r'^@.*\{.*\}','',text)
-            out = re.sub(r'^\..*\{.*\}','',out)
-            out = re.sub(r'\s\s+',' ',out)
-            out = re.sub(r'\n','',out)
-            out = re.sub(r':\xa0','',out)
+            pattern_list = [r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707']# only digits: r'\b[0-9]+\b\s*'
+            for pattern in pattern_list:
+                text = re.sub(pattern,'',text)
+            #remove any word shorter than 3 characters
+            out = re.sub(r'^\w{0,3}$','',text)
 
             output.append(out)
-        output = list(filter(None,output))
-
+        output = list(filter(lambda x: len(x) > 3,output))
+        output = list(set(list(filter(None,output))))
+        # print(output)
         return "|".join(output)
     
     def remove_nonText(self):
