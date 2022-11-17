@@ -4,7 +4,7 @@ import os
 import pandas as pd
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
-from nlp_lda_coherence import get_coherence 
+from lda_coherence import get_coherence 
 import numpy as np
 
 class TopicExtractor:
