@@ -19,6 +19,7 @@ class TopicExtractor:
         return pd.read_csv(df_path, header = 0, delimiter=",")
 
     def save_data(self):
+        self.data.to_csv(str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_cleaned.csv", index = False)
         print(self.data['TOPIC'])
 
     def generate_tfIdf(self,doc_list):
@@ -54,9 +55,10 @@ class TopicExtractor:
         topics = [item for sublist in topics for item in sublist]
         topics = list(set(list(filter(lambda x: len(x) > 3, topics))))
 
-        tfiIdf_vectorizer_vocab = np.array([x for x in tfidf_v.vocabulary_.keys()])
-        c = get_coherence(lda_components,lda_dtm,fit_data,tfiIdf_vectorizer_vocab)
-        print(c)
+        ##Test Coherence Values##
+        # tfiIdf_vectorizer_vocab = np.array([x for x in tfidf_v.vocabulary_.keys()])
+        # c = get_coherence(lda_components,lda_dtm,fit_data,tfiIdf_vectorizer_vocab)
+        # print(c)
 
         return "|".join(topics)
 
@@ -69,6 +71,7 @@ class TopicExtractor:
 
     def run(self):
         self.data['TOPIC']=self.data[self.text_col].apply(lambda row: self.generate_topic(row))
+        self.save_data()
 
 
 if __name__ == "__main__":
