@@ -2,26 +2,121 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import tensorflow_text as text
 from official.nlp import optimization
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
 import matplotlib.pyplot as plt
+import pandas as pd
+import shutil
+import os
 
 tf.get_logger().setLevel('ERROR')
 
 class Transformer():
-    def __init__(self, bert_model_name = 'small_bert/bert_en_uncased_L-4_H-512_A-8'):
-        self.optimizer, self.loss, self.metrics, self.epochs = self.create_set_up()
+    def __init__(self, bert_model_name = 'bert_multi_cased_L-12_H-768_A-12'):
+        self.data = None
         self.bert_model_name = bert_model_name
-        self.tfhub_handle_encoder, self.tfhub_handle_preprocess = self.select_bert_model()
         self.classifier_model = None
         self.history = None
+        self.train_df, self.test_df, self.val_df = self.load_data()
+        self.tfhub_handle_encoder, self.tfhub_handle_preprocess = self.select_bert_model()
+        self.optimizer, self.loss, self.metrics, self.epochs = self.create_set_up()
+
+    def load_data(self):
+        AUTOTUNE = tf.data.AUTOTUNE
+
+        df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\Output_texts_labeled.csv")
+        self.data = pd.read_csv(df_path, header = 0, delimiter=",")
+        self.data['text'] = self.data['text'].apply(lambda row: row.replace("|","."))
+        self.data['sentences'] = self.data['text']
+        
+        target = self.data.pop('LABEL')
+        features = self.data[['sentences']]
+
+        # # set aside 20% of train and test data for evaluation
+        train_ds, test_ds, train_label, test_label = train_test_split(features, target,
+            test_size=0.2, shuffle = True, random_state = 8)
+
+        # # Use the same function above for the validation set
+        train_ds, val_ds, train_label, val_label = train_test_split(train_ds, train_label, 
+            test_size=0.25, random_state= 8) # 0.25 x 0.8 = 0.2
+
+        train_ds['LABEL'] = train_label.to_frame()['LABEL'].tolist()
+        val_ds['LABEL'] = val_label.to_frame()['LABEL'].tolist()
+        test_ds['LABEL'] = test_label.to_frame()['LABEL'].tolist()
+       
+        features = ['sentences']
+
+        train_ds = (tf.data.Dataset.from_tensor_slices(
+                (
+                    tf.cast(train_ds[features].values, tf.string),
+                    tf.cast(train_ds['LABEL'].values, tf.float32)
+                )
+            )
+        ).cache().prefetch(buffer_size=AUTOTUNE)
+        test_ds = (tf.data.Dataset.from_tensor_slices(
+                (
+                    tf.cast(test_ds[features].values, tf.string),
+                    tf.cast(test_ds['LABEL'].values, tf.float32)
+                )
+            )
+        ).cache().prefetch(buffer_size=AUTOTUNE)
+        val_ds = (tf.data.Dataset.from_tensor_slices(
+                (
+                    tf.cast(val_ds[features].values, tf.string),
+                    tf.cast(val_ds['LABEL'].values, tf.float32)
+                )
+            )
+        ).cache().prefetch(buffer_size=AUTOTUNE)
+
+        return train_ds,test_ds,val_ds
+
+    def load_data_keras(self):
+        AUTOTUNE = tf.data.AUTOTUNE
+        batch_size = 32
+        seed = 42
+        df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\Output_texts_labeled.csv")
+
+        ds = tf.keras.utils.get_file(df_path).shuffle(buffer_size=batch_size)
+        print(ds)
+
+        raw_train_ds = tf.keras.utils.get_file(
+            df_path)
+            #batch_size=batch_size,
+            #validation_split=0.2,
+            #subset='training',
+            #seed=seed)
+
+        class_names = raw_train_ds.class_names
+        train_ds = raw_train_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+        val_ds = tf.keras.utils.text_dataset_from_directory(
+            df_path,
+            batch_size=batch_size,
+            validation_split=0.2,
+            subset='validation',
+            seed=seed)
+
+        val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+        test_ds = tf.keras.utils.text_dataset_from_directory(
+            df_path,
+            batch_size=batch_size)
+
+        test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+        return train_ds, test_ds, val_ds
+
+    def save_data(self):
+        self.data.to_csv(str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_classified.csv", index = False)
 
     def create_set_up(self):
         epochs = 5
-        steps_per_epoch = tf.data.experimental.cardinality(train_ds).numpy()
+        steps_per_epoch = tf.data.experimental.cardinality(self.train_df).numpy()
         num_train_steps = steps_per_epoch * epochs
         num_warmup_steps = int(0.1*num_train_steps)
 
-        loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        metrics = tf.metrics.BinaryAccuracy()
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        metrics = tf.metrics.Accuracy() #tf.metrics.CategoricalAccuracy()
 
         init_lr = 3e-5
         optimizer = optimization.create_optimizer(init_lr=init_lr,
@@ -176,17 +271,37 @@ class Transformer():
         print(f'Preprocess model auto-selected: {tfhub_handle_preprocess}')
         return tfhub_handle_encoder, tfhub_handle_preprocess
 
-    def model_preprocess(self):
+    def model_preprocess_test(self):
         bert_model = hub.KerasLayer(self.tfhub_handle_encoder)
         bert_preprocess_model = hub.KerasLayer(self.tfhub_handle_preprocess)
 
-        text_test = ['this is such an amazing movie!']
+        text_test = self.data['text'].tolist()[0]
+        text_test = text_test.replace("|",".")
+        text_test = [text_test]
+        print("Test: "+str(text_test))
+
         text_preprocessed = bert_preprocess_model(text_test)
 
-        return text_preprocessed
+        print(f'Keys       : {list(text_preprocessed.keys())}')
+        print(f'Shape      : {text_preprocessed["input_word_ids"].shape}')
+        print(f'Word Ids   : {text_preprocessed["input_word_ids"][0, :12]}')
+        print(f'Input Mask : {text_preprocessed["input_mask"][0, :12]}')
+        print(f'Type Ids   : {text_preprocessed["input_type_ids"][0, :12]}')
+
+        bert_results = bert_model(text_preprocessed)
+
+        print(f'Loaded BERT: {self.tfhub_handle_encoder}')
+        print(f'Pooled Outputs Shape:{bert_results["pooled_output"].shape}')
+        print(f'Pooled Outputs Values:{bert_results["pooled_output"][0, :12]}')
+        print(f'Sequence Outputs Shape:{bert_results["sequence_output"].shape}')
+        print(f'Sequence Outputs Values:{bert_results["sequence_output"][0, :12]}')
+
+        classifier_model = c.create_classifier_model()
+        bert_raw_result = classifier_model(tf.constant(text_test))
+        print(tf.sigmoid(bert_raw_result))        
 
     def create_classifier_model(self):
-        text_input = tf.keras.layers.Input(shape=(), dtype=tf.string, name='text')
+        text_input = tf.keras.layers.Input(shape=(), dtype=tf.string, name='sentences')
         preprocessing_layer = hub.KerasLayer(self.tfhub_handle_preprocess, name='preprocessing')
         encoder_inputs = preprocessing_layer(text_input)
         encoder = hub.KerasLayer(self.tfhub_handle_encoder, trainable=True, name='BERT_encoder')
@@ -194,18 +309,19 @@ class Transformer():
         net = outputs['pooled_output']
         net = tf.keras.layers.Dropout(0.1)(net)
         net = tf.keras.layers.Dense(1, activation=None, name='classifier')(net)
-        return tf.keras.Model(text_input, net)
-    
+        return tf.keras.Model(text_input, net)  
 
     def apply_classifier(self):
-        self.classifier_model = self.build_classifier_model()
-        self.classifier_model.compile(optimizer= self.optimizer,
+        classifier_model = self.create_classifier_model()
+        classifier_model.compile(optimizer= self.optimizer,
                             loss=self.loss,
                             metrics=self.metrics)
         print(f'Training model with {self.tfhub_handle_encoder}')
-        self.history = self.classifier_model.fit(x=train_ds,
-                                    validation_data=val_ds,
-                                    epochs=self.epochs)
+
+        self.history = classifier_model.fit(x=self.train_df,
+                                    validation_data=self.val_df,
+                                    epochs=self.epochs, 
+                                    batch_size = 1)
 
     def save_model(self):
         dataset_name = 'imdb'
@@ -220,7 +336,7 @@ class Transformer():
         return reloaded_model
     
     def evaluate_model(self):
-        loss, accuracy = self.classifier_model.evaluate(test_ds)
+        loss, accuracy = self.classifier_model.evaluate(self.test_ds)
 
         history_dict = self.history.history
         print(history_dict.keys())
@@ -251,3 +367,19 @@ class Transformer():
         plt.xlabel('Epochs')
         plt.ylabel('Accuracy')
         plt.legend(loc='lower right')
+
+    def run(self):
+        c.create_classifier_model()
+        c.apply_classifier()
+
+if __name__ == "__main__":
+    c = Transformer()
+    # for text_batch, label_batch in c.train_df.take(1):
+    #     for i in range(1):
+    #         print(f'Review: {text_batch.numpy()[i]}')
+    
+    # c.model_preprocess_test()
+    c.apply_classifier()
+
+    
+    

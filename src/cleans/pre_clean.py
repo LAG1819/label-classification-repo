@@ -13,7 +13,7 @@ class textFilter:
     def regex_remove(self,row):
         output = []
         for text in row.split("|"):
-            pattern_list = [r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707']# only digits: r'\b[0-9]+\b\s*'
+            pattern_list = [r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707', r'\xe2',r'\x80',r"\x8b"]# only digits: r'\b[0-9]+\b\s*'
             for pattern in pattern_list:
                 text = re.sub(pattern,'',text)
             #remove any word shorter than 3 characters

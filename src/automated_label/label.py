@@ -74,7 +74,7 @@ class Labeler:
     def run(self):
         self.apply_labeling_functions()
         self.apply_labeling_model()
-        self.assign_labels_final()
+        #self.assign_labels_final()
         self.save_data()
 
 if __name__ == "__main__":
