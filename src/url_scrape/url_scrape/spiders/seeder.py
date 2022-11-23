@@ -25,7 +25,7 @@ class SeederSpider(scrapy.Spider):
 
         df = pd.read_excel(absolute_path,header = 0) 
 
-        urlList = df['URL'].to_list()[1:5]
+        urlList = df['URL'].to_list()#[1:5]
         for url in urlList:
              yield scrapy.Request(url = url, callback=self.parse)
 
@@ -36,7 +36,7 @@ class SeederSpider(scrapy.Spider):
             self.base_links.append(response.url)
 
         seeds_df = pd.DataFrame(data = {'URL': self.base_links, 'URL-FOUND': self.result_links})
-        seeds_df.to_csv(os.path.join(self.package_dir,r'files\Output_seeds.csv'), index = False)
+        seeds_df.to_csv(os.path.join(self.package_dir,r'files\URL_Subseed.csv'), index = False)
         print("ALL: "+str(len(self.result_links)))# + str(self.result_links)
 
         # hxs = scrapy.Selector(response)
@@ -50,7 +50,7 @@ class SeederSpider(scrapy.Spider):
         except Exception as e:
             text = ""
 
-        print(text)
+        #print(text)
 
         self.result_text.append(text)
         self.url_text.append(response.url)

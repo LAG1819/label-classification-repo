@@ -20,7 +20,7 @@ class TopicExtractor:
 
     def save_data(self):
         self.data.to_csv(str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_cleaned.csv", index = False)
-        print(self.data['TOPIC'])
+        
 
     def generate_tfIdf(self,doc_list):
         tokenizer = RegexpTokenizer(r'\w+')
@@ -63,18 +63,23 @@ class TopicExtractor:
         return "|".join(topics)
 
     def generate_topic(self,text):
-        doc_list = text.split("|")
-        fit, tfidf = self.generate_tfIdf(doc_list)
-        topics = self.apply_lda(fit,tfidf)
-        # print(topics.split("|"))
-        return topics
+        try:
+            doc_list = text.split("|")
+            fit, tfidf = self.generate_tfIdf(doc_list)
+            topics = self.apply_lda(fit,tfidf)
+            # print(topics.split("|"))
+            return topics
+        except:
+            return ''
+
 
     def run(self):
         self.data['TOPIC']=self.data[self.text_col].apply(lambda row: self.generate_topic(row))
+        self.data.replace(np.nan, "",regex = False, inplace = True)
         self.save_data()
 
 
 if __name__ == "__main__":
     t = TopicExtractor(4)
     t.run() 
-    # print(t.data['TOPIC'])
+    # print(t.data['TOPIC'].tolist())

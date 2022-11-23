@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import shutil
 import os
+import numpy as np
 
 tf.get_logger().setLevel('ERROR')
 
@@ -23,9 +24,11 @@ class Transformer():
 
     def load_data(self):
         AUTOTUNE = tf.data.AUTOTUNE
+        batch_size = 32
 
         df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\Output_texts_labeled.csv")
-        self.data = pd.read_csv(df_path, header = 0, delimiter=",")
+        df = pd.read_csv(df_path, header = 0, delimiter=",")
+        self.data = df.replace(np.nan, "",regex = False)
         self.data['text'] = self.data['text'].apply(lambda row: row.replace("|","."))
         self.data['sentences'] = self.data['text']
         
@@ -39,6 +42,8 @@ class Transformer():
         # # Use the same function above for the validation set
         train_ds, val_ds, train_label, val_label = train_test_split(train_ds, train_label, 
             test_size=0.25, random_state= 8) # 0.25 x 0.8 = 0.2
+        
+        print(train_ds.shape,val_ds.shape,test_ds.shape)
 
         train_ds['LABEL'] = train_label.to_frame()['LABEL'].tolist()
         val_ds['LABEL'] = val_label.to_frame()['LABEL'].tolist()
@@ -52,23 +57,36 @@ class Transformer():
                     tf.cast(train_ds['LABEL'].values, tf.float32)
                 )
             )
-        ).cache().prefetch(buffer_size=AUTOTUNE)
+        ).batch(batch_size=batch_size)
+        train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
         test_ds = (tf.data.Dataset.from_tensor_slices(
                 (
                     tf.cast(test_ds[features].values, tf.string),
                     tf.cast(test_ds['LABEL'].values, tf.float32)
                 )
             )
-        ).cache().prefetch(buffer_size=AUTOTUNE)
+        ).batch(batch_size=batch_size)
+        test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
         val_ds = (tf.data.Dataset.from_tensor_slices(
                 (
                     tf.cast(val_ds[features].values, tf.string),
                     tf.cast(val_ds['LABEL'].values, tf.float32)
                 )
             )
-        ).cache().prefetch(buffer_size=AUTOTUNE)
+        ).batch(batch_size=batch_size)
+        val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
         return train_ds,test_ds,val_ds
+    
+    # A utility method to create a tf.data dataset from a Pandas Dataframe
+    def df_to_dataset(dataframe, shuffle=True, batch_size=32):
+        dataframe = dataframe.copy()
+        labels = dataframe.pop('target').astype('float64')
+        ds = tf.data.Dataset.from_tensor_slices((dict(dataframe), labels))
+        if shuffle:
+            ds = ds.shuffle(buffer_size=len(dataframe))
+        ds = ds.batch(batch_size)
+        return ds
 
     def load_data_keras(self):
         AUTOTUNE = tf.data.AUTOTUNE
@@ -110,13 +128,13 @@ class Transformer():
         self.data.to_csv(str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_classified.csv", index = False)
 
     def create_set_up(self):
-        epochs = 5
+        epochs = 3
         steps_per_epoch = tf.data.experimental.cardinality(self.train_df).numpy()
         num_train_steps = steps_per_epoch * epochs
         num_warmup_steps = int(0.1*num_train_steps)
 
         loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        metrics = tf.metrics.Accuracy() #tf.metrics.CategoricalAccuracy()
+        metrics = tf.metrics.CategoricalAccuracy()
 
         init_lr = 3e-5
         optimizer = optimization.create_optimizer(init_lr=init_lr,
@@ -308,17 +326,17 @@ class Transformer():
         outputs = encoder(encoder_inputs)
         net = outputs['pooled_output']
         net = tf.keras.layers.Dropout(0.1)(net)
-        net = tf.keras.layers.Dense(1, activation=None, name='classifier')(net)
+        net = tf.keras.layers.Dense(5, activation=None, name='classifier')(net)
         return tf.keras.Model(text_input, net)  
 
     def apply_classifier(self):
-        classifier_model = self.create_classifier_model()
-        classifier_model.compile(optimizer= self.optimizer,
+        self.classifier_model = self.create_classifier_model()
+        self.classifier_model.compile(optimizer= self.optimizer,
                             loss=self.loss,
                             metrics=self.metrics)
         print(f'Training model with {self.tfhub_handle_encoder}')
 
-        self.history = classifier_model.fit(x=self.train_df,
+        self.history = self.classifier_model.fit(x=self.train_df,
                                     validation_data=self.val_df,
                                     epochs=self.epochs, 
                                     batch_size = 1)
@@ -336,13 +354,13 @@ class Transformer():
         return reloaded_model
     
     def evaluate_model(self):
-        loss, accuracy = self.classifier_model.evaluate(self.test_ds)
+        loss, accuracy = self.classifier_model.evaluate(self.test_df)
 
         history_dict = self.history.history
         print(history_dict.keys())
 
-        acc = history_dict['binary_accuracy']
-        val_acc = history_dict['val_binary_accuracy']
+        acc = history_dict['categorical_accuracy']
+        val_acc = history_dict['val_categorical_accuracy']
         loss = history_dict['loss']
         val_loss = history_dict['val_loss']
 
@@ -367,9 +385,9 @@ class Transformer():
         plt.xlabel('Epochs')
         plt.ylabel('Accuracy')
         plt.legend(loc='lower right')
+        plt.show()
 
     def run(self):
-        c.create_classifier_model()
         c.apply_classifier()
 
 if __name__ == "__main__":
@@ -380,6 +398,7 @@ if __name__ == "__main__":
     
     # c.model_preprocess_test()
     c.apply_classifier()
+    c.evaluate_model()
 
     
     

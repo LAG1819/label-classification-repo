@@ -1,25 +1,36 @@
 import pandas as pd
 import os
+import numpy as np
 from snorkel.labeling import labeling_function
 from snorkel.labeling import PandasLFApplier
 from snorkel.labeling import LFAnalysis
 from snorkel.labeling.model.label_model import LabelModel
 
-ABSTAIN = -1
-GENERAL = 0
-SPECIFIC = 1
-ELECTRIC = 2
+ABSTAIN = 1
+GENERAL = 2
+SPECIFIC = 3
+ELECTRIC = 4
 
 @labeling_function()
 def check_general(x):
-    return GENERAL if "startseite" in x.text.lower() else ABSTAIN
+    value = ABSTAIN
+    if "startseite" in x.text.lower():
+        value = GENERAL
+    return value
+    
 @labeling_function()
 def check_specific(x):
-    return SPECIFIC if ("romeo" or "audi" or "bentley")  in x.text.lower()  else ABSTAIN
+    value = ABSTAIN
+    if ("abarth" or "romeo" or "audi" or "bentley")  in x.text.lower():
+        value = SPECIFIC
+    return value
 
 @labeling_function()
 def check_electric(x):
-    return SPECIFIC if ("e-fahrzeug" or "elektro" or "strom")  in x.text.lower()  else ABSTAIN
+    value = ABSTAIN
+    if ("e-fahrzeug" or "elektro" or "strom") in x.text.lower():
+        value = ELECTRIC        
+    return value
 
 class Labeler:
     def __init__(self):
@@ -33,7 +44,8 @@ class Labeler:
 
     def load_data(self):
         df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_cleaned.csv"
-        return pd.read_csv(df_path, header = 0, delimiter=",")
+        df = pd.read_csv(df_path, header = 0, delimiter=",")
+        return df.replace(np.nan, "",regex = False)
 
     def save_data(self):
         self.data.to_csv(str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_labeled.csv", index = False)
@@ -53,7 +65,7 @@ class Labeler:
         # print(L_analyis.lf_summary())
 
     def apply_labeling_model(self):
-        self.label_model = LabelModel(verbose=False)
+        self.label_model = LabelModel(cardinality = 5, verbose=False)
         self.label_model.fit(L_train=self.L_train, n_epochs=1000, seed=100)
         preds_train_label = self.label_model.predict(L=self.L_train)
         print(preds_train_label)
@@ -80,4 +92,4 @@ class Labeler:
 if __name__ == "__main__":
     l = Labeler()
     l.run()
-    print(l.data['LABEL'])
+    print(l.data['LABEL'].tolist())
