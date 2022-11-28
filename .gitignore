@@ -1,2 +1,6 @@
 .venv/*
 *.csv
+*.wdm/*
+*.pyc
+*.log
+__pycache__/*
