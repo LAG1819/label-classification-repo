@@ -7,6 +7,9 @@ from nltk.corpus import stopwords
 from lda_coherence import get_coherence 
 import numpy as np
 
+import nltk
+nltk.download('stopwords')
+
 class TopicExtractor:
     def __init__(self, input_topic:int):
         self.data = self.load_data()
