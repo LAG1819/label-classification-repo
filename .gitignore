@@ -3,3 +3,4 @@
 *.log
 *.pyc
 *.py[cod]
+*/__pycache__
