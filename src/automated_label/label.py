@@ -51,11 +51,11 @@ class Labeler:
         self.data.to_csv(str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_labeled.csv", index = False)
 
     def apply_labeling_functions(self):
-        self.data = self.data.rename(columns = {'TEXT' : 'text'})
+        self.data = self.data.rename(columns = {'URL-TEXT' : 'text'})
 
         applier = PandasLFApplier(lfs=self.lfs)
         self.L_train = applier.apply(df=self.data)
-        print(self.L_train)
+        #print(self.L_train)
 
         # coverage_checking_out, coverage_check = (self.L_train != ABSTAIN).mean(axis=0)
         # print(f"checking specific coverage: {coverage_checking_out * 100:.1f}%")
@@ -68,16 +68,16 @@ class Labeler:
         self.label_model = LabelModel(cardinality = 5, verbose=False)
         self.label_model.fit(L_train=self.L_train, n_epochs=1000, seed=100)
         preds_train_label = self.label_model.predict(L=self.L_train)
-        print(preds_train_label)
+        #print(preds_train_label)
         
         self.data['LABEL'] = preds_train_label
         # preds_valid_label = label_model.predict(L=L_validate)
     
     def assign_labels_final(self):
-        self.data.loc[(self.data['LABEL']==-1), 'LABEL'] ='ABSTAIN'
-        self.data.loc[(self.data['LABEL']==0), 'LABEL'] ='GENERAL'
-        self.data.loc[(self.data['LABEL']==1), 'LABEL'] ='SPECIFIC'
-        self.data.loc[(self.data['LABEL']==2), 'LABEL'] ='ELECTRIC'
+        self.data.loc[(self.data['LABEL']==1), 'LABEL'] ='ABSTAIN'
+        self.data.loc[(self.data['LABEL']==2), 'LABEL'] ='GENERAL'
+        self.data.loc[(self.data['LABEL']==3), 'LABEL'] ='SPECIFIC'
+        self.data.loc[(self.data['LABEL']==4), 'LABEL'] ='ELECTRIC'
 
     def analysis_result_model(self):
         print('validate metrics')

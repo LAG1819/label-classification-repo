@@ -14,7 +14,7 @@ class TopicExtractor:
     def __init__(self, input_topic:int):
         self.data = self.load_data()
         self.number_topics = input_topic
-        self.text_col = 'TEXT'
+        self.text_col = 'URL-TEXT'
         self.german_stopwords = stopwords.words('german')
 
     def load_data(self):

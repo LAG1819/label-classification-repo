@@ -5,9 +5,9 @@ import re
 
 class textFilter:
     def __init__(self):
-        df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts.csv"
+        df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts.csv"
         self.data = pd.read_csv(df_path, header = 0, delimiter=",")
-        self.text_col = 'TEXT'
+        self.text_col = 'URL-TEXT'
         self.url_col = 'URL'
     
     def regex_remove(self,row):
