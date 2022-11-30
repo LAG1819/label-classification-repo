@@ -3,4 +3,6 @@
 *.log
 *.pyc
 *.py[cod]
-*/__pycache__
+src/*/__pychache__
+secrets.py
+src/archive/*
