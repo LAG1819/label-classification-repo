@@ -19,8 +19,9 @@ from selenium.webdriver.support import expected_conditions as EC
 import os
 import pandas as pd
 import logging
+import secrets as s
 
-os.environ['GH_TOKEN'] = "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"
+os.environ['GH_TOKEN'] = s.github_token
 os.environ['WDM_LOG'] = str(logging.NOTSET)
 os.environ['WDM_LOCAL'] = '1'
 os.environ['WDM_SSL_VERIFY'] = '0'
