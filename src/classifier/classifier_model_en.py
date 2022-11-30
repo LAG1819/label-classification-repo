@@ -3,7 +3,6 @@ import tensorflow_hub as hub
 import tensorflow_text as text
 from official.nlp import optimization
 from sklearn.model_selection import train_test_split
-from sklearn.datasets import load_iris
 import matplotlib.pyplot as plt
 import pandas as pd
 import shutil
