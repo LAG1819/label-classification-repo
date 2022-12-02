@@ -3,9 +3,11 @@
 *.log
 *.pyc
 *.py[cod]
-src/*/__pychache__
+src/*/__pychache__*
 secrets_git_luisa.py
 src/archive/*
 *.json
 *.exe
 *.zip
+*.feather
+src/*/__pychache__/*
