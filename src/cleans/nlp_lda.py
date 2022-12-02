@@ -18,11 +18,11 @@ class TopicExtractor:
         self.german_stopwords = stopwords.words('german')
 
     def load_data(self):
-        df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_pre_clean.csv"
-        return pd.read_csv(df_path, header = 0, delimiter=",")
+        df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\cleaned_texts.feather"
+        return pd.read_feather(df_path)
 
     def save_data(self):
-        self.data.to_csv(str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_cleaned.csv", index = False)
+        self.data.to_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\texts_topiced.feather")
         
 
     def generate_tfIdf(self,doc_list):
@@ -84,5 +84,6 @@ class TopicExtractor:
 
 if __name__ == "__main__":
     t = TopicExtractor(4)
-    t.run() 
+    print(t.data)
+    #t.run() 
     # print(t.data['TOPIC'].tolist())

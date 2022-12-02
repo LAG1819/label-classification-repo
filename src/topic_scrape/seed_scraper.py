@@ -20,7 +20,6 @@ import os
 import pandas as pd
 import logging
 import secrets_git_luisa as s
-import feather as f
 
 os.environ['GH_TOKEN'] = s.github_token
 os.environ['WDM_LOG'] = str(logging.NOTSET)
@@ -62,7 +61,15 @@ class TopicScraper:
             resultLinks = self.google_search(q)
         except Exception as e:
             resultLinks =[]
-            print("Google Search went wrong: ",e)
+            print("BS4 Google Search went wrong: ",e)
+
+        if not resultLinks:
+            try:
+                resultLinks = self.google_search_selenium(q)
+            except Exception as e:
+                resultLinks =[]
+                print("SELENIUM Google Search went wrong: ",e)
+                        
         return resultLinks
 
     def google_search(self,query):
@@ -76,6 +83,7 @@ class TopicScraper:
         return list(filter(self.filter_resultLinks,[sr.find("a")["href"] for sr in searchResults]))
 
     def google_search_selenium(self,query):
+        ignored_exceptions=(NoSuchElementException,StaleElementReferenceException,)
         self.browser.get('http://www.google.com')
         try: 
             frame = self.browser.find_element(By.XPATH,'//*[@id="cnsw"]/iframe') #<-locating chrome cookies consent frame 
@@ -89,16 +97,24 @@ class TopicScraper:
         search.send_keys(str(query))
         search.send_keys(Keys.RETURN) 
 
-        ignored_exceptions=(NoSuchElementException,StaleElementReferenceException,)
-        WebDriverWait(self.browser, 5,ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        wait = WebDriverWait(self.browser, 15)
+        wait.until(EC.presence_of_all_elements_located((By.XPATH, '//div[@class = "g"]')))
+    
+        searchResults =[]
+        a_tags =  self.browser.find_elements(By.TAG_NAME,"a")
+        for tag in a_tags: 
+            if re.search("google", str(tag.get_attribute("href")).lower()):
+                pass
+            else:
+                searchResults.append(tag.get_attribute('href'))
 
-        searchResults = [r.get_attribute("href") for r in self.browser.find_elements(By.TAG_NAME,"a")]
-        print(searchResults)
+        return list(filter(self.filter_resultLinks,searchResults))
+        
 
 
     def filter_resultLinks(self,link):
         if re.match(r'^(http|https)://',str(link)):
-            if(re.search("googleadservices",str(link)) or re.search("home.mobile",str(link)) or re.search("autoscout24",str(link)) or re.search("web2.cylex",str(link)) or re.search("servicesinfo",str(link)) or re.search("11880",str(link)) or re.search("facebook",str(link))):
+            if(re.search("google",str(link)) or re.search("googleadservices",str(link)) or re.search("home.mobile",str(link)) or re.search("autoscout24",str(link)) or re.search("web2.cylex",str(link)) or re.search("servicesinfo",str(link)) or re.search("11880",str(link)) or re.search("facebook",str(link))):
                 return
             else:
                 return link
@@ -107,8 +123,9 @@ class TopicScraper:
     
     def save_data(self):
         all_seed_df = pd.concat([self.url_df,self.topics_df], ignore_index= True)
+        print(all_seed_df)
         #all_seed_df.to_csv(os.path.join(self.package_dir,r'files\Seed.csv'), index = False)
-        all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed.csv'), index = False)
+        all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed.feather'))
 
     def run(self):
         self.topics_df['URL'] = self.topics_df['Keyword'].apply(lambda row: self.get_url(row))
@@ -120,8 +137,7 @@ class TopicScraper:
 if __name__ == "__main__":
     start = time.process_time()
     scrape = TopicScraper()
-    scrape.google_search_selenium("Auto Trend Deutschland")
-    #scrape.run()
+    scrape.run()
     print(time.process_time() - start)
 
 
