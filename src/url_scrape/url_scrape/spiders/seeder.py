@@ -54,7 +54,7 @@ class SeederSpider(scrapy.Spider):
             yield scrapy.Request(url = url, callback=self.parse)
 
     def filter_link(self,link):
-        pattern_list =["github","vimeo","apple","twitter","facebook","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube", "gebrauchtwagen", "neufahrzeug"]
+        pattern_list =["configure","github","vimeo","apple","twitter","facebook","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube", "gebrauchtwagen", "neufahrzeug"]
         flag = False
         if any(pattern in str(link).lower() for pattern in pattern_list):
             flag = True
