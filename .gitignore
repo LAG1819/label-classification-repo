@@ -4,5 +4,8 @@
 *.pyc
 *.py[cod]
 src/*/__pychache__
-secrets.py
+secrets_git_luisa.py
 src/archive/*
+*.json
+*.exe
+*.zip

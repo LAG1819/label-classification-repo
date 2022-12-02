@@ -19,7 +19,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import os
 import pandas as pd
 import logging
-import secrets as s
+import secrets_git_luisa as s
+import feather as f
 
 os.environ['GH_TOKEN'] = s.github_token
 os.environ['WDM_LOG'] = str(logging.NOTSET)
@@ -67,10 +68,33 @@ class TopicScraper:
     def google_search(self,query):
         params = {"q": query}
         req = requests.get('https://www.google.com/search?q=',headers = self.headers, params = params,verify= False).text
+        
         soup = BeautifulSoup(req,"html.parser")
         searchResults = soup.find_all(class_="g")
+       
 
         return list(filter(self.filter_resultLinks,[sr.find("a")["href"] for sr in searchResults]))
+
+    def google_search_selenium(self,query):
+        self.browser.get('http://www.google.com')
+        try: 
+            frame = self.browser.find_element(By.XPATH,'//*[@id="cnsw"]/iframe') #<-locating chrome cookies consent frame 
+            self.browser.switch_to.frame(frame) 
+            self.browser.find_element(By.XPATH,'//*[@id="introAgreeButton"]').click()#<-looking for introAgreeButton button, but seems google has changed its name since and  it only works in old chrome versions.
+
+        except NoSuchElementException:
+            self.browser.find_element(By.XPATH,'//*[@id="L2AGLb"]').click() #<- pay attention to new id.
+
+        search = self.browser.find_element(By.NAME,'q')
+        search.send_keys(str(query))
+        search.send_keys(Keys.RETURN) 
+
+        ignored_exceptions=(NoSuchElementException,StaleElementReferenceException,)
+        WebDriverWait(self.browser, 5,ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+
+        searchResults = [r.get_attribute("href") for r in self.browser.find_elements(By.TAG_NAME,"a")]
+        print(searchResults)
+
 
     def filter_resultLinks(self,link):
         if re.match(r'^(http|https)://',str(link)):
@@ -83,7 +107,8 @@ class TopicScraper:
     
     def save_data(self):
         all_seed_df = pd.concat([self.url_df,self.topics_df], ignore_index= True)
-        all_seed_df.to_csv(os.path.join(self.package_dir,r'files\Seed.csv'), index = False)
+        #all_seed_df.to_csv(os.path.join(self.package_dir,r'files\Seed.csv'), index = False)
+        all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed.csv'), index = False)
 
     def run(self):
         self.topics_df['URL'] = self.topics_df['Keyword'].apply(lambda row: self.get_url(row))
@@ -95,7 +120,8 @@ class TopicScraper:
 if __name__ == "__main__":
     start = time.process_time()
     scrape = TopicScraper()
-    scrape.run()
+    scrape.google_search_selenium("Auto Trend Deutschland")
+    #scrape.run()
     print(time.process_time() - start)
 
 
