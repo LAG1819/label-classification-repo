@@ -11,6 +11,12 @@ GENERAL = 2
 SPECIFIC = 3
 ELECTRIC = 4
 
+###DEFINE NUMBER LABELS 1-N###
+###DEFINE 2 HEURISTICS PER LABEL###
+###DEFINE CLUSTERING MODEL (SIMPLE)###
+###DEFINE SIMPLE "BLACKLIST" PER LABEL###
+
+
 @labeling_function()
 def check_general(x):
     value = ABSTAIN

@@ -141,6 +141,8 @@ tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
 data, train_data = load_data()
 len_train_data = train_data['LABEL'].tolist()
 tokenized_data = preprocess_data(data)
+print(tokenized_data.keys)
+#add label column to tokenized!!! 
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer)#return_tensors="tf"
 train_dataloader,eval_dataloader = transform_data_asTR(tokenized_data, data_collator)
 
@@ -150,6 +152,8 @@ num_training_steps,num_epochs, metric, optimizer, lr_scheduler = set_params(len_
 progress_bar_train = range(num_training_steps)
 progress_bar_eval = range(num_epochs * len(eval_dataloader))
 
+
+###training of model###
 for epoch in range(num_epochs):
   model.train()
   for batch in train_dataloader:
@@ -165,6 +169,7 @@ for epoch in range(num_epochs):
       optimizer.zero_grad()
       progress_bar_train.update(1)
 
+### eval of model ###
 #   model.eval()
 #   for batch in eval_dataloader:
 #     batch = {k: v.to(device) for k, v in batch.items()}

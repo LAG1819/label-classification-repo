@@ -60,6 +60,10 @@ class SeederSpider(scrapy.Spider):
             flag = True
         return flag
 
+    def parse_external(self, response):
+        #Parse external links save them seperately#
+        pass
+
     def parse(self, response):
         try:
             reqs = requests.get(str(response.url),headers = self.headers).text
