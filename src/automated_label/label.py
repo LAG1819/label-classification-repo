@@ -7,11 +7,15 @@ from snorkel.labeling import LFAnalysis
 from snorkel.labeling.model.label_model import LabelModel
 
 ABSTAIN = 1
-GENERAL = 2
-SPECIFIC = 3
-ELECTRIC = 4
+AUTONOMOUS = 2
+ELECTRIFICATION = 3
+CONNECTIVITY = 4
+SHARED = 5
+SUSTAINABILITY = 6
+DIGITALISATION = 7
+INDIVIDUALISATION = 8
 
-###DEFINE NUMBER LABELS 1-N###
+###DEFINE NUMBER LABELS 1-7###
 ###DEFINE 2 HEURISTICS PER LABEL###
 ###DEFINE CLUSTERING MODEL (SIMPLE)###
 ###DEFINE SIMPLE "BLACKLIST" PER LABEL###
@@ -21,21 +25,21 @@ ELECTRIC = 4
 def check_general(x):
     value = ABSTAIN
     if "startseite" in x.text.lower():
-        value = GENERAL
+        value = 2
     return value
     
 @labeling_function()
 def check_specific(x):
     value = ABSTAIN
     if ("abarth" or "romeo" or "audi" or "bentley")  in x.text.lower():
-        value = SPECIFIC
+        value = 1
     return value
 
 @labeling_function()
 def check_electric(x):
     value = ABSTAIN
     if ("e-fahrzeug" or "elektro" or "strom") in x.text.lower():
-        value = ELECTRIC        
+        value = 3        
     return value
 
 class Labeler:
