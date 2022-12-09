@@ -6,7 +6,7 @@ import pickle
 import json
 
 class textFilter:
-    def __init__(self):
+    def __init__(self,lang, path, t_path):
         # df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts.pkl"
         # file = open(df_path, 'rb')
         # data = pickle.load(file)
@@ -14,17 +14,20 @@ class textFilter:
         # # dict= pd.read_pickle(df_path)
         # # self.data = pd.DataFrame.from_dict(dict, orient = 'index').T
 
-        df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts.json"
+        df_path = str(os.path.dirname(__file__)).split("src")[0] + path
         self.data = pd.read_json(df_path)
         
-        self.text_col = 'URL-TEXT'
+        self.text_col = 'URL_TEXT'
         self.url_col = 'URL'
+        self.lang = lang
+
+        self.target_path = t_path
     
     def regex_remove(self,row):
         output = []
         try:
             for text in row.split("|"):
-                pattern_list = [r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707', r'\xe2',r'\x80',r"\x8b"]# only digits: r'\b[0-9]+\b\s*'
+                pattern_list = [r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707', r'\xe2',r'\x80',r"\x8b", r"{{\.*}}"]# only digits: r'\b[0-9]+\b\s*'
                 for pattern in pattern_list:
                     text = re.sub(pattern,'',text)
                 #remove any word shorter than 3 characters
@@ -46,20 +49,25 @@ class textFilter:
         def detect_language(text):
             return_lan = None
             try:
-                return_lan = detect(text)
+                return_lan = str(detect(text)).lower()
             except: 
                 return_lan = None
             return return_lan
         
         self.data["LANG"]=self.data[self.text_col].apply(lambda row: detect_language(row))
+        self.data = self.data[self.data["LANG"] == self.lang]
+        self.data = self.data.reset_index(drop = True)
 
     def save_data(self):
-        self.data.to_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\cleaned_texts.feather")
+        path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        self.data.to_feather(path)
 
     def run(self):
         self.remove_nonText()
         self.flag_lang()
         self.save_data()
+        print(self.data.shape)
+        print(self.data)
         print("Done Cleaning")
 
 class urlFilter:
@@ -74,6 +82,7 @@ class urlFilter:
         self.data.to_csv(os.path.join(self.package_dir,r'files\Output_texts.csv'), index = False)
 
 if __name__ == "__main__":
-    f = textFilter()
-    print(f.data)
-    #f.run()
+    f = textFilter('de',r"files\raw_texts.json",r"files\cleaned_texts.feather")
+    f.run()
+    # f2 = textFilter('de',r"files\raw_topics.json",r"files\cleaned_topics.feather")
+    # f2.run()

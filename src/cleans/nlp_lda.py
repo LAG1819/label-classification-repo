@@ -11,25 +11,37 @@ import nltk
 nltk.download('stopwords')
 
 class TopicExtractor:
-    def __init__(self, input_topic:int):
+    def __init__(self, input_topic, s_path,t_path):
+        self.source_path = s_path
+        self.target_path = t_path
         self.data = self.load_data()
         self.number_topics = input_topic
-        self.text_col = 'URL-TEXT'
+        self.text_col = 'URL_TEXT'
         self.german_stopwords = stopwords.words('german')
+       
 
     def load_data(self):
-        df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\cleaned_texts.feather"
+        df_path = str(os.path.dirname(__file__)).split("src")[0] + self.source_path
         return pd.read_feather(df_path)
 
     def save_data(self):
-        self.data.to_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\texts_topiced.feather")
+        self.data.to_feather(str(os.path.dirname(__file__)).split("src")[0] + self.target_path)
         
 
     def generate_tfIdf(self,doc_list):
         tokenizer = RegexpTokenizer(r'\w+')
-
+        domain_stopwords = ["news","report","partner","impressum", "rechtliches", "newsletter", "datenschutz", "datenschutzerklärung", "datenschutzbeauftragter",\
+                 "entdecken", "anmelden", "login","logout", "log out", "abmelden", "kunden login","extras",\
+                    "produkte", "übersicht", "veranstaltungen", "suchen","suche", "kaufen", "angebote","angebot", "konfigurieren","konfiguration" \
+                        "zubehör", "owner", "garantie", "mehr", "modelle", "modell", "kontaktieren","kontakt", "skip", "https", "service",\
+                            "buchen", "anfahrt", "inanzdienstleistungen", "inanzdienstleistung", "services", "service", "connected", "required"
+                            "englisch", "google", "wikipedia", "internet", "website", "email", "mail", "e-mail", "beispielsweise", "siehe", "beim", "isbn", "issn",\
+                                "beispiel", "artikel", "fragen", "deutsch", "navigation","فارسی",\
+                                    "januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember", "online",\
+                                        "english", "privacy", "bundesdatenschutzgesetz", "weitere"]
+        all_stopwords = self.german_stopwords + domain_stopwords        
         tfidf_v = TfidfVectorizer(lowercase=True,
-                                stop_words=self.german_stopwords,
+                                stop_words=all_stopwords,
                                 ngram_range = (1,2),
                                 tokenizer = tokenizer.tokenize)
 
@@ -77,13 +89,15 @@ class TopicExtractor:
 
 
     def run(self):
-        self.data['TOPIC']=self.data[self.text_col].apply(lambda row: self.generate_topic(row))
+        self.data['TOPICS']=self.data[self.text_col].apply(lambda row: self.generate_topic(row))
         self.data.replace(np.nan, "",regex = False, inplace = True)
         self.save_data()
 
 
 if __name__ == "__main__":
-    t = TopicExtractor(4)
-    print(t.data)
-    #t.run() 
+    # t = TopicExtractor(4,r"files\cleaned_texts.feather",r"files\topiced_texts.feather")
+    # t.run() 
     # print(t.data['TOPIC'].tolist())
+    t2 = TopicExtractor(7,r"files\cleaned_topics.feather",r"files\topiced_topics.feather")
+    t2.run()
+    print(t2.data)#['TOPIC'].tolist())
