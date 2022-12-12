@@ -64,11 +64,11 @@ class textFilter:
                                     "englisch", "english","deutsch","german","google", "wikipedia", "navigation",\
                                         "januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember"]
                                        
-        domain_stopwords = ["(g/km)"]
-        numbers_only = ["^\\d+$","^[0-9]+(\s+[0-9]+)*$"]
+        domain_stopwords = ["(g/km)","use case\w*"]
+        numbers_only = ["^\\d+$","^\s?[0-9]+(\s+[0-9]+)*\s?$"]
         special_characters = ['[^äöüßA-Za-z0-9 ]+']
         short_words = ['^\w{0,3}$']
-        all_stopwords = url+email+zip+phone+dates+website_stopwords+domain_stopwords+numbers_only+special_characters+short_words
+        all_stopwords = url+email+zip+phone+dates+website_stopwords+domain_stopwords+numbers_only+special_characters+short_words+numbers_only+[" \\d+ "]
         
         for sentence in row.split("|"):
             for pattern in all_stopwords:
@@ -77,6 +77,7 @@ class textFilter:
             
             output_sentence.append(sentence)
         output_sentence = list(set(list(filter(None,output_sentence))))
+        # print(output_sentence)
         return "|".join(output_sentence)
     
     def remove_nonText(self):
@@ -95,7 +96,7 @@ class textFilter:
             return return_lan
         
         self.data["LANG"]=self.data[self.text_col].apply(lambda row: detect_language(row))
-        self.data = self.data[self.data["LANG"] == self.lang]
+        # self.data = self.data[self.data["LANG"] == self.lang]
         self.data = self.data.reset_index(drop = True)
 
     def save_data(self):
@@ -106,7 +107,7 @@ class textFilter:
         self.remove_nonText()
         self.remove_domainStopwords()
         self.flag_lang()
-        # self.save_data()
+        self.save_data()
         print(self.data.shape)
         print(self.data)
         print("Done Cleaning")
@@ -123,11 +124,11 @@ class urlFilter:
         self.data.to_csv(os.path.join(self.package_dir,r'files\Output_texts.csv'), index = False)
 
 if __name__ == "__main__":
-    f = textFilter('de',r"files\raw_texts.json",r"files\cleaned_texts.feather")
-    f.run()
-    #f2 = textFilter('de',r"files\raw_topics.json",r"files\cleaned_topics.feather")
-    #f2.run()
+    # f = textFilter('de',r"files\raw_texts.json",r"files\cleaned_texts.feather")
+    # f.run()
+    f2 = textFilter('de',r"files\raw_classes.json",r"files\cleaned_classes.feather")
+    f2.run()
 
     
-    # result = [re.sub("^[0-9]+(\s+[0-9]+)*", "", w) for w in [ "hi 089","089", "00 88 00", "000 888 000"]]
+    # result = [re.sub("^\s?[0-9]+(\s+[0-9]+)*", "", w) for w in [ " 9 2015"," 2014", "00 88 00", "000 888 000"]]
     # print(result)

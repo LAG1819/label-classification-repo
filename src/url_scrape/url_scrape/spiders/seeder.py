@@ -55,9 +55,9 @@ class TopicSpider(scrapy.Spider):
             body = soup.body
             text = "|".join([str(x) for x in body.strings])
         except Exception as e:
-            text = ""
+            text = "javascript"
 
-        if text == "":
+        if ("javascript" in text) or ("java script" in text)or ('Access denied' in text):
             try:
                 browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=self.options)
                 browser.get(response.url)
@@ -136,7 +136,7 @@ class SeederSpider(CrawlSpider):
         except Exception as e:
             text = "javascript"
 
-        if ("javascript" in text) or ("java script" in text):
+        if ("javascript" in text) or ("java script" in text) or ('Access denied' in text):
             try:
                 browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=self.options)
                 browser.get(response.url)
@@ -195,15 +195,15 @@ def run_crawler():
     process3 =  CrawlerProcess({
         'USER_AGENT': 'Mozilla/5.0',
         'FEED_EXPORT_ENCODING': 'utf-8',
-        'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ['TOPIC','URL', 'URL_TEXT']}}
+        'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ['CLASS','DOMAIN','URL', 'URL_TEXT']}}
         })
 
-    process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
+    # process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
     #process2.crawl(SeederSpider, r'files\Seed.feather', 'external')
-    # process3.crawl(TopicSpider,'DE')
-    process.start()
+    process3.crawl(TopicSpider,'DE')
+    # process.start()
     #process2.start()
-    # process3.start()
+    process3.start()
 
 def union_data():
     df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
@@ -224,4 +224,4 @@ def union_data():
     
 if __name__ == '__main__':
     run_crawler()
-    union_data()
+    #union_data()
