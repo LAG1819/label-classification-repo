@@ -6,50 +6,70 @@ from nltk.corpus import stopwords
 import pandas as pd
 import os
 import nltk
+import pickle
 nltk.download('stopwords')
 
-def load_centroids(source_path):
-    df_path = str(os.path.dirname(__file__)).split("src")[0] + source_path
-    return pd.read_feather(df_path)
+class TOPIC_KMeans:
 
-def load_data(source_path):
-    df_path = str(os.path.dirname(__file__)).split("src")[0] + source_path
-    return pd.read_feather(df_path)
+    def __init__(self, topics_path:str,data_path:str):
+        self.topics = self.load_centroids(topics_path)
+        self.raw_data = self.load_data(data_path)
 
-def generate_TfIdf(text):
-    tokenizer = RegexpTokenizer(r'\w+')
-    german_stopwords = stopwords.words('german')
+    def load_centroids(self,source_path):
+        df_path = str(os.path.dirname(__file__)).split("src")[0] + source_path
+        return pd.read_feather(df_path)
 
-    tfidf_v = TfidfVectorizer(lowercase=True,
-                            stop_words=german_stopwords,
-                            ngram_range = (1,2),
-                            tokenizer = tokenizer.tokenize)
+    def load_data(self,source_path):
+        df_path = str(os.path.dirname(__file__)).split("src")[0] + source_path
+        return pd.read_feather(df_path)
 
-    tfidf_v = tfidf_v.fit(text)
-    return tfidf_v
+    def generate_TfIdf(self,text):
+        tokenizer = RegexpTokenizer(r'\w+')
+        german_stopwords = stopwords.words('german')
 
-def apply_kMeans(data,centroids):
-    kmeans = KMeans(init = centroids, n_clusters=7, random_state=1, n_init = 1)
-    kmeans.fit(centroids)
-    print(kmeans.labels_)
-    cluster_centers = kmeans.cluster_centers_
-    return kmeans.predict(data)
+        tfidf_v = TfidfVectorizer(lowercase=True,
+                                stop_words=german_stopwords,
+                                ngram_range = (1,2),
+                                tokenizer = tokenizer.tokenize)
 
-topics = load_centroids(r"files\topiced_topics.feather")
-raw_data = load_data(r"files\topiced_texts.feather")
-dic = {}
-for i, t in enumerate (topics['TOPIC'].tolist()): 
-    print(i,t)
-    dic[i] = t
+        tfidf_v = tfidf_v.fit(text)
+        return tfidf_v
 
-raw_centroids = topics['TOPICS'].tolist()
-all_texts = raw_centroids + raw_data['TOPIC'].tolist()
+    def apply_kMeans(self,data,centroids):
+        kmeans = KMeans(init = centroids, n_clusters=7, random_state=1, n_init = 1)
+        kmeans.fit(centroids)
+        print(kmeans.labels_)
+        cluster_centers = kmeans.cluster_centers_
+        print(cluster_centers)
 
-tfidf = generate_TfIdf(all_texts)
-text = tfidf.transform(raw_data['TOPIC'].tolist())
-centroids = tfidf.transform(raw_centroids)
-print(centroids.shape)
+        self.save_model(kmeans)
+        
 
-raw_data['CLUSTER'] = apply_kMeans(text.toarray(),centroids.toarray())
-raw_data['CLUSTER'] = raw_data['CLUSTER'].map(dic)
-print(raw_data)
+    def save_model(self,model):
+        with open("kmeans.pkl", "wb") as f:
+            pickle.dump(model, f)
+
+    def run(self):
+        dic = {}
+        for i, t in enumerate (self.topics['TOPIC'].tolist()):  #replace with CLASS!
+            print(i,t)
+            dic[i] = t
+
+        raw_centroids = self.topics['TOPICS'].tolist()
+        all_texts = raw_centroids + self.raw_data['TOPIC'].tolist()
+
+        tfidf = self.generate_TfIdf(all_texts)
+        text = tfidf.transform(self.raw_data['TOPIC'].tolist())
+        centroids = tfidf.transform(raw_centroids)
+        print(centroids.shape)
+
+        self.apply_kMeans(text.toarray(),centroids.toarray())
+
+
+kmeans = TOPIC_KMeans(r"files\topiced_topics.feather",r"files\topiced_texts.feather")
+
+# return kmeans.predict(data)
+# raw_data['CLUSTER'] = apply_kMeans(text.toarray(),centroids.toarray())
+# raw_data['CLUSTER'] = raw_data['CLUSTER'].map(dic)
+# print(raw_data)
+
