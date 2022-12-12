@@ -17,6 +17,7 @@ class TopicExtractor:
         self.data = self.load_data()
         self.number_topics = input_topic
         self.text_col = 'URL_TEXT'
+        print(self.data[self.text_col].tolist())
         self.german_stopwords = stopwords.words('german')
        
 
@@ -31,18 +32,8 @@ class TopicExtractor:
 
     def generate_tfIdf(self,doc_list):
         tokenizer = RegexpTokenizer(r'\w+')
-        domain_stopwords = ["news","report","partner","impressum", "rechtliches", "newsletter", "datenschutz", "datenschutzerklärung", "datenschutzbeauftragter",\
-                 "entdecken", "anmelden", "login","logout", "log out", "abmelden", "kunden login","extras",\
-                    "produkte", "übersicht", "veranstaltungen", "suchen","suche", "kaufen", "angebote","angebot", "konfigurieren","konfiguration" \
-                        "zubehör", "owner", "garantie", "mehr", "modelle", "modell", "kontaktieren","kontakt", "skip", "https", "service",\
-                            "buchen", "anfahrt", "inanzdienstleistungen", "inanzdienstleistung", "services", "service", "connected", "required"
-                            "englisch", "google", "wikipedia", "internet", "website", "email", "mail", "e-mail", "beispielsweise", "siehe", "beim", "isbn", "issn",\
-                                "beispiel", "artikel", "fragen", "deutsch", "navigation","فارسی",\
-                                    "januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember", "online",\
-                                        "english", "privacy", "bundesdatenschutzgesetz", "weitere"]
-        all_stopwords = self.german_stopwords + domain_stopwords        
         tfidf_v = TfidfVectorizer(lowercase=True,
-                                stop_words=all_stopwords,
+                                stop_words=self.german_stopwords,
                                 ngram_range = (1,2),
                                 tokenizer = tokenizer.tokenize)
 
@@ -59,7 +50,7 @@ class TopicExtractor:
 
         lda_components=model.components_
 
-        terms = tfidf_v.get_feature_names()
+        terms = tfidf_v.get_feature_names_out()
         
         topics = []
         for index, component in enumerate(lda_components):
@@ -70,6 +61,7 @@ class TopicExtractor:
 
         topics = [item for sublist in topics for item in sublist]
         topics = list(set(list(filter(lambda x: len(x) > 3, topics))))
+        print(topics)
 
         ##Test Coherence Values##
         # tfiIdf_vectorizer_vocab = np.array([x for x in tfidf_v.vocabulary_.keys()])
@@ -81,24 +73,24 @@ class TopicExtractor:
     def generate_topic(self,text):
         try:
             doc_list = text.split("|")
-            fit, tfidf = self.generate_tfIdf(doc_list)
-            topics = self.apply_lda(fit,tfidf)
+            fitted_data, tfidf = self.generate_tfIdf(doc_list)
+            topics = self.apply_lda(fitted_data,tfidf)
             # print(topics.split("|"))
             return topics
-        except:
+        except Exception as e:
+            print(e)
             return ''
 
 
     def run(self):
         self.data['TOPIC']=self.data[self.text_col].apply(lambda row: self.generate_topic(row))
         self.data.replace(np.nan, "",regex = False, inplace = True)
-        self.save_data()
+        # self.save_data()
 
 
 if __name__ == "__main__":
     # t = TopicExtractor(4,r"files\cleaned_texts.feather",r"files\topiced_texts.feather")
     # t.run() 
     # print(t.data['TOPIC'].tolist())
-    t2 = TopicExtractor(7,r"files\cleaned_topics.feather",r"files\topiced_topics.feather")
+    t2 = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather")
     t2.run()
-    print(t2.data)#['TOPIC'].tolist())
