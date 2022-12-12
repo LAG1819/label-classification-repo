@@ -22,6 +22,7 @@ class TopicExtractor:
 
     def load_data(self):
         df_path = str(os.path.dirname(__file__)).split("src")[0] + self.source_path
+        #group by class#
         return pd.read_feather(df_path)
 
     def save_data(self):
@@ -89,7 +90,7 @@ class TopicExtractor:
 
 
     def run(self):
-        self.data['TOPICS']=self.data[self.text_col].apply(lambda row: self.generate_topic(row))
+        self.data['TOPIC']=self.data[self.text_col].apply(lambda row: self.generate_topic(row))
         self.data.replace(np.nan, "",regex = False, inplace = True)
         self.save_data()
 
