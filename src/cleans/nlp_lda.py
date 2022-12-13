@@ -17,7 +17,6 @@ class TopicExtractor:
         self.data = self.load_data()
         self.number_topics = input_topic
         self.text_col = 'URL_TEXT'
-        print(self.data[self.text_col].tolist())
         self.german_stopwords = stopwords.words('german')
        
 
@@ -32,8 +31,13 @@ class TopicExtractor:
 
     def generate_tfIdf(self,doc_list):
         tokenizer = RegexpTokenizer(r'\w+')
+        
+        city_path = str(os.path.dirname(__file__)).split("src")[0] + r"files/germany.json"
+        german_cites = pd.read_json(city_path)["name"].tolist()
+        german_cites = [c.lower() for c in german_cites]
+        
         tfidf_v = TfidfVectorizer(lowercase=True,
-                                stop_words=self.german_stopwords,
+                                stop_words=self.german_stopwords + german_cites,
                                 ngram_range = (1,2),
                                 tokenizer = tokenizer.tokenize)
 
@@ -61,7 +65,6 @@ class TopicExtractor:
 
         topics = [item for sublist in topics for item in sublist]
         topics = list(set(list(filter(lambda x: len(x) > 3, topics))))
-        print(topics)
 
         ##Test Coherence Values##
         # tfiIdf_vectorizer_vocab = np.array([x for x in tfidf_v.vocabulary_.keys()])
@@ -89,8 +92,9 @@ class TopicExtractor:
 
 
 if __name__ == "__main__":
-    # t = TopicExtractor(4,r"files\cleaned_texts.feather",r"files\topiced_texts.feather")
-    # t.run() 
-    # print(t.data['TOPIC'].tolist())
-    t2 = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather")
-    t2.run()
+    t = TopicExtractor(7,r"files\cleaned_texts.feather",r"files\topiced_texts.feather")
+    t.run() 
+    print(t.data['TOPIC'].tolist())
+    # t2 = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather")
+    # t2.run()
+    # print(t2.data['TOPIC'].tolist())
