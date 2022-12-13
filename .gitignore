@@ -11,3 +11,4 @@ src/archive/*
 *.zip
 *.feather
 src/*/__pychache__/*
+!CLASS_keywords.json
