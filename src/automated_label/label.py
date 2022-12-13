@@ -15,31 +15,69 @@ SUSTAINABILITY = 6
 DIGITALISATION = 7
 INDIVIDUALISATION = 8
 
-###DEFINE NUMBER LABELS 1-7###
+path = str(os.path.dirname(__file__)).split("src")[0] + r"files/CLASS_keywords.json"
+DATA = pd.read_json(path)
+
+#X DEFINE NUMBER LABELS 1-7###
+#X SELECT ALL KEYWORDS BASED ON SUFFICENT SOURCES###
 ###DEFINE 2 HEURISTICS PER LABEL###
 ###DEFINE CLUSTERING MODEL (SIMPLE)###
 ###DEFINE SIMPLE "BLACKLIST" PER LABEL###
 
+@labeling_function()
+def check_autonomous(x):
+    value = ABSTAIN
+    keywords = DATA[DATA["CLASS"] == 'AUTONOMOUS']['KEYWORDS'].tolist()
+    if any(key.lower() in x.text.lower() for key in keywords):
+        value = AUTONOMOUS
+    return value
 
 @labeling_function()
-def check_general(x):
+def check_electrification(x):
     value = ABSTAIN
-    if "startseite" in x.text.lower():
-        value = 2
+    keywords = DATA[DATA["CLASS"] == 'ELECTRIFICATION']['KEYWORDS'].tolist()
+    if any(key.lower() in x.text.lower() for key in keywords):
+        value = ELECTRIFICATION       
     return value
     
 @labeling_function()
-def check_specific(x):
+def check_digitalisation(x):
     value = ABSTAIN
-    if ("abarth" or "romeo" or "audi" or "bentley")  in x.text.lower():
-        value = 1
+    keywords = DATA[DATA["CLASS"] == 'DIGITALISATION']['KEYWORDS'].tolist()
+    if any(key.lower() in x.text.lower() for key in keywords):
+        value = DIGITALISATION
     return value
 
 @labeling_function()
-def check_electric(x):
+def check_connectivity(x):
     value = ABSTAIN
-    if ("e-fahrzeug" or "elektro" or "strom") in x.text.lower():
-        value = 3        
+    keywords = DATA[DATA["CLASS"] == 'CONNECTIVITY']['KEYWORDS'].tolist()
+    if any(key.lower() in x.text.lower() for key in keywords):
+        value = CONNECTIVITY
+    return value
+
+@labeling_function()
+def check_sustainability(x):
+    value = ABSTAIN
+    keywords = DATA[DATA["CLASS"] == 'SUSTAINABILITY']['KEYWORDS'].tolist()
+    if any(key.lower() in x.text.lower() for key in keywords):
+        value = SUSTAINABILITY
+    return value
+
+@labeling_function()
+def check_individualisaton(x):
+    value = ABSTAIN
+    keywords = DATA[DATA["CLASS"] == 'INDIVIDUALISATION']['KEYWORDS'].tolist()
+    if any(key.lower() in x.text.lower() for key in keywords):
+        value = INDIVIDUALISATION
+    return value
+
+@labeling_function()
+def check_shared(x):
+    value = ABSTAIN
+    keywords = DATA[DATA["CLASS"] == 'SHARED']['KEYWORDS'].tolist()
+    if any(key.lower() in x.text.lower() for key in keywords):
+        value = SHARED
     return value
 
 class Labeler:
@@ -48,7 +86,7 @@ class Labeler:
         self.train_df = self.data
         # self.validate_df = self.data
         # self.validate_labels = self.data['LABEL']
-        self.lfs = [check_general,check_specific,check_electric]
+        self.lfs = [check_autonomous,check_connectivity,check_digitalisation,check_electrification,check_individualisaton,check_shared,check_sustainability]
         self.L_train = None
         self.label_model = None
 
