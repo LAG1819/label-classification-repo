@@ -25,7 +25,7 @@ class textFilter:
     
     def regex_remove(self,row):
         output = []
-        sentence_lang = []
+        
         xml = ["(?:<from.*?>)(.*?)(?:<\\/from>)"]
         html = ["<(?:\"[^\"]*\"['\"]*|'[^']*'['\"]*|[^'\">])+>"]
         try:
@@ -52,23 +52,26 @@ class textFilter:
         output_sentence = []
         url = ["^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[äöüßa-zA-Z0-9()]{1,6}\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$"]
         email = ["^\S+@\S+\.\S+$"]
-        zip = ["^[0-9]{5}(?:-[0-9]{4})?$"]
+        zip = ["^[0-9]{5}(?:-[0-9]{4})?\s?\w*$"]
         phone = ["^\\+?[1-9][0-9]{7,14}$"]
         dates = ["^[0-9]{1,2}\\/[0-9]{1,2}\\/[0-9]{4}$","^[0-9]{1,2}\\-[0-9]{1,2}\\-[0-9]{4}$"]
-        website_stopwords = ['richtlinie\w*',"\w*recht\w* hinweis\w*","\w*recht\w*","\w*datenschutz\w*", "privacy","policy\w*","cooky\w*","cookie\w*","content\w*"," to ",\
-                "anmelden",  "abmelden", "login","log in","logout", "log out", "kunden login", "online"," back ",\
+        website_stopwords = ["allgemeine geschäftsbedingungen","allgemein\*",'richtlinie\w*',"\w*recht\w* hinweis\w*","\w*recht\w*","\w*datenschutz\w*", "privacy","policy\w*","cooky\w*","cookie\w*","content\w*"," to ",\
+                "anmeld\w*",  "abmeld\w*", "login","log in","logout", "log out", "kunden login", "online","zurück","back","start","select\w*", "ausw\w*","close",\
                     "extras","news","report\w*","impressum","newsletter\w*", "owner","internet", "website\w*", "email\w*", "e-mail\w*", "mail\w*", "isbn", "issn",\
-                        "produkte", "partner","übersicht", "veranstaltungen", "suche\w*","kauf\w*", "angebot\w*", "konfigur\w*",\
-                            "zubehör", "garantie", "mehr", "modell\w*", "kontakt\w*", "skip",'useful links','link\w*',\
-                                "buchen", "anfahrt", "finanzdienstleistung\w*" "connected", "required",\
-                                    "englisch", "english","deutsch","german","google", "wikipedia", "navigation",\
-                                        "januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember"]
+                        "produkte", "partner","übersicht", "veranstaltungen", "suche\w*","kauf\w*", "angebot\w*", "konfigur\w*", "configur\w*","nutzer\w*","icon\w*",\
+                            "zubehör", "garantie", "mehr", "modell\w*", "kontakt\w*","contact\w*","anfrage\w*","skip",'useful links','link\w*',"pin\w*","passw\w*", "password\w*",\
+                                "buchen","book" "anfahrt", "finanzdienstleistung\w*" "connected", "required", "sitemap\w*", "\w*\s?abo\w*", 'social media', "socialmedia",\
+                                    "englisch", "english","deutsch","german","google", "wikipedia", "navigation","\w*shop\w*", "\w*magazin\w*", "lifestyle",\
+                                        "facebook\w*", "youtube\w*","instagram\w*","xing\w*","linkedin\w*", "blog\w*","spiegel\w*","twitter\w*","sms","video"\
+                                            "archiv\w*", "artikel\w*", "article\w*","side\w*", "seite\w*","site","app\w*","\s?abgerufen\s?\w*\s*\d*",\
+                                                "januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember",\
+                                                    "dbx707", "db11","\w*\s?straße\s?\d*","\w*\s?strasse\w*", "tel\w*", "\w*\s?download\w*"]
                                        
-        domain_stopwords = ["(g/km)","use case\w*"]
+        domain_stopwords = ["(g/km)","use case\w*", "unternehme\w*", "gmbh", "cokg", "co kg", "consult\w*", "handel\w*", "händler\w*", "leistung\w*"]
         numbers_only = ["^\\d+$","^\s?[0-9]+(\s+[0-9]+)*\s?$"]
-        special_characters = ['[^äöüßA-Za-z0-9 ]+']
+        special_characters = ['[^äöüßA-Za-z0-9 ]+', "www\w*de"]
         short_words = ['^\w{0,3}$']
-        all_stopwords = url+email+zip+phone+dates+website_stopwords+domain_stopwords+numbers_only+special_characters+short_words+numbers_only+[" \\d+ "]
+        all_stopwords = url+email+zip+phone+dates+website_stopwords+domain_stopwords+short_words+[" \\d+ "]+special_characters+numbers_only
         
         for sentence in row.split("|"):
             for pattern in all_stopwords:
@@ -96,7 +99,8 @@ class textFilter:
             return return_lan
         
         self.data["LANG"]=self.data[self.text_col].apply(lambda row: detect_language(row))
-        # self.data = self.data[self.data["LANG"] == self.lang]
+        if self.lang != None:
+            self.data = self.data[self.data["LANG"] == self.lang]
         self.data = self.data.reset_index(drop = True)
 
     def save_data(self):
@@ -112,23 +116,12 @@ class textFilter:
         print(self.data)
         print("Done Cleaning")
 
-class urlFilter:
-    def __init__(self):
-        df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts.csv"
-
-    def flag_url(self):
-        self.data["URL-FLAG"] = self.data[self.text_col]
-        ###TO DO Define Rules to filter URL###
-
-    def save_data(self):
-        self.data.to_csv(os.path.join(self.package_dir,r'files\Output_texts.csv'), index = False)
-
 if __name__ == "__main__":
-    # f = textFilter('de',r"files\raw_texts.json",r"files\cleaned_texts.feather")
-    # f.run()
-    f2 = textFilter('de',r"files\raw_classes.json",r"files\cleaned_classes.feather")
+    f = textFilter('de',r"files\raw_texts.json",r"files\cleaned_texts.feather")
+    f.run()
+    f2 = textFilter(None,r"files\raw_classes.json",r"files\cleaned_classes.feather")
     f2.run()
 
     
-    # result = [re.sub("^\s?[0-9]+(\s+[0-9]+)*", "", w) for w in [ " 9 2015"," 2014", "00 88 00", "000 888 000"]]
+    # result = [re.sub("\s?abgerufen\s?\w*\s*\d*", "", w) for w in [ "abgerufen am 2709","abgerufen2709", " abgerufen am27 09", "000 888 000"]]
     # print(result)
