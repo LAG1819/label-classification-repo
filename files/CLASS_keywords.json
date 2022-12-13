@@ -1,0 +1,70 @@
+[
+    {
+        "CLASS":"AUTONOMOUS",
+        "KEYWORDS":["autonom","intelligentes auto","selbstfahrend", "autonomes fahren", "autonomous","autonomes fahrzeug","sensoren", "sensorik", "vollautomatisiert","voll-automatisiert", "voll automatisiert",
+        "vollautonomes fahrzeug", "autonomes fahrzeug","vehicle on demand", "vehicle-on-demand","vehicleondemand","level5", "level 5", "level4", "level 4","level3", "level 3", "fahrroboter", "autobahnautomat" , "autobahn automat",
+        "exklusiv-autonom","exklusiv autonom","exklusivautonom","autonomous-only", "autonomous only","autonomousonly", "hochautomatisiertes fahren", "hochautomatisiert",
+        "maschinelle fahrfähigkeiten", "maschinelle fähigkeiten", "maschinelle-fahrfähigkeiten", "maschinelle-fähigkeiten", "robotic_vehicle", "DMM", "Driver Mode Manager", "SecForCARs",
+        "Security for connected automated cars"]
+},
+{
+    "CLASS":"ELECTRIFICATION",
+    "KEYWORDS":["e-auto","eauto","e auto","elektro","elektrofahrzeug","hybridfahrzeug", "plug-in-hybrid vehicle","plug in hybrid vehicle","phev","batterieelektrofahrzeug",
+    "elektro-fahrzeug","elektro fahrzeug","elektrisch", "electric","elektroauto", "elektro auto", "batterie", "battery", "elektroverkehr", "elektro verkehr", "batteriemanagementsystem",
+    "batteriebetrieben", "energieeffizienz", "elektrifizierung", "elektromobilität", "elektro mobilität", "electric mobility", "electro mobility", "eco-driving",
+    "eco driving", "akku", "akkuzelle", "energiespeicher",  "traktionsbatterie", "hochvoltbatterie", "speicherkapazität", "ladung", "batterieladestand","batterieladezustand",
+    "batterie-ladestand", "batterie-ladezustand", "ladestand", "ladezustand","ladeleistung" ,"state of charge","state-of-charge", "soc", "s-o-c","batteriegarantie", "batteriemanagementsystem",
+    "bms","batteriemiete", "batteriezellen", "antriebsbatterie", "batteriezellen", "akkuzellen", "elektroauto-akkus","elektroauto akkus", "batteriefabrik", "bev",
+    "battery electric vehicle", "battery-electric-vehicle","batteryelectricvehicle", "bidirektionales laden", "bi-direktionales laden", "smart grid", "smart-grid",
+    "smartgrid", "vehicle-to-grid","vehicle to grid","vehicletogrid", "v2g","v-2-g", "bordladegerät","einphasiges laden","einphasig laden", "dreiphasiges laden","dreiphasig laden",
+    "brennstoffzellen-pkw","brennstoffzellen pkw","brennstoffzellenpkw", "fcev", "fuel cell electric vehicle","fuel-cell-electric-vehicle","chademo", "charge de move",
+    "charge-de-move","combined charging system", "combinedchargingsystem","combined-charging-system","ccs","elektromobilitätsgesetz", "e-kennzeichen", "energiedichte",
+    "feststoffbatterie", "batterietechnologie", "induktiv", "induktives laden", "ladekurve", "ladeinfrastruktur", "ladeleistung", "ladesäule","ladepunkt", "ladestecker",
+    "ladetarif", "ladekarte", "e-charge", "echarge", "lithium-ionen-batterie","lithium-ionenbatterie","lithiumionen-batterie","lithium ionen batterie","lithiumionen batterie", "lithiumionenbatterie",
+    "mild-hybrid-fahrzeug","mildhybridfahrzeug","mild hybrid fahrzeug", "notladekabel", "one-pedal-driving","one pedal driving","onepedal-driving",
+    "onepedaldriving", "onepedal driving", "plug-in-hybrid","plugin-hybrid", "plug in hybrid","plugin hybrid", "rekuperation","energierückgewinnung", "schnelladen",
+    "synchronmaschine", "psm", "asynchronmaschine", "asm", "wallbox", "voll-hybrid", "voll hybrid", "wallbox", "zyklenfestigkeit"]
+},
+
+{
+    "CLASS":"CONNECTIVITY",
+    "KEYWORDS":["connectivität", "conntectivity", "connected", "connected car","vernetzt", "vernetztes auto", "vernetztes fahrzeug", "connected services", "cloud", "cloud basiert", "cloud based",
+    "netzwerk", "high spped connectivity", "network", "Datentransfer", "Datenaustausch", "telematik", "informationstransfer", "telekommunikation", "vernetzen", "vernetzt", "vernetzung", 
+    "vernetzte daten", "digitales fahrtenbuch", "v2x","Vehicle to x", "infotainment", "ifi", "a2a","apps to automotive", "over-the-air-updates","ota", "abk","anzeige-bedien-konzept",
+    "adis", "advanced driver information system", "agl" ,"automotive-grade linux", "ach", "ad-hoc communication","asd","active sound design", "bsm", "basic safety message",
+    "bsp",  "basic system profile", "cits", "cooperative intelligent transport systems and services", "cv2x", "cellular v2x", "datenkommunikation", "c2c", "car-to-car",
+    "c2ccc","car-to-car communication consortium", "c2i", "car to infrastructure","c2x", "car-to-everything", "C2XC", "Car-to-X-Communication", "CAM, Cooperative Awareness Message",
+    "CEP", "Circular Error Probable","CLAS", "Centimeter Level Augmentation Service","CP", "Car to Pedestrian", "DAA", "Direct Anonymous Attestation", "DENM", 
+    "Decentralised Environmental Notification Message", "DGPS", "Differential Global Positioning System", "DSRC", "Dedicated Short Range Communication",
+    "EDR", "Event Data Recorder", "GLOSA", "Green-Light-Optimal-Speed-Advisory", "IVI", "In-Vehicle Infotainment", "IVS", "In-Vehicle System",
+    "NGTP", "Next Generation Telematics Pattern", "OBU", "On-Board Unit", "OCU", "Online Connectivity Unit", "Echtzeit-Kinematik", "RTK",
+    "PRESERVE", "Preparing Secure Vehicle-to-X Communication Systems", "RKE", "Remote Keyless Entry", "SAPA", "Safe And Precise Augmentation",
+    "SCMS", "Security Credential Management System", "SEVECOM", "Secure Vehicle Communication", "SPC", "Smart Parking Content Provider",
+    "TCU", "Telematics Control Unit", "Telematik-Steuergerät", "TPEG", "Transport Protocol Experts Group", "TSP", "Telematik Service Provider",
+    "TSDP", "Telematics Service Delivery Platform", "V2/2V", "Vehicle to Infrastructure to Vehicle", "V2B", "Vehicle to Backend",
+    "V2C", "Vehicle to Cloud", "V2G", "Vehicle to Grid", "V2I","Vehicle to Infrastructure","V2N", "Vehicle to Network","V2P", "Vehicle to Pedestrian",
+    "V2V", "Vehicle to Vehicle","V2X", "Vehicle to everything","Verkehrsvernetzung","X2V", "X to Vehicle", "5GAA", "5G Automotive Association"]
+},
+{
+    "CLASS":"SHARED",
+    "KEYWORDS":["car share", "car sharing", "share", "shared mobility"]
+},
+{
+    "CLASS":"SUSTAINABILITY",
+    "KEYWORDS":["nachhaltig", "nachhaltigkeit", "sustainable","sustainability"]
+},
+{
+    "CLASS":"DIGITALISATION",
+    "KEYWORDS":["digital", "digitalisierung","digitalisation", "digitales auto-cockpit", "digitales auto cockpit","digitales autocockpit", "touchscreen", "sprachsteuerung", "geste", "mobilitätsdienstleister",
+    "digitaler ökostrom", "software", "softwarebetrieben","digitale services", "industrie 4.0", "industrie 40", "industrie4.0", "produktion",
+    "industrie40","industrie4","industrie 4", "software", "softwareentwicklung", "anwendungsentwicklung", "transformation", "transformieren", "it", "informationstechnologie",
+    "computerbasiert","3d-modell","3d modell","3dmodell","assistenz-system","assistenz system","assistenzsystem","roboter-system", "roboter system", "robotersystem",  "digitale fabrik",
+    "digitalfabrik","digital fabrik", "digitale revolution","digitale-revolution", "digitalerevolution", "digitalrevolution", "innovation", "technologie", "technology", "datenmenge", "big-data",
+    "big data", "datenanalyse", "daten analyse", "datenmanagement", "datamangement", "daten management", "data management", "cloud", "cloud computing", "saas", "software as a service",
+    "software-as-a-service", "softwareasaaservice", "state-of-the-art","state of the art", "digital services", "infrastruktur", "infrastructur","ITS", "Intelligent Transportation System"]
+},
+{
+    "CLASS":"INDIVIDUALISATION",
+    "KEYWORDS":["personalisierung", "personalisieren", "individualisieren","customization", "customize", "customise", "individual services"]
+}
+]
