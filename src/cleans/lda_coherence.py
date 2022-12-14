@@ -4,6 +4,15 @@ from gensim.models import CoherenceModel
 from itertools import combinations
 
 def get_coherence_lda_gensim(lda_model,bow_corpus,docs):
+    """Calculate coherence value of generated 
+    Args:
+        lda_model (_type_): Generated gensim LDA model 
+        bow_corpus (_type_): Text corpus of type bow. Specific type of gensim.
+        docs (_type_): Cleaned texts.
+
+    Returns:
+        float: Returns the calculated coherence value based on given lda_model.
+    """
     # instantiate topic coherence model
     cm = CoherenceModel(model=lda_model, corpus=bow_corpus, texts=docs, coherence='c_v')
 
@@ -16,6 +25,14 @@ def get_coherence_topics_gensim(topics,common_corpus,common_dictionary):
     coherence_topic_value = cm.get_coherence()
 
 def get_coherence(lda_components,tf_matrix ,texts,tfiIdf_vectorizer_vocab):
+    """Calculation of coherence value based on a given lda model.
+
+    Args:
+        lda_components (_type_): _description_
+        tf_matrix (_type_): _description_
+        texts (_type_): _description_
+        tfiIdf_vectorizer_vocab (_type_): _description_
+    """
     topicmod.evaluate.metric_coherence_gensim(measure='c_v', 
                         top_n=25, 
                         topic_word_distrib=lda_components,
@@ -25,6 +42,15 @@ def get_coherence(lda_components,tf_matrix ,texts,tfiIdf_vectorizer_vocab):
                         return_mean= True
                         )
 def get_coherence_manual(model, term_rankings):
+    """Manual calculation of coherence value based on given lda model and term rankings.
+
+    Args:
+        model (_type_): Fitted LDA Model.
+        term_rankings (_type_): Term Frequencies of fitted lda model.
+
+    Returns:
+        float: Returns the calculated coherence value based on given lda_model.
+    """
     overall_coherence = 0.0
     for topic_index in range(len(term_rankings)):
         # check each pair of terms

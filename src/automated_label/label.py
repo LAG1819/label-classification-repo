@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import numpy as np
+import pickle
 from snorkel.labeling import labeling_function
 from snorkel.labeling import PandasLFApplier
 from snorkel.labeling import LFAnalysis
@@ -19,10 +20,24 @@ path = str(os.path.dirname(__file__)).split("src")[0] + r"files/CLASS_keywords.j
 DATA = pd.read_json(path)
 
 #X DEFINE NUMBER LABELS 1-7###
+#X DEFINE CLUSTERING MODEL (SIMPLE)###
 #X SELECT ALL KEYWORDS BASED ON SUFFICENT SOURCES###
 ###DEFINE 2 HEURISTICS PER LABEL###
-###DEFINE CLUSTERING MODEL (SIMPLE)###
 ###DEFINE SIMPLE "BLACKLIST" PER LABEL###
+
+@labeling_function()
+def predict_cluster(x):
+    value = ABSTAIN
+    kmeans = pickle.load(open("kmeans.pkl", 'rb'))           
+    cluster = kmeans.predict(x)
+    if cluster == 1:
+        value = AUTONOMOUS
+        # upload cluster dictionary
+        #.
+        #.
+        #.
+
+    return value
 
 @labeling_function()
 def check_autonomous(x):

@@ -6,7 +6,16 @@ import pickle
 import json
 
 class textFilter:
-    def __init__(self,lang, path, t_path):
+    """Class to clean and filter raw texts (raw_texts.json) that had been crawled in previous step. 
+    """
+    def __init__(self,lang:str, path:str, t_path:str):
+        """Initialise a textFilter object that can clean raw html text.
+
+        Args:
+            lang (str): unicode of language to filter raw texts only in that language 
+            path (str): source path to file containing raw texts to clean
+            t_path (str): target path to save file with cleaned texts
+        """
         # df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts.pkl"
         # file = open(df_path, 'rb')
         # data = pickle.load(file)
@@ -15,7 +24,7 @@ class textFilter:
         # # self.data = pd.DataFrame.from_dict(dict, orient = 'index').T
 
         df_path = str(os.path.dirname(__file__)).split("src")[0] + path
-        self.data = pd.read_json(df_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        self.data = pd.read_json(df_path, orient= 'records').drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
         
         self.text_col = 'URL_TEXT'
         self.url_col = 'URL'
@@ -23,7 +32,15 @@ class textFilter:
 
         self.target_path = t_path
     
-    def regex_remove(self,row):
+    def regex_remove(self,row:str) -> str:
+        """Basic text cleaning with help of regex (rowwise). Removes all text that is part of scripting like html or xml.
+
+        Args:
+            row (str): raw text of one sample. Each sample contains text of one crawled website.  
+
+        Returns:
+            str: pre cleaned text of on sample.
+        """
         output = []
         
         xml = ["(?:<from.*?>)(.*?)(?:<\\/from>)"]
@@ -48,7 +65,16 @@ class textFilter:
             output = ""
         return output
 
-    def stopword_remove(self,row):
+    def stopword_remove(self,row:str) -> str:
+        """Advanced text cleaning with help of regex (rowwise). Removes advanced websites specific "stopwrods" as well as domain specific "stopwrods" as 
+        well as other basic stopwrods to remove. 
+
+        Args:
+            row (str): pre cleaned text of one sample. Each sample contains text of one crawled website.  
+
+        Returns:
+            str: full cleaned text of on sample.
+        """
         output_sentence = []
         url = ["^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[äöüßa-zA-Z0-9()]{1,6}\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$"]
         email = ["^\S+@\S+\.\S+$"]
@@ -84,13 +110,26 @@ class textFilter:
         return "|".join(output_sentence)
     
     def remove_nonText(self):
+        """Apply rowwise basic text cleaning with regex_remove() on raw texts.
+        """
         self.data[self.text_col] = self.data[self.text_col].apply(lambda row: self.regex_remove(row))
 
     def remove_domainStopwords(self):
+        """Apply rowwise advanced text cleaning with stopword_remove() on pre cleaned texts.
+        """
         self.data[self.text_col] = self.data[self.text_col].apply(lambda row: self.stopword_remove(row))
 
     def flag_lang(self):
-        def detect_language(text):
+        """Detect Language of each sample (row) containing text of one crawled website. 
+        """
+        def detect_language(text:str) -> str:
+            """Helper Function for detecting language of row using langdetect package.
+            Args:
+                text (str): one sample (row) containing text of one crawled website.
+
+            Returns:
+                str: detected language as unicode.
+            """
             return_lan = None
             try:
                 return_lan = str(detect(text)).lower()
@@ -104,21 +143,27 @@ class textFilter:
         self.data = self.data.reset_index(drop = True)
 
     def save_data(self):
+        """Save cleaned texts to target path. 
+        """
         path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
         self.data.to_feather(path)
 
     def run(self):
+        """Run function of textFilter class. Firstly a basic text cleansing will be applied, than an advanced text cleaning and advanced stopwords removal will be applied.
+        Than the language of cleaned texts is applied and all texts that are not matching the initialised lang are filtered. 
+        Filtered and cleaned texts are finally saved to target path. 
+        """
         self.remove_nonText()
         self.remove_domainStopwords()
         self.flag_lang()
-        self.save_data()
+        #self.save_data()
         print(self.data.shape)
         print(self.data)
         print("Done Cleaning")
 
 if __name__ == "__main__":
-    f = textFilter('de',r"files\raw_texts.json",r"files\cleaned_texts.feather")
-    f.run()
+    # f = textFilter('de',r"files\raw_texts.json",r"files\cleaned_texts.feather")
+    # f.run()
     f2 = textFilter(None,r"files\raw_classes.json",r"files\cleaned_classes.feather")
     f2.run()
 

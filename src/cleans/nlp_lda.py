@@ -11,25 +11,60 @@ import nltk
 nltk.download('stopwords')
 
 class TopicExtractor:
-    def __init__(self, input_topic, s_path,t_path):
+    """Class to identify topics of cleand texts (cleaned_texts.feather) based on LDA(LatentDirichletAllocation) algorithm. 
+    """
+    def __init__(self, input_topic: int, s_path:str,t_path:str, lang:str, topic:bool = False):
+        """Initialisation of a topic generator object. 
+
+        Args:
+            input_topic (int): Number of topics, that shall be generated
+            s_path (str): source path to file containing cleaned texts to identify topics
+            t_path (str): target path to save file with cleaned texts and generated topics
+            lang (str): unicode of language to filter raw texts only in that language 
+        """
         self.source_path = s_path
         self.target_path = t_path
         self.data = self.load_data()
         self.number_topics = input_topic
         self.text_col = 'URL_TEXT'
-        self.german_stopwords = stopwords.words('german')
+        self.lang = lang
+        self.topic = topic
+
+        if self.lang == "de":
+            self.stopwords = stopwords.words('german')
+        elif self.lang == 'en':
+            self.stopwords = stopwords.words('english')
+        else:
+            self.stopwords = stopwords.words('german')
        
 
     def load_data(self):
+        """Read cleaned text stored in source path
+
+        Returns:
+            DataFrame: Returns a pandas DataFrame containing domain name of url link (DOMAIN), url link (URL), cleaned texts(URL_TEXT), language of text (LANG) and CLASS (optional).
+        """
         df_path = str(os.path.dirname(__file__)).split("src")[0] + self.source_path
+        if self.topic:
+            data = pd.read_feather(df_path).groupby("CLASS").agg("|".join(list('URL_TEXT')))
         #group by class#
         return pd.read_feather(df_path)
 
     def save_data(self):
+        """Save data as feather file to defined target path.
+        """
         self.data.to_feather(str(os.path.dirname(__file__)).split("src")[0] + self.target_path)
         
 
-    def generate_tfIdf(self,doc_list):
+    def generate_tfIdf(self,doc_list:list):
+        """Apply rowwise generation of Tfidf-Vector and fit to cleaned texts (URL_TEXT).
+
+        Args:
+            doc_list (list): Rowwise list of cleaned texts (URL_TEXT) of dataset.
+
+        Returns:
+            tfidf_matrix, idf np_array: Returns transformed cleaned texts to tfidf matrix and generated Tfif Vector based on doc_list. 
+        """
         tokenizer = RegexpTokenizer(r'\w+')
         
         city_path = str(os.path.dirname(__file__)).split("src")[0] + r"files/germany.json"
@@ -37,7 +72,7 @@ class TopicExtractor:
         german_cites = [c.lower() for c in german_cites]
         
         tfidf_v = TfidfVectorizer(lowercase=True,
-                                stop_words=self.german_stopwords + german_cites,
+                                stop_words=self.stopwords + german_cites,
                                 ngram_range = (1,2),
                                 tokenizer = tokenizer.tokenize)
 
@@ -45,7 +80,16 @@ class TopicExtractor:
         
         return fit_data,tfidf_v   
 
-    def apply_lda(self,fit_data,tfidf_v):
+    def apply_lda(self,fit_data,tfidf_v) -> str:
+        """Fit and applies LDA Algorithm on tfidf matrix of cleaned texts rowwise and returns a list of generated topics.
+
+        Args:
+            fit_data (tfidf_matrix): rowwise tfidf matrix of transformed cleaned texts.
+            tfidf_v (idf np_array): rowwise generated Tfif Vector.
+
+        Returns:
+            str: Returns generated topics of rowwise cleaned texts.
+        """
 
         model=LatentDirichletAllocation(n_components=self.number_topics)
 
@@ -73,7 +117,15 @@ class TopicExtractor:
 
         return "|".join(topics)
 
-    def generate_topic(self,text):
+    def generate_topic(self,text:str) -> str:
+        """Generation, Fit and Application of cleaned text rowwise by calling generate_tfIdf and apply_lda function.  
+
+        Args:
+            text (str): one sample (row) containing cleaned text of one crawled website.
+
+        Returns:
+            str: String list of generated topics of one sample.
+        """
         try:
             doc_list = text.split("|")
             fitted_data, tfidf = self.generate_tfIdf(doc_list)
@@ -86,6 +138,8 @@ class TopicExtractor:
 
 
     def run(self):
+        """Run function of TopicExtractor class. First generate_topic() is rowwise called, than empty values will be replaced by empty strings.
+        """
         self.data['TOPIC']=self.data[self.text_col].apply(lambda row: self.generate_topic(row))
         self.data.replace(np.nan, "",regex = False, inplace = True)
         # self.save_data()
