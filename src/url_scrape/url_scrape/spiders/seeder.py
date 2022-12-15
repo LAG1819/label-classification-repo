@@ -158,7 +158,7 @@ class SeederSpider(CrawlSpider):
             allowed.add(urlparse(str(s)).netloc)
         self.allowed_domains = list(allowed) 
 
-        list_test = list(seed_list[0:1])
+        list_test = list(seed_list[0:3])
         self.visited = list_test
         self.queue = list_test
 

@@ -31,21 +31,17 @@ os.environ['WDM_SSL_VERIFY'] = '0'
 # :param searchlist: a list of strings containing seller+city per item
 # :type searchlist: list
 class TopicScraper:
-    """Performs a Google search of all keywords defined in TOPIC_Seed.xlsx, retrieves the top 10 result links. 
-    The result links will be unionend with all links defined in URL_Seed.xlsx and saves them in a new file Seed.feather.
-    Seed.feather is 
-
-    Args:
-        CrawlSpider (_type_): _description_
-
-    Returns:
-        _type_: _description_
-
-    Yields:
-        _type_: _description_
+    """This Crawler takes the file TOPIC_Seed.xlsx and crawls all keywords given in that file. 
+        For each keyword the top 10 result urls of a google search with the dedicated keywords is saved. 
+        The result urls are saved together with all found urls in URL_Seed.xlsx as Seed.feather.
+        Seed.feather contains the initial set of url links that form the basis (seed) for the overall dataset.
     """
-    def __init__(self):
-        """Initialisation of Crawler. Sets Selenium Browser and calls load_data.
+  
+    def __init__(self, lang:str):
+        """Initialisation of Topic Crawler. Sets Selenium Browser and calls load_data. 
+
+        Args:
+            lang (str): unicode of language to select column with keywords only in that language 
         """
         self.headers = {'Accept-Langugage':'de;q=0.7',
                    'User-agent':"Mozilla/101.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0. 5005.78 Edge/100.01185.39"}
@@ -59,6 +55,7 @@ class TopicScraper:
         self.options.add_argument(f'user-agent={self.headers}')
         self.browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=self.options)
         self.wait = WebDriverWait(self.browser, 20)
+        self.lang = lang
 
     def load_data(self):
         """Call of both Seed files. TOPIC_Seed.xlsx contains keywords to crawl. URL_Seed.xlsx contains links to crawl.
@@ -146,7 +143,8 @@ class TopicScraper:
         all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed.feather'))
 
     def run(self):
-        self.topics_df['URL'] = self.topics_df['Keyword'].apply(lambda row: self.get_url(row))
+        keyword_col = "KEYWORD_"+ self.lang.upper()
+        self.topics_df['URL'] = self.topics_df[keyword_col].apply(lambda row: self.get_url(row))
         self.topics_df = self.topics_df.explode('URL')
         self.save_data()
         
@@ -154,7 +152,7 @@ class TopicScraper:
 #Main - Init a crawler with given searchlist Searchlist.xsls. Crawls and saves all information (run).
 if __name__ == "__main__":
     start = time.process_time()
-    scrape = TopicScraper()
+    scrape = TopicScraper("de")
     scrape.run()
     print(time.process_time() - start)
 
