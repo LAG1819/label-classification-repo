@@ -192,7 +192,7 @@ class SeederSpider(CrawlSpider):
         Returns:
             boolean: Returns true if domain of given link is in blacklist.
         """
-        black_list =["foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","configure","github","vimeo","apple","twitter","facebook","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube", "gebrauchtwagen", "neufahrzeug"]
+        black_list =["suche","formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","configure","github","vimeo","apple","twitter","facebook","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube", "gebrauchtwagen", "neufahrzeug"]
         flag = False
         if any(pattern in str(link).lower() for pattern in black_list):
             flag = True
@@ -260,17 +260,31 @@ def union_data():
     """
     df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
     df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
+    df_path_c = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_classes.json"
+
     internal_data = pd.read_json(df_path_i)
    
     try:
         external_data = pd.read_json(df_path_e)
         outer = external_data.merge(internal_data, how='outer', indicator=True)
         merged_df = pd.concat([internal_data,external_data]).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        merged_df.to_feather(r'files\raw_texts.feather')
         #external_data_anti_joined = outer[(outer._merge=='left_only')].drop('_merge', axis=1)
     except Exception as e:
         merged_df = internal_data
 
-    merged_df.to_json(r'files\raw_texts.json', orient = 'records')
+    try:
+        classes = pd.read_json(df_path_c)
+        classes.to_feather(r"files\raw_classes.feather")
+    except Exception as e:
+        print("Could not read raw_classes.json: ", e)        
+
+    try:
+        os.remove(df_path_c)
+        os.remove(df_path_i)
+        os.remove(df_path_e)
+    except:
+        print("Could not remove files.")
 
 def run_crawler():
     """
@@ -304,12 +318,12 @@ def run_crawler():
         'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ['CLASS','DOMAIN','URL', 'URL_TEXT']}}
         })
 
-    process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
-    process2.crawl(SeederSpider, r'files\Seed.feather', 'external')
-    # process3.crawl(TopicSpider,'DE')
-    process.start()
-    process2.start()
-    # process3.start()
+    # process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
+    # process2.crawl(SeederSpider, r'files\Seed.feather', 'external')
+    process3.crawl(TopicSpider,'DE')
+    # process.start()
+    # process2.start()
+    process3.start()
     
 if __name__ == '__main__':
     """Main function. Calls run method "run_crawler" and union method "union_data"

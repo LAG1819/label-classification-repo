@@ -24,11 +24,11 @@ class TopicExtractor:
         """
         self.source_path = s_path
         self.target_path = t_path
+        self.topic = topic
         self.data = self.load_data()
         self.number_topics = input_topic
         self.text_col = 'URL_TEXT'
         self.lang = lang
-        self.topic = topic
 
         if self.lang == "de":
             self.stopwords = stopwords.words('german')
@@ -46,13 +46,17 @@ class TopicExtractor:
         """
         df_path = str(os.path.dirname(__file__)).split("src")[0] + self.source_path
         if self.topic:
-            data = pd.read_feather(df_path).groupby("CLASS").agg("|".join(list('URL_TEXT')))
+            data = pd.read_feather(df_path).groupby("CLASS").agg({'URL_TEXT':lambda x: "|".join(list(x))})#['URL_TEXT'].apply(list)
+            print(data)
+        else:
+            data = pd.read_feather(df_path)
         #group by class#
-        return pd.read_feather(df_path)
+        return data
 
     def save_data(self):
         """Save data as feather file to defined target path.
         """
+        self.data = self.data.reset_index()
         self.data.to_feather(str(os.path.dirname(__file__)).split("src")[0] + self.target_path)
         
 
@@ -72,7 +76,7 @@ class TopicExtractor:
         german_cites = [c.lower() for c in german_cites]
         
         tfidf_v = TfidfVectorizer(lowercase=True,
-                                stop_words=self.stopwords + german_cites,
+                                stop_words=self.stopwords,
                                 ngram_range = (1,2),
                                 tokenizer = tokenizer.tokenize)
 
@@ -142,13 +146,13 @@ class TopicExtractor:
         """
         self.data['TOPIC']=self.data[self.text_col].apply(lambda row: self.generate_topic(row))
         self.data.replace(np.nan, "",regex = False, inplace = True)
-        # self.save_data()
+        self.save_data()
 
 
 if __name__ == "__main__":
-    t = TopicExtractor(7,r"files\cleaned_texts.feather",r"files\topiced_texts.feather")
-    t.run() 
-    print(t.data['TOPIC'].tolist())
-    # t2 = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather")
-    # t2.run()
-    # print(t2.data['TOPIC'].tolist())
+    # t = TopicExtractor(7,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
+    # t.run() 
+    # print(t.data['TOPIC'].tolist()[:3])
+    t2 = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
+    t2.run()
+    print(t2.data['TOPIC'].tolist())

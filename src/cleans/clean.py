@@ -24,7 +24,7 @@ class textFilter:
         # # self.data = pd.DataFrame.from_dict(dict, orient = 'index').T
 
         df_path = str(os.path.dirname(__file__)).split("src")[0] + path
-        self.data = pd.read_json(df_path, orient= 'records').drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        self.data = pd.read_feather(df_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
         
         self.text_col = 'URL_TEXT'
         self.url_col = 'URL'
@@ -156,15 +156,15 @@ class textFilter:
         self.remove_nonText()
         self.remove_domainStopwords()
         self.flag_lang()
-        #self.save_data()
+        self.save_data()
         print(self.data.shape)
         print(self.data)
         print("Done Cleaning")
 
 if __name__ == "__main__":
-    # f = textFilter('de',r"files\raw_texts.json",r"files\cleaned_texts.feather")
-    # f.run()
-    f2 = textFilter(None,r"files\raw_classes.json",r"files\cleaned_classes.feather")
+    f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
+    f.run()
+    f2 = textFilter(None,r"files\raw_classes.feather",r"files\cleaned_classes.feather")
     f2.run()
 
     

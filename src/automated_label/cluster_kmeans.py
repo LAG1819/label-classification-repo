@@ -97,15 +97,19 @@ class TOPIC_KMeans:
         with open("kmeans.pkl", "wb") as f:
             pickle.dump(model, f)
 
+    def save_clusterNames(self):
+        dic = {}
+        for i, t in enumerate (self.topics['CLASS'].tolist()): 
+            print(i+1,t)
+            dic[str(i+1)] = [t]
+        #save cluster dictionary
+        cluster_names =  pd.DataFrame.from_dict(dic)
+        cluster_names.to_feather(r"files\kMeans_cluster.feather")
+
     def run(self):
         """Run function of TOPIC_KMeans class. After data and centroids are seperately loaded the topics of the data to be predicted and the topics of the predefined clusters 
         are merged. This text corpus is used to fit and transform a KMeans model which is than saved.
         """
-        dic = {}
-        for i, t in enumerate (self.topics['CLASS'].tolist()): 
-            print(i,t)
-            dic[i] = t
-        #save dictionary as cluster dictionary
         raw_centroids = self.topics['TOPIC'].tolist()
         all_texts = raw_centroids + self.raw_data['TOPIC'].tolist()
 
@@ -115,8 +119,9 @@ class TOPIC_KMeans:
         print(centroids.shape)
 
         self.apply_kMeans(centroids.toarray())
+        self.save_clusterNames()
 
 
-kmeans = TOPIC_KMeans(r"files\topiced_topics.feather",r"files\topiced_texts.feather")
-# kmeans.run()
+kmeans = TOPIC_KMeans(r"files\topiced_classes.feather",r"files\topiced_texts.feather")
+kmeans.run()
 

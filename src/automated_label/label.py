@@ -27,15 +27,17 @@ DATA = pd.read_json(path)
 
 @labeling_function()
 def predict_cluster(x):
+    #load trained kMeans and cluster dictionary
+    cluster_names = pd.read_feather(r"files\kMeans_cluster.feather").to_dict('records')[0]
+    kmeans = pickle.load(open("kmeans.pkl", 'rb')) 
     value = ABSTAIN
-    kmeans = pickle.load(open("kmeans.pkl", 'rb'))           
+
     cluster = kmeans.predict(x)
-    if cluster == 1:
-        value = AUTONOMOUS
-        # upload cluster dictionary
-        #.
-        #.
-        #.
+    try:
+        value = cluster_names[cluster]
+    except Exception as e:
+        print("Predicted cluster  could not be mapped: ", e)
+        return value
 
     return value
 
