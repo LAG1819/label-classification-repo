@@ -1,7 +1,7 @@
 [
     {
         "CLASS":"AUTONOMOUS",
-        "KEYWORDS":["autonom","intelligentes auto","selbstfahrend", "autonomes fahren", "autonomous","autonomes fahrzeug","sensoren", "sensorik", "vollautomatisiert","voll-automatisiert", "voll automatisiert",
+        "KEYWORDS":["autonom","intelligentes auto","selbstfahrend", "autonomes fahren", "autonomous","autonomes fahrzeug", "vollautomatisiert","voll-automatisiert", "voll automatisiert",
         "vollautonomes fahrzeug", "autonomes fahrzeug","vehicle on demand", "vehicle-on-demand","vehicleondemand","level5", "level 5", "level4", "level 4","level3", "level 3", "fahrroboter", "autobahnautomat" , "autobahn automat",
         "exklusiv-autonom","exklusiv autonom","exklusivautonom","autonomous-only", "autonomous only","autonomousonly", "hochautomatisiertes fahren", "hochautomatisiert",
         "maschinelle fahrfähigkeiten", "maschinelle fähigkeiten", "maschinelle-fahrfähigkeiten", "maschinelle-fähigkeiten", "robotic_vehicle", "DMM", "Driver Mode Manager", "SecForCARs",
@@ -43,7 +43,7 @@
     "TCU", "Telematics Control Unit", "Telematik-Steuergerät", "TPEG", "Transport Protocol Experts Group", "TSP", "Telematik Service Provider",
     "TSDP", "Telematics Service Delivery Platform", "V2/2V", "Vehicle to Infrastructure to Vehicle", "V2B", "Vehicle to Backend",
     "V2C", "Vehicle to Cloud", "V2G", "Vehicle to Grid", "V2I","Vehicle to Infrastructure","V2N", "Vehicle to Network","V2P", "Vehicle to Pedestrian",
-    "V2V", "Vehicle to Vehicle","V2X", "Vehicle to everything","Verkehrsvernetzung","X2V", "X to Vehicle", "5GAA", "5G Automotive Association"]
+    "V2V", "Vehicle to Vehicle","V2X", "Vehicle to everything","Verkehrsvernetzung","X2V", "X to Vehicle", "5GAA", "5G Automotive Association", "sensoren", "sensorik"]
 },
 {
     "CLASS":"SHARED",
@@ -65,6 +65,8 @@
 },
 {
     "CLASS":"INDIVIDUALISATION",
-    "KEYWORDS":["personalisierung", "personalisieren", "individualisieren","customization", "customize", "customise", "individual services"]
+    "KEYWORDS":["personalisierung", "personalisieren", "individualisieren","customization", "customize", "customise", "individual services", "konfigurieren", "Konfigurator", "Konfiguration",
+    "individual","individualisierung", "individuell","Individualität","gestaltungsfreiheit", "exklusiv", "sonderlackierung", "sonderaustattung", "persönlichkeit", "gestaltung", "austattungspaket",
+    "sondermodell", "austattung", "paket"]
 }
 ]
