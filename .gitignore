@@ -12,3 +12,4 @@ src/archive/*
 *.feather
 src/*/__pychache__/*
 !CLASS_keywords.json
+*/kmeans.pkl
