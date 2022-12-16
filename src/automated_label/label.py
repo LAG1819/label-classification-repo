@@ -232,13 +232,22 @@ class Labeler:
         coverage_predict_cluster,coverage_check_keywords, coverage_check_random = (self.L_train != ABSTAIN).mean(axis=0)
         print(f"coverage_predict_cluster: {coverage_predict_cluster * 100:.1f}%")
         print(f"coverage_check_keywords: {coverage_check_keywords * 100:.1f}%")
+        
         #print(self.label_model.score(L_validate, Y=validate_labels,metrics=["f1","accuracy",'precision','recall']))
+
+    def show_samples_per_class(self):
+        df1 = self.data.iloc[self.L_train[:, 1] == ELECTRIFICATION].sample(10, random_state=1)[['text','TOPIC']]
+        #df2 = self.data.iloc[self.L_train[:, 1] == AUTONOMOUS].sample(10, random_state=1)[['text','TOPIC']]
+        df3 = self.data.iloc[self.L_train[:, 1] == DIGITALISATION].sample(10, random_state=1)[['text','TOPIC']]
+        df4 = self.data.iloc[self.L_train[:, 1] == INDIVIDUALISATION].sample(10, random_state=1)[['text','TOPIC']]
+        print(df1)
     
     def run(self):
         self.apply_labeling_functions()
         self.apply_labeling_model()
         #self.assign_labels_final()
         self.analysis_result_model()
+        self.show_samples_per_class()
         #self.save_data()
 
 if __name__ == "__main__":
