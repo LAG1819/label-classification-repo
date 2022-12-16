@@ -71,9 +71,10 @@ class TOPIC_KMeans:
                                 tokenizer = tokenizer.tokenize)
 
         tfidf_v = tfidf_v.fit(text)
+
         return tfidf_v
 
-    def apply_kMeans(self,centroids: np.array):
+    def apply_kMeans(self,centroids: np.array, vectorizer:TfidfVectorizer):
         """Generation and fit of KMeans Model and saving of fitted Model.
 
         Args:
@@ -85,20 +86,28 @@ class TOPIC_KMeans:
         cluster_centers = kmeans.cluster_centers_
         # print(cluster_centers)
 
-        self.save_model(kmeans)
+        self.save_model(kmeans,vectorizer)
         
 
-    def save_model(self,model:KMeans):
-        """Saving of given KMeans model as pickle file.
+    def save_model(self,model:KMeans, vectorizer:TfidfVectorizer):
+        """Saving of given KMeans model as pickle file and the fitted tfidf vectorizer.
 
         Args:
             model (KMeans): Fitted KMeans model.
         """
-        path = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans.pkl"
-        if os.path.exists(path):
-            os.remove(path)
+        path_m = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans.pkl"
+        path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans_vectoizer.pkl"
+
+        if os.path.exists(path_m):
+            os.remove(path_m)
+        if os.path.exists(path_v):
+            os.remove(path_v)
+
         with open("models\kmeans.pkl", "wb") as f:
             pickle.dump(model, f)
+
+        with open('models\kmeans_vectorizer.pkl', 'wb') as fin:
+            pickle.dump(vectorizer, fin)
 
     def save_clusterNames(self):
         dic = {}
@@ -126,7 +135,7 @@ class TOPIC_KMeans:
         centroids = tfidf.transform(raw_centroids)
         #print(centroids.shape)
 
-        self.apply_kMeans(centroids.toarray())
+        self.apply_kMeans(centroids.toarray(), tfidf)
         self.save_clusterNames()
 
 
