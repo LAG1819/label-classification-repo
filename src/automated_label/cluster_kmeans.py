@@ -94,7 +94,10 @@ class TOPIC_KMeans:
         Args:
             model (KMeans): Fitted KMeans model.
         """
-        with open("kmeans.pkl", "wb") as f:
+        path = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans.pkl"
+        if os.path.exists(path):
+            os.remove(path)
+        with open("models\kmeans.pkl", "wb") as f:
             pickle.dump(model, f)
 
     def save_clusterNames(self):

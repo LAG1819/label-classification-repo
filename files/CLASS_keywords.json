@@ -5,7 +5,7 @@
         "vollautonomes fahrzeug", "autonomes fahrzeug","vehicle on demand", "vehicle-on-demand","vehicleondemand","level5", "level 5", "level4", "level 4","level3", "level 3", "fahrroboter", "autobahnautomat" , "autobahn automat",
         "exklusiv-autonom","exklusiv autonom","exklusivautonom","autonomous-only", "autonomous only","autonomousonly", "hochautomatisiertes fahren", "hochautomatisiert",
         "maschinelle fahrfähigkeiten", "maschinelle fähigkeiten", "maschinelle-fahrfähigkeiten", "maschinelle-fähigkeiten", "robotic_vehicle", "DMM", "Driver Mode Manager", "SecForCARs",
-        "Security for connected automated cars"]
+        "Security for connected automated cars","av"]
 },
 {
     "CLASS":"ELECTRIFICATION",
@@ -23,7 +23,7 @@
     "ladetarif", "ladekarte", "e-charge", "echarge", "lithium-ionen-batterie","lithium-ionenbatterie","lithiumionen-batterie","lithium ionen batterie","lithiumionen batterie", "lithiumionenbatterie",
     "mild-hybrid-fahrzeug","mildhybridfahrzeug","mild hybrid fahrzeug", "notladekabel", "one-pedal-driving","one pedal driving","onepedal-driving",
     "onepedaldriving", "onepedal driving", "plug-in-hybrid","plugin-hybrid", "plug in hybrid","plugin hybrid", "rekuperation","energierückgewinnung", "schnelladen",
-    "synchronmaschine", "psm", "asynchronmaschine", "asm", "wallbox", "voll-hybrid", "voll hybrid", "wallbox", "zyklenfestigkeit"]
+    "synchronmaschine", "psm", "asynchronmaschine", "asm", "wallbox", "voll-hybrid", "voll hybrid", "wallbox", "zyklenfestigkeit", "efuel", "e fuel"]
 },
 
 {
@@ -43,15 +43,19 @@
     "TCU", "Telematics Control Unit", "Telematik-Steuergerät", "TPEG", "Transport Protocol Experts Group", "TSP", "Telematik Service Provider",
     "TSDP", "Telematics Service Delivery Platform", "V2/2V", "Vehicle to Infrastructure to Vehicle", "V2B", "Vehicle to Backend",
     "V2C", "Vehicle to Cloud", "V2G", "Vehicle to Grid", "V2I","Vehicle to Infrastructure","V2N", "Vehicle to Network","V2P", "Vehicle to Pedestrian",
-    "V2V", "Vehicle to Vehicle","V2X", "Vehicle to everything","Verkehrsvernetzung","X2V", "X to Vehicle", "5GAA", "5G Automotive Association", "sensoren", "sensorik"]
+    "V2V", "Vehicle to Vehicle","V2X", "Vehicle to everything","Verkehrsvernetzung","X2V", "X to Vehicle", "5GAA", "5G Automotive Association", "sensoren", "sensorik",
+    "platooning", "platoon"]
 },
 {
     "CLASS":"SHARED",
-    "KEYWORDS":["car share", "car sharing", "share", "shared mobility"]
+    "KEYWORDS":["car share","carshare", "carsharing","car sharing", "shared mobility", "intermodal", "multimodal","float" ,"floating", "free floating", "ride hailing", "pooling","ridesharing", "vermietung", "vermeiten",
+    "anmieten", "hailing","mobility flatrate", "mobilität", "maas", "M-a-a-S", "mobility as a service", "taas", "t-a-a-s", "Transport as a Service", "car2go", "drivenow", "peer",
+    "stationsbasiert", "gemeinsame Fahrzeugnutzung", "sharing economy", "share economy", "leihen"]
 },
 {
     "CLASS":"SUSTAINABILITY",
-    "KEYWORDS":["nachhaltig", "nachhaltigkeit", "sustainable","sustainability"]
+    "KEYWORDS":["nachhaltig", "nachhaltigkeit", "sustainable","sustainability","umweltfreundlich", "mobilitätsmanagement", "mobilitätswende", "achtsam","health mobility", "letzte meile",
+    "mobility hub", "knotenpunkt", "all inclusive", "autofrei", " e mobility","emobility" ]
 },
 {
     "CLASS":"DIGITALISATION",
@@ -61,7 +65,8 @@
     "computerbasiert","3d-modell","3d modell","3dmodell","assistenz-system","assistenz system","assistenzsystem","roboter-system", "roboter system", "robotersystem",  "digitale fabrik",
     "digitalfabrik","digital fabrik", "digitale revolution","digitale-revolution", "digitalerevolution", "digitalrevolution", "innovation", "technologie", "technology", "datenmenge", "big-data",
     "big data", "datenanalyse", "daten analyse", "datenmanagement", "datamangement", "daten management", "data management", "cloud", "cloud computing", "saas", "software as a service",
-    "software-as-a-service", "softwareasaaservice", "state-of-the-art","state of the art", "digital services", "infrastruktur", "infrastructur","ITS", "Intelligent Transportation System"]
+    "software-as-a-service", "softwareasaaservice", "state-of-the-art","state of the art", "digital services", "infrastruktur", "infrastructur","ITS", "Intelligent Transportation System",
+    "fahrzeugtechnologie", "technologie", "technology"]
 },
 {
     "CLASS":"INDIVIDUALISATION",
