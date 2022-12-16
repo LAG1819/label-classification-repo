@@ -96,17 +96,17 @@ class TOPIC_KMeans:
             model (KMeans): Fitted KMeans model.
         """
         path_m = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans.pkl"
-        path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans_vectoizer.pkl"
+        path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans_vectorizer.pkl"
 
         if os.path.exists(path_m):
             os.remove(path_m)
         if os.path.exists(path_v):
             os.remove(path_v)
 
-        with open("models\kmeans.pkl", "wb") as f:
+        with open(path_m, "wb") as f:
             pickle.dump(model, f)
 
-        with open('models\kmeans_vectorizer.pkl', 'wb') as fin:
+        with open(path_v, 'wb') as fin:
             pickle.dump(vectorizer, fin)
 
     def save_clusterNames(self):
