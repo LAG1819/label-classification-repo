@@ -50,7 +50,6 @@ class TopicExtractor:
         df_path = str(os.path.dirname(__file__)).split("src")[0] + self.source_path
         if self.topic:
             data = pd.read_feather(df_path).groupby("CLASS").agg({'URL_TEXT':lambda x: "|".join(list(x))})#['URL_TEXT'].apply(list)
-            print(data)
         else:
             data = pd.read_feather(df_path)
         #group by class#
@@ -153,7 +152,7 @@ class TopicExtractor:
 if __name__ == "__main__":
     t = TopicExtractor(7,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
     t.run() 
-    print(t.data['TOPIC'].tolist()[:3])
-    # t2 = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
-    # t2.run()
+    # print(t.data['TOPIC'].tolist()[:3])
+    t2 = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
+    t2.run()
     # print(t2.data['TOPIC'].tolist())

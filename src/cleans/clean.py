@@ -148,7 +148,7 @@ class textFilter:
         """Removes all city names in text
         """
         regex = re.compile("|".join(map(re.escape, self.cities.keys(  ))))
-        self.data[self.text_col] = self.data[self.text_col].apply(lambda row: regex.sub(lambda match: self.cities[match.group(0)], row))
+        self.data[self.text_col] = self.data[self.text_col].apply(lambda row: regex.sub(lambda match: self.cities[match.group(0)], row) if row else "")
 
     def lemmatize_text(self):
         """Lemmatize text with help of spacy 
@@ -197,20 +197,20 @@ class textFilter:
         print("Non textual elements and stopwords had been removed.")
         self.flag_lang()
         print("Languages had been detected and filtered.")
-        self.remove_cityNames()
-        print("City names had been removed.")
         self.lemmatize_text()
         print("Text had been lemmatized.")
+        self.remove_cityNames()
+        print("City names had been removed.")
         self.save_data()
         print(self.data.shape)
         print(self.data)
         print("Done Cleaning.")
 
 if __name__ == "__main__":
-    f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
-    f.run()
-    # f2 = textFilter(None,r"files\raw_classes.feather",r"files\cleaned_classes.feather")
-    # f2.run()
+    # f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
+    # f.run()
+    f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
+    f2.run()
     
     # result = [re.sub("\s?abgerufen\s?\w*\s*\d*", "", w) for w in [ "abgerufen am 2709","abgerufen2709", " abgerufen am27 09", "000 888 000"]]
     # print(result)
