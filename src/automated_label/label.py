@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import numpy as np
 import pickle
+import re
 from snorkel.labeling import labeling_function
 from snorkel.labeling import PandasLFApplier
 from snorkel.labeling import LFAnalysis
@@ -9,12 +10,12 @@ from snorkel.labeling.model.label_model import LabelModel
 
 ABSTAIN = 1
 AUTONOMOUS = 2
-ELECTRIFICATION = 3
-CONNECTIVITY = 4
-SHARED = 5
-SUSTAINABILITY = 6
-DIGITALISATION = 7
-INDIVIDUALISATION = 8
+CONNECTIVITY = 3
+DIGITALISATION = 4
+ELECTRIFICATION = 5
+INDIVIDUALISATION = 6
+SHARED = 7
+SUSTAINABILITY = 8
 
 path = str(os.path.dirname(__file__)).split("src")[0] + r"files/CLASS_keywords.json"
 DATA = pd.read_json(path)
@@ -23,7 +24,6 @@ DATA = pd.read_json(path)
 #X DEFINE CLUSTERING MODEL (SIMPLE)###
 #X SELECT ALL KEYWORDS BASED ON SUFFICENT SOURCES###
 ###DEFINE 2 HEURISTICS PER LABEL###
-###DEFINE SIMPLE "BLACKLIST" PER LABEL###
 
 @labeling_function()
 def predict_cluster(x):
@@ -33,19 +33,18 @@ def predict_cluster(x):
     value = ABSTAIN
 
     cluster = kmeans.predict(x)
-    try:
-        value = cluster_names[cluster]
-    except Exception as e:
-        print("Predicted cluster  could not be mapped: ", e)
-        return value
-
+    list_of_values = [ABSTAIN,AUTONOMOUS,ELECTRIFICATION,CONNECTIVITY,SHARED,SUSTAINABILITY,DIGITALISATION,INDIVIDUALISATION]
+    value = cluster_names[cluster]
+    for v in list_of_values:
+        if str(value) == str(v):
+            value = v
     return value
 
 @labeling_function()
 def check_autonomous(x):
     value = ABSTAIN
     keywords = DATA[DATA["CLASS"] == 'AUTONOMOUS']['KEYWORDS'].tolist()
-    if any(key.lower() in x.text.lower() for key in keywords):
+    if any(re.search(key.lower(), x.text.lower()) for key in keywords):
         value = AUTONOMOUS
     return value
 
@@ -53,7 +52,7 @@ def check_autonomous(x):
 def check_electrification(x):
     value = ABSTAIN
     keywords = DATA[DATA["CLASS"] == 'ELECTRIFICATION']['KEYWORDS'].tolist()
-    if any(key.lower() in x.text.lower() for key in keywords):
+    if any(re.search(key.lower(), x.text.lower()) for key in keywords):
         value = ELECTRIFICATION       
     return value
     
@@ -61,7 +60,7 @@ def check_electrification(x):
 def check_digitalisation(x):
     value = ABSTAIN
     keywords = DATA[DATA["CLASS"] == 'DIGITALISATION']['KEYWORDS'].tolist()
-    if any(key.lower() in x.text.lower() for key in keywords):
+    if any(re.search(key.lower(), x.text.lower()) for key in keywords):
         value = DIGITALISATION
     return value
 
@@ -69,7 +68,7 @@ def check_digitalisation(x):
 def check_connectivity(x):
     value = ABSTAIN
     keywords = DATA[DATA["CLASS"] == 'CONNECTIVITY']['KEYWORDS'].tolist()
-    if any(key.lower() in x.text.lower() for key in keywords):
+    if any(re.search(key.lower(), x.text.lower()) for key in keywords):
         value = CONNECTIVITY
     return value
 
@@ -77,7 +76,7 @@ def check_connectivity(x):
 def check_sustainability(x):
     value = ABSTAIN
     keywords = DATA[DATA["CLASS"] == 'SUSTAINABILITY']['KEYWORDS'].tolist()
-    if any(key.lower() in x.text.lower() for key in keywords):
+    if any(re.search(key.lower(), x.text.lower()) for key in keywords):
         value = SUSTAINABILITY
     return value
 
@@ -85,7 +84,7 @@ def check_sustainability(x):
 def check_individualisaton(x):
     value = ABSTAIN
     keywords = DATA[DATA["CLASS"] == 'INDIVIDUALISATION']['KEYWORDS'].tolist()
-    if any(key.lower() in x.text.lower() for key in keywords):
+    if any(re.search(key.lower(), x.text.lower()) for key in keywords):
         value = INDIVIDUALISATION
     return value
 
@@ -93,30 +92,36 @@ def check_individualisaton(x):
 def check_shared(x):
     value = ABSTAIN
     keywords = DATA[DATA["CLASS"] == 'SHARED']['KEYWORDS'].tolist()
-    if any(key.lower() in x.text.lower() for key in keywords):
+    if any(re.search(key.lower(), x.text.lower()) for key in keywords):
         value = SHARED
     return value
 
 class Labeler:
-    def __init__(self):
+    def __init__(self,s_path:str, t_path:str):
         self.data = self.load_data()
         self.train_df = self.data
         # self.validate_df = self.data
         # self.validate_labels = self.data['LABEL']
-        self.lfs = [check_autonomous,check_connectivity,check_digitalisation,check_electrification,check_individualisaton,check_shared,check_sustainability]
+        self.lfs = [predict_cluster,check_autonomous,check_connectivity,check_digitalisation,check_electrification,check_individualisaton,check_shared,check_sustainability]
         self.L_train = None
         self.label_model = None
+        self.source_path = s_path
+        self.target_path = t_path
+        self.text_col = 'URL_TEXT'
 
     def load_data(self):
-        df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_cleaned.csv"
-        df = pd.read_csv(df_path, header = 0, delimiter=",")
+        df_path = str(os.path.dirname(__file__)).split("src")[0] + self.source_path
+        df = pd.read_feather(df_path, header = 0, delimiter=",")
         return df.replace(np.nan, "",regex = False)
 
     def save_data(self):
-        self.data.to_csv(str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_labeled.csv", index = False)
+        path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        if os.path.exists(path):
+            os.remove(path)
+        self.data.to_feather(path)
 
     def apply_labeling_functions(self):
-        self.data = self.data.rename(columns = {'URL-TEXT' : 'text'})
+        self.data = self.data.rename(columns = {self.text_col : 'text'})
 
         applier = PandasLFApplier(lfs=self.lfs)
         self.L_train = applier.apply(df=self.data)
@@ -139,10 +144,10 @@ class Labeler:
         # preds_valid_label = label_model.predict(L=L_validate)
     
     def assign_labels_final(self):
-        self.data.loc[(self.data['LABEL']==1), 'LABEL'] ='ABSTAIN'
-        self.data.loc[(self.data['LABEL']==2), 'LABEL'] ='GENERAL'
-        self.data.loc[(self.data['LABEL']==3), 'LABEL'] ='SPECIFIC'
-        self.data.loc[(self.data['LABEL']==4), 'LABEL'] ='ELECTRIC'
+        list_of_values = {"ABSTAIN":ABSTAIN,"AUTONOMOUS":AUTONOMOUS,"ELECTRIFICATION":ELECTRIFICATION,"CONNECTIVITY":CONNECTIVITY,"SHARED":SHARED,\
+            "SUSTAINABILITY":SUSTAINABILITY,"DIGITALISATION":DIGITALISATION,"INDIVIDUALISATION":INDIVIDUALISATION}
+        for v in list_of_values.keys:
+            self.data.loc[(self.data['LABEL']==list_of_values[v]), 'LABEL'] = v
 
     def analysis_result_model(self):
         print('validate metrics')
@@ -155,6 +160,6 @@ class Labeler:
         self.save_data()
 
 if __name__ == "__main__":
-    l = Labeler()
+    l = Labeler(r"files\topiced_texts.feather",r"files\labeled_texts.feather" )
     l.run()
     print(l.data['LABEL'].tolist())

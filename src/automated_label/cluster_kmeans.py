@@ -83,7 +83,7 @@ class TOPIC_KMeans:
         kmeans.fit(centroids)
         print(kmeans.labels_)
         cluster_centers = kmeans.cluster_centers_
-        print(cluster_centers)
+        # print(cluster_centers)
 
         self.save_model(kmeans)
         
@@ -103,11 +103,16 @@ class TOPIC_KMeans:
     def save_clusterNames(self):
         dic = {}
         for i, t in enumerate (self.topics['CLASS'].tolist()): 
-            print(i+1,t)
-            dic[str(i+1)] = [t]
+            print(i+2,t)
+            dic[str(i+2)] = [t]
         #save cluster dictionary
         cluster_names =  pd.DataFrame.from_dict(dic)
-        cluster_names.to_feather(r"files\kMeans_cluster.feather")
+        print(dic)
+
+        path = r"files\kMeans_cluster.feather"
+        if os.path.exists(path):
+            os.remove(path)
+        cluster_names.to_feather(path)
 
     def run(self):
         """Run function of TOPIC_KMeans class. After data and centroids are seperately loaded the topics of the data to be predicted and the topics of the predefined clusters 
@@ -119,7 +124,7 @@ class TOPIC_KMeans:
         tfidf = self.generate_TfIdf(all_texts)
         text = tfidf.transform(self.raw_data['TOPIC'].tolist())
         centroids = tfidf.transform(raw_centroids)
-        print(centroids.shape)
+        #print(centroids.shape)
 
         self.apply_kMeans(centroids.toarray())
         self.save_clusterNames()
