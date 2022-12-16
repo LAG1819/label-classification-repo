@@ -1,3 +1,7 @@
+def warn(*args, **kwargs):
+    pass
+import warnings
+warnings.warn = warn
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 import os
@@ -6,7 +10,6 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 from lda_coherence import get_coherence 
 import numpy as np
-
 import nltk
 nltk.download('stopwords')
 
@@ -57,8 +60,10 @@ class TopicExtractor:
         """Save data as feather file to defined target path.
         """
         self.data = self.data.reset_index()
-        self.data.to_feather(str(os.path.dirname(__file__)).split("src")[0] + self.target_path)
-        
+        path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        if os.path.exists(path):
+            os.remove(path)
+        self.data.to_feather(path)
 
     def generate_tfIdf(self,doc_list:list):
         """Apply rowwise generation of Tfidf-Vector and fit to cleaned texts (URL_TEXT).
@@ -70,10 +75,6 @@ class TopicExtractor:
             tfidf_matrix, idf np_array: Returns transformed cleaned texts to tfidf matrix and generated Tfif Vector based on doc_list. 
         """
         tokenizer = RegexpTokenizer(r'\w+')
-        
-        city_path = str(os.path.dirname(__file__)).split("src")[0] + r"files/germany.json"
-        german_cites = pd.read_json(city_path)["name"].tolist()
-        german_cites = [c.lower() for c in german_cites]
         
         tfidf_v = TfidfVectorizer(lowercase=True,
                                 stop_words=self.stopwords,
@@ -119,7 +120,7 @@ class TopicExtractor:
         # c = get_coherence(lda_components,lda_dtm,fit_data,tfiIdf_vectorizer_vocab)
         # print(c)
 
-        return "|".join(topics)
+        return ",".join(topics)
 
     def generate_topic(self,text:str) -> str:
         """Generation, Fit and Application of cleaned text rowwise by calling generate_tfIdf and apply_lda function.  
@@ -131,7 +132,7 @@ class TopicExtractor:
             str: String list of generated topics of one sample.
         """
         try:
-            doc_list = text.split("|")
+            doc_list = text.split(" ")
             fitted_data, tfidf = self.generate_tfIdf(doc_list)
             topics = self.apply_lda(fitted_data,tfidf)
             # print(topics.split("|"))
@@ -150,9 +151,9 @@ class TopicExtractor:
 
 
 if __name__ == "__main__":
-    # t = TopicExtractor(7,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
-    # t.run() 
-    # print(t.data['TOPIC'].tolist()[:3])
-    t2 = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
-    t2.run()
-    print(t2.data['TOPIC'].tolist())
+    t = TopicExtractor(7,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
+    t.run() 
+    print(t.data['TOPIC'].tolist()[:3])
+    # t2 = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
+    # t2.run()
+    # print(t2.data['TOPIC'].tolist())

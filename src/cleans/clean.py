@@ -4,6 +4,8 @@ import os
 import re
 import pickle
 import json
+import spacy
+nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
 
 class textFilter:
     """Class to clean and filter raw texts (raw_texts.json) that had been crawled in previous step. 
@@ -23,14 +25,33 @@ class textFilter:
         # # dict= pd.read_pickle(df_path)
         # # self.data = pd.DataFrame.from_dict(dict, orient = 'index').T
 
-        df_path = str(os.path.dirname(__file__)).split("src")[0] + path
-        self.data = pd.read_feather(df_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
-        
         self.text_col = 'URL_TEXT'
         self.url_col = 'URL'
         self.lang = lang
 
+        df_path = str(os.path.dirname(__file__)).split("src")[0] + path
+        self.data = pd.read_feather(df_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        #self.data = self.data.head(4)
+        self.cities = self.load_cities(self.lang)
+
         self.target_path = t_path
+
+    def load_cities(self,lang:str) -> dict:
+        """Load a complete list of citynames of a country based on language unicode. It can be choosen between german(de) and english(en)
+
+        Args:
+            lang (str): unicode of language to select country with citynames with dedicated language
+
+        Returns:
+            dict: Return dictionary containing all city names as key and the string to replace it with as value.
+        """
+        cites_dic = {}
+        if lang == 'de':
+            city_path = str(os.path.dirname(__file__)).split("src")[0] + r"files/germany.json"
+            german_cites = pd.read_json(city_path)["name"].tolist()
+            for city in german_cites:
+                cites_dic[city.lower()] = ""  
+        return cites_dic
     
     def regex_remove(self,row:str) -> str:
         """Basic text cleaning with help of regex (rowwise). Removes all text that is part of scripting like html or xml.
@@ -76,11 +97,11 @@ class textFilter:
             str: full cleaned text of on sample.
         """
         output_sentence = []
-        url = ["^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[äöüßa-zA-Z0-9()]{1,6}\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$"]
+        url = ["^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[äöüßa-zA-Z0-9()]{1,6}\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$", "www\w*de","www\w*com"]
         email = ["^\S+@\S+\.\S+$"]
         zip = ["^[0-9]{5}(?:-[0-9]{4})?\s?\w*$"]
         phone = ["^\\+?[1-9][0-9]{7,14}$"]
-        dates = ["^[0-9]{1,2}\\/[0-9]{1,2}\\/[0-9]{4}$","^[0-9]{1,2}\\-[0-9]{1,2}\\-[0-9]{4}$"]
+        dates = ["^[0-9]{1,2}\\/[0-9]{1,2}\\/[0-9]{4}$","^[0-9]{1,2}\\-[0-9]{1,2}\\-[0-9]{4}$", "^[0-9]{4}\\-[0-9]{1,2}\\-[0-9]{1,2}$"]
         website_stopwords = ["explore","allgemeine geschäftsbedingungen","allgemein\*",'richtlinie\w*',"\w*recht\w* hinweis\w*","\w*recht\w*","\w*datenschutz\w*", "privacy","policy\w*","cooky\w*","cookie\w*","content\w*"," to ",\
                 "anmeld\w*",  "abmeld\w*", "login","log in","logout", "log out", "kunden login", "online","zurück","back","start","select\w*", "ausw\w*","close",\
                     "extras","news","report\w*","impressum","newsletter\w*", "owner","internet", "website\w*", "email\w*", "e-mail\w*", "mail\w*", "isbn", "issn",\
@@ -91,23 +112,27 @@ class textFilter:
                                         "facebook\w*", "youtube\w*","instagram\w*","xing\w*","linkedin\w*", "blog\w*","spiegel\w*","twitter\w*","sms","video"\
                                             "archiv\w*", "artikel\w*", "article\w*","side\w*", "seite\w*","site","app\w*","\s?abgerufen\s?\w*\s*\d*",\
                                                 "januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember",\
-                                                    "dbx707", "db11","\w*\s?straße\s?\d*","\w*\s?strasse\w*", "tel\w*", "\w*\s?download\w*"]
+                                                    "dbx707", "db11","\w*\s?straße\s?\d*","\w*\s?strasse\w*", "tel\w*", "\w*\s?download\w*",\
+                                                        "covid\w*\s?\d*", "corona\w*\s?\d*"]
                                        
         domain_stopwords = ["(g/km)","use case\w*", "unternehme\w*", "gmbh", "cokg", "co kg", "consult\w*", "handel\w*", "händler\w*", "leistung\w*"]
-        numbers_only = ["^\\d+$","^\s?[0-9]+(\s+[0-9]+)*\s?$"]
-        special_characters = ['[^äöüßA-Za-z0-9 ]+', "www\w*de"]
-        short_words = ['^\w{0,3}$']
-        all_stopwords = url+email+zip+phone+dates+website_stopwords+domain_stopwords+short_words+[" \\d+ "]+special_characters+numbers_only
+        numbers_only = ["^\\d+$","^\s?[0-9]+(\s+[0-9]+)*\s?$", "\(.*\)","\[.*\]", "^\d+.\d+"," \\d+ "]
+        special_characters = ['[^äöüßA-Za-z0-9 ]+']#['[\(,.:\);^]']
+        short_words = ['^\w{0,3}$', '^\s+']
+        all_stopwords = url+email+zip+phone+dates+numbers_only+special_characters+website_stopwords+domain_stopwords+short_words
         
         for sentence in row.split("|"):
-            for pattern in all_stopwords:
-                sentence = re.sub(pattern,'',sentence.lower())
-                # if re.search(pattern, str(sentence).lower()):
-            
-            output_sentence.append(sentence)
-        output_sentence = list(set(list(filter(None,output_sentence))))
-        # print(output_sentence)
-        return "|".join(output_sentence)
+            out_sentence = []
+            for word in sentence.split(" "):
+                for pattern in all_stopwords:
+                    word = re.sub(pattern,'',word.lower())
+                    # if re.search(pattern, str(sentence).lower()):
+                out_sentence.append(word.lstrip())
+            out_sentence = list(set(list(filter(None,out_sentence))))
+            if out_sentence:
+                output_sentence.append(" ".join(out_sentence))
+        #print(" ".join(output_sentence))
+        return " ".join(output_sentence)
     
     def remove_nonText(self):
         """Apply rowwise basic text cleaning with regex_remove() on raw texts.
@@ -118,6 +143,17 @@ class textFilter:
         """Apply rowwise advanced text cleaning with stopword_remove() on pre cleaned texts.
         """
         self.data[self.text_col] = self.data[self.text_col].apply(lambda row: self.stopword_remove(row))
+
+    def remove_cityNames(self):
+        """Removes all city names in text
+        """
+        regex = re.compile("|".join(map(re.escape, self.cities.keys(  ))))
+        self.data[self.text_col] = self.data[self.text_col].apply(lambda row: regex.sub(lambda match: self.cities[match.group(0)], row))
+
+    def lemmatize_text(self):
+        """Lemmatize text with help of spacy 
+        """
+        self.data[self.text_col] = self.data[self.text_col].apply(lambda row: " ".join([token.lemma_ for token in nlp(row)]))
 
     def flag_lang(self):
         """Detect Language of each sample (row) containing text of one crawled website. 
@@ -146,27 +182,35 @@ class textFilter:
         """Save cleaned texts to target path. 
         """
         path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        if os.path.exists(path):
+            os.remove(path)
         self.data.to_feather(path)
 
     def run(self):
         """Run function of textFilter class. Firstly a basic text cleansing will be applied, than an advanced text cleaning and advanced stopwords removal will be applied.
-        Than the language of cleaned texts is applied and all texts that are not matching the initialised lang are filtered. 
+        Than the language of cleaned texts is applied and all texts that are not matching the initialised lang are filtered. In advance all city 
+        names in texts will be removed and text will be lemmatized.
         Filtered and cleaned texts are finally saved to target path. 
         """
         self.remove_nonText()
         self.remove_domainStopwords()
+        print("Non textual elements and stopwords had been removed.")
         self.flag_lang()
+        print("Languages had been detected and filtered.")
+        self.remove_cityNames()
+        print("City names had been removed.")
+        self.lemmatize_text()
+        print("Text had been lemmatized.")
         self.save_data()
         print(self.data.shape)
         print(self.data)
-        print("Done Cleaning")
+        print("Done Cleaning.")
 
 if __name__ == "__main__":
     f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
     f.run()
-    f2 = textFilter(None,r"files\raw_classes.feather",r"files\cleaned_classes.feather")
-    f2.run()
-
+    # f2 = textFilter(None,r"files\raw_classes.feather",r"files\cleaned_classes.feather")
+    # f2.run()
     
     # result = [re.sub("\s?abgerufen\s?\w*\s*\d*", "", w) for w in [ "abgerufen am 2709","abgerufen2709", " abgerufen am27 09", "000 888 000"]]
     # print(result)
