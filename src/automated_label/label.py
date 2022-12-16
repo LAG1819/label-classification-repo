@@ -239,7 +239,7 @@ class Labeler:
         df1 = self.data.iloc[self.L_train[:, 1] == ELECTRIFICATION].sample(10, random_state=1)[['text','TOPIC']]
         #df2 = self.data.iloc[self.L_train[:, 1] == AUTONOMOUS].sample(10, random_state=1)[['text','TOPIC']]
         df3 = self.data.iloc[self.L_train[:, 1] == DIGITALISATION].sample(10, random_state=1)[['text','TOPIC']]
-        df4 = self.data.iloc[self.L_train[:, 1] == INDIVIDUALISATION].sample(10, random_state=1)[['text','TOPIC']]
+        #df4 = self.data.iloc[self.L_train[:, 1] == INDIVIDUALISATION].sample(10, random_state=1)[['text','TOPIC']]
         print(df1)
     
     def run(self):
