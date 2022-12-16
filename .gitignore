@@ -13,3 +13,4 @@ src/archive/*
 src/*/__pychache__/*
 !CLASS_keywords.json
 */kmeans.pkl
+*/kmeans_vectorizer.pkl
