@@ -227,7 +227,7 @@ class SeederSpider(CrawlSpider):
                     .until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
                 content = self.browser.find_element_by_tag_name("body").get_attribute("innerText")
-                text = "|".join([str(x) for x in content])
+                text = " ".join([str(x) for x in content])
             except:
                 text =""
 
