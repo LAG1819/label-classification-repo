@@ -241,7 +241,7 @@ class SeederSpider(CrawlSpider):
         Returns:
             bool: Return a boolean "flag". If True is returned the given link will not be crawled, if False is returned the given link will be crawled. 
         """
-        black_list =["wikipedia","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
+        black_list =["wikipedia","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
             "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
                 "vimeo","apple","twitter","facebook","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
                     "gebrauchtwagen", "neufahrzeug","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
@@ -364,18 +364,17 @@ def run_crawler():
 
     process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
     process2.crawl(SeederSpider, r'files\Seed.feather', 'external')
-    process3.crawl(TopicSpider,'DE', r'files/raw_classes.json')
+    # process3.crawl(TopicSpider,'DE', r'files/raw_classes.json')
     process.start()
     process2.start()
-    process3.start()
+    # process3.start()
     
 if __name__ == '__main__':
     """Main function. Calls run method "run_crawler" and union method "union_data"
     """
     run_crawler()
-    #union_data()
 
     # df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
     # df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
-    # df = pd.read_json(df_path_i,orient = 'records')
+    # df = pd.read_json(df_path_e,orient = 'records')
     # print(df[df['URL'].duplicated(keep=False)])
