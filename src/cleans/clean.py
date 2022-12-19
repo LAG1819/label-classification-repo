@@ -36,6 +36,7 @@ class textFilter:
 
         self.target_path = t_path
 
+
     def load_cities(self,lang:str) -> dict:
         """Load a complete list of citynames of a country based on language unicode. It can be choosen between german(de) and english(en)
 
@@ -206,11 +207,44 @@ class textFilter:
         print(self.data)
         print("Done Cleaning.")
 
+def union_data():
+    """Combines all external and internal crawled websites (based on the specified domains). Duplicates are removed. Saves all crawled websites under raw_texts.json.
+    """
+    df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
+    df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
+    df_path_c = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_classes.json"
+
+    internal_data = pd.read_json(df_path_i)
+   
+    try:
+        external_data = pd.read_json(df_path_e)
+        outer = external_data.merge(internal_data, how='outer', indicator=True)
+        merged_df = pd.concat([internal_data,external_data]).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        merged_df.to_feather(r'files\raw_texts.feather')
+        #external_data_anti_joined = outer[(outer._merge=='left_only')].drop('_merge', axis=1)
+    except Exception as e:
+        merged_df = internal_data
+
+    try:
+        classes = pd.read_json(df_path_c)
+        classes.to_feather(r"files\raw_classes.feather")
+    except Exception as e:
+        print("Could not read raw_classes.json: ", e)        
+
+    try:
+        os.remove(df_path_c)
+        os.remove(df_path_i)
+        os.remove(df_path_e)
+    except:
+        print("Could not remove files.")
+
 if __name__ == "__main__":
-    # f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
-    # f.run()
+    union_data()
+    f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
+    f.run()
     f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
     f2.run()
-    
-    # result = [re.sub("\s?abgerufen\s?\w*\s*\d*", "", w) for w in [ "abgerufen am 2709","abgerufen2709", " abgerufen am27 09", "000 888 000"]]
+
+    #re.sub( "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$", "", w)
+    # result = [re.search( "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$",w) for w in ["https://www.abarth.fr", "https://www.abarth.de","https://www.abarth.gr", "https://www.abarth.com"]]
     # print(result)
