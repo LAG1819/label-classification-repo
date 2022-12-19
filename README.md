@@ -22,7 +22,7 @@ predicted_topic = classifier.predict(example_text)
 It can be selected between German and English with a resulting german or english specified classifier.
 The general steps to develop the classifier are as follows:
 
-   1. Data mining and crawling of website text content using seed url list and seed keywords.(#data-mining-and-crawling-of-website-text-content)
+   1. [Data mining and crawling of website text content using seed url list and seed keywords.](#data-mining-and-crawling-of-website-text-content)
    2. Data cleansing and topic extraction of website text content (one sample is one website link)
    3. Automated labeling of cleaned website text content and of topics.
    4. Train Classification model (BERT-based).
