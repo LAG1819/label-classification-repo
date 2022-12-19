@@ -22,13 +22,13 @@ predicted_topic = classifier.predict(example_text)
 It can be selected between German and English with a resulting german or english specified classifier.
 The general steps to develop the classifier are as follows:
 
-   1. [Data mining and crawling of website text content using seed url list and seed keywords.](#data-mining-and-crawling-of-website-text-content)
+   1. [Data mining and crawling of website text content using seed url list and seed keywords.](#1.data-mining-and-crawling-of-website-text-content)
    2. Data cleansing and topic extraction of website text content (one sample is one website link)
    3. Automated labeling of cleaned website text content and of topics.
    4. Train Classification model (BERT-based).
 
 ***
-#### Data Mining and crawling of website text content
+#### 1.Data Mining and crawling of website text content
 
    At first three Excel Sheets are assigned: TOPIC_Seed.xlsx, URL_Seed.xlsx and TOPIC_Classes.xlsx.
    **TOPIC_Seed.xlsx** and **URL_Seed.xlsx** form the base (seed) of the websites to be crawled. The seed is crawled with help of a scrapy spider specified for the industries.(BFS)
