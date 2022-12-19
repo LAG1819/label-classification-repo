@@ -28,7 +28,7 @@ The general steps to develop the classifier are as follows:
    4. Train Classification model (BERT-based).
 
 ***
-#### 1. **Data Mining and crawling of website text content:**
+#### Data Mining and crawling of website text content
 
    At first three Excel Sheets are assigned: TOPIC_Seed.xlsx, URL_Seed.xlsx and TOPIC_Classes.xlsx.
    **TOPIC_Seed.xlsx** and **URL_Seed.xlsx** form the base (seed) of the websites to be crawled. The seed is crawled with help of a scrapy spider specified for the industries.(BFS)
