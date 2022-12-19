@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# datapackage: All data is licensed under the Creative Common Attribution License as is the original data from geonames. 
+# datapackage: All data is licensed under the Creative Common Attribution License as is the original data from geonames. https://creativecommons.org/licenses/by/4.0/legalcode
 # All source code is licensed under the MIT licence. Further credits: https://github.com/lexman and https://okfn.org/ 
 
 from langdetect import detect
@@ -23,6 +23,7 @@ import os
 import re
 import pickle
 import json
+import datapackage
 import spacy
 nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
 
@@ -51,26 +52,31 @@ class textFilter:
         df_path = str(os.path.dirname(__file__)).split("src")[0] + path
         self.data = pd.read_feather(df_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
         #self.data = self.data.head(4)
-        self.cities = self.load_cities(self.lang)
+        self.cities = self.load_cities()
 
         self.target_path = t_path
 
 
-    def load_cities(self,lang:str) -> dict:
-        """Load a complete list of citynames of a country based on language unicode. It can be choosen between german(de) and english(en)
-
-        Args:
-            lang (str): unicode of language to select country with citynames with dedicated language
+    def load_cities(self) -> dict:
+        """Load a complete list of citynames of a cities above 15,000 inhabitants. All data is licensed under the Creative Common 
+        Attribution License as is the original data from geonames.
 
         Returns:
             dict: Return dictionary containing all city names as key and the string to replace it with as value.
         """
         cites_dic = {}
-        if lang == 'de':
-            city_path = str(os.path.dirname(__file__)).split("src")[0] + r"files/germany.json"
-            german_cites = pd.read_json(city_path)["name"].tolist()
-            for city in german_cites:
-                cites_dic[city.lower()] = ""  
+
+        city_data = 'https://datahub.io/core/world-cities/datapackage.json'
+         # to load Data Package into storage
+        package = datapackage.Package(city_data)
+
+        # to load only tabular data
+        resources = package.resources
+        for resource in resources:
+            if resource.tabular:
+                data = pd.read_csv(resource.descriptor['path'])['name'].tolist()
+                for city in data:
+                    cites_dic[city.lower()] = "" 
         return cites_dic
     
     def regex_remove(self,row:str) -> str:
@@ -258,11 +264,11 @@ def union_data():
         print("Could not remove files.")
 
 if __name__ == "__main__":
-    union_data()
+    # union_data()
     f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
-    f.run()
-    f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
-    f2.run()
+    # f.run()
+    # f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
+    # f2.run()
 
     #re.sub( "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$", "", w)
     # result = [re.search( "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$",w) for w in ["https://www.abarth.fr", "https://www.abarth.de","https://www.abarth.gr", "https://www.abarth.com"]]
