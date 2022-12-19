@@ -241,11 +241,11 @@ class SeederSpider(CrawlSpider):
         Returns:
             bool: Return a boolean "flag". If True is returned the given link will not be crawled, if False is returned the given link will be crawled. 
         """
-        black_list =["wikipedia","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
+        black_list =["wikipedia","boutique","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
             "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
                 "vimeo","apple","twitter","facebook","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
                     "gebrauchtwagen", "neufahrzeug","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
-                        "termin", "store"]
+                        "termin", "store", "update"]
         journals = ["spiegel", "sueddeutsche", "handelsblatt", "faz"]
         selected_countryURL = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com|en)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
 
@@ -362,10 +362,10 @@ def run_crawler():
         'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ['CLASS','DOMAIN','URL', 'URL_TEXT']}}
         })
 
-    process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
+    # process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
     process2.crawl(SeederSpider, r'files\Seed.feather', 'external')
     # process3.crawl(TopicSpider,'DE', r'files/raw_classes.json')
-    process.start()
+    # process.start()
     process2.start()
     # process3.start()
     
@@ -376,5 +376,13 @@ if __name__ == '__main__':
 
     # df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
     # df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
-    # df = pd.read_json(df_path_e,orient = 'records')
-    # print(df[df['URL'].duplicated(keep=False)])
+    # dfi = pd.read_json(df_path_i,orient = 'records')
+    # dfi = dfi.drop(dfi[~dfi['URL'].str.contains("boutique")].index)
+    # os.remove(df_path_i)
+    # dfi.to_json(df_path_i, orient = 'records')
+    
+    # dfe = pd.read_json(df_path_e,orient = 'records')
+    # dfe = dfe.drop(dfe[~dfe['URL'].str.contains("boutique")].index)
+    # os.remove(df_path_e)
+    # dfe.to_json(df_path_e, orient = 'records')
+    # print("Saved data")
