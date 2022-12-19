@@ -20,11 +20,12 @@ The general steps to develop the classifier are as follows:
 ~~~
 ***
 1. Data Minind and crawling of website text content. 
-At first three Excel Sheets are assigned: TOPIC_Seed.xlsx, URL_Seed.xlsx and TOPIC_Classes.xlsx.
+   At first three Excel Sheets are assigned: TOPIC_Seed.xlsx, URL_Seed.xlsx and TOPIC_Classes.xlsx.
    **TOPIC_Seed.xlsx** and **URL_Seed.xlsx** form the base (seed) of the websites to be crawled. The seed is crawled with help of a scrapy spider specified for the industries.(BFS)
-⋅⋅⋅**TOPIC_Seed.xlsx** contains 13 Keywords per pre-defined class(german and english). Each class was derived from current literature and research.
-⋅⋅⋅**URL_Seed.xlsx** contains 300 pre-selected relevant industry-specific website links (url). 
-⋅⋅⋅**TOPIC_Classes.xlsx** contains 2 pre-selected relevant industry-specific website links (url) per pre-defined class (german and english). Those weblinks are later used as Centroids for K-Means Clustering.
+   **TOPIC_Seed.xlsx** contains 13 Keywords per pre-defined class(german and english). Each class was derived from current literature and research.
+   **URL_Seed.xlsx** contains 300 pre-selected relevant industry-specific website links (url). 
+   **TOPIC_Classes.xlsx** contains 2 pre-selected relevant industry-specific website links (url) per pre-defined class (german and english). Those weblinks are later used as Centroids for K-Means Clustering.
+***
 
 ## Licence
 This work is licensed under a [Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/4.0/legalcode) and of the 
