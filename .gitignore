@@ -6,11 +6,12 @@
 src/*/__pychache__*
 secrets_git_luisa.py
 src/archive/*
+src/cleans/__pycache__/*
 *.json
 *.exe
 *.zip
 *.feather
-src/*/__pychache__/*
+*.__pycache__*
 !CLASS_keywords.json
 */kmeans.pkl
 */kmeans_vectorizer.pkl
