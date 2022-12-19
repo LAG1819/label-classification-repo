@@ -1,8 +1,8 @@
 # BERT-Based Classification algorithm based on deep learning and automated labeling.
 A classification of texts based on automated labeling and tranfsormers
 
-This repository was developed as part of the master thesis "Analysis and automated labeling of topics and trends in the German
-automotive industry using Deep Learning and Natural Language Processing based on of industry-specific website content." generated and developed. 
+This repository was generated and developed as part of the master thesis "Analysis and automated labeling of topics and trends in the German
+automotive industry using Deep Learning and Natural Language Processing based on of industry-specific website content.".
 In the context of this work, a BERT-based classification algorithm is trained and developed that can identify and classify topics and trends of a predefined industry.
 
 ## Install
