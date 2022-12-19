@@ -6,6 +6,9 @@ automotive industry using Deep Learning and Natural Language Processing based on
 In the context of this work, a BERT-based classification algorithm is trained and developed that can identify and classify topics and trends of a predefined industry.
 
 ## Install
+```python
+pip install -r environment/requirements.txt
+```
 
 ## Usage
 The generated classifier can classify random texts into the industry-specific topics and trends and returns the most appropriate topic to which the text is related. 
@@ -29,7 +32,7 @@ The general steps to develop the classifier are as follows:
 2.**Data cleansing and topic extraction.**
 ***
 3.**Automated labeling.**
-**
+***
 4.**Train Classification model.(BERT-based).**
 
 ## Licence
