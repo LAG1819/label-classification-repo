@@ -12,12 +12,12 @@ The generated classifier can classify random texts into the industry-specific to
 
 ## Descrption
 The general steps to develop the classifier are as follows:
-{
+~~~
 1. Data mining and crawling of website text content using seed url list and seed keywords.
 2. Data cleansing and topic extraction of website text content (one sample is one website link)
 3. Automated labeling of cleaned website text content and of topics.
 4. Train Classification model (BERT).
-}
+~~~
 ***
 
 ## Licence
