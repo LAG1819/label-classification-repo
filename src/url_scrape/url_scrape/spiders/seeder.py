@@ -34,15 +34,17 @@ class TopicSpider(scrapy.Spider):
     name = 'topic'
     link_extractor = LinkExtractor()
 
-    def __init__(self, lang:str, name=None, **kwargs):
+    def __init__(self, lang:str,t_path:str, name=None, **kwargs):
         """Initalisation of WebCrawler. 
 
         Args:
             lang (str): unicode to select texts in that language 
+            t_path (str): Target path were crawled data will be stored at.
             name (_type_, optional): Name of the scrapy crawler. Defaults to None.
         """
         super().__init__(name, **kwargs)
         self.lang = lang
+        self.target_path = t_path
 
         self.headers = {'Accept-Language': 'de;q=0.7', 
             'User-agent':"Mozilla/101.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0. 5005.78 Safari/537.36 Edge/100.0.1185.39"}
@@ -65,15 +67,20 @@ class TopicSpider(scrapy.Spider):
             yield scrapy.Request(url = url[1], meta={'topic': url[0]},callback=self.parse)
 
     def get_data(self):
-        """Get the input data with the url links to be retrieved.
+        """Get the input data with the url links to be retrieved. Deletes existing ouput file where crawled data will be saved to.
 
         Returns:
             DataFrame: Pandas DataFrame containing the columns CLASS(class labels), URL(url links for retrival), LANG(language), 
         """
+
+        if os.path.exists(package_dir+self.target_path):
+            os.remove(package_dir+self.target_path)
+
         package_dir = str(os.path.dirname(__file__)).split("src")[0]
         absolute_path = os.path.join(package_dir, r'files\TOPIC_Classes.xlsx')
         seed_df = pd.read_excel(absolute_path,header = 0)
-        seed_df =  seed_df[seed_df['LANG']==self.lang] 
+        seed_df =  seed_df[seed_df['LANG']==self.lang]
+
         return seed_df
 
     def parse(self, response):
@@ -158,9 +165,13 @@ class SeederSpider(CrawlSpider):
             allowed.add(urlparse(str(s)).netloc)
         self.allowed_domains = list(allowed) 
 
-        list_test = list(seed_list[0:3])
-        self.visited = list_test
+        list_test = list(seed_list)
+        self.visited = []
+        self.get_already_visited()
+        
         self.queue = list_test
+        
+        print(self.visited)
 
     def get_data(self,url_path):
         """Get the input data with the url links to be retrieved.
@@ -173,6 +184,25 @@ class SeederSpider(CrawlSpider):
         seed_df = pd.read_csv(absolute_path,header = 0) 
         return seed_df
 
+    def get_already_visited(self):
+        """Because of possible long crawling times depending on the size of the seed, crawling can be interrupted because of lost internet connection etc.. 
+        Because of that this helper function is created to link to already crawled content and not to crawl again the already crawled pages.
+        """
+        df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
+        df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
+        
+        if self.parse_style == 'internal':
+            if os.path.exists(df_path_i):
+                visited = pd.read_json(df_path_i,orient = 'records')['URL'].tolist()
+                self.visited += visited
+        elif self.parse_style == 'external':
+            if os.path.exists(df_path_e):
+                visited = pd.read_json(df_path_e,orient = 'records')['URL'].tolist()
+                self.visited += visited
+
+        self.visited =list(set(self.visited))
+        print(self.visited)
+
     def start_requests(self):
         """Start of Retrieval of the individual input url links. Scrapy own mandatory function.
 
@@ -183,19 +213,44 @@ class SeederSpider(CrawlSpider):
             yield scrapy.Request(url = url, callback=self.parse)
         
         
-    def filter_link(self,link):
-        """
+    def filter_link(self,link:str, link_text:str) -> bool:
+        """This helper functions filters an input link name and its text description. It checks if the link contains any word of a defined blacklist and if it is not
+        a link with ending .de, .com or .en. If one of the criteria is met, the link is marked (flag = True) and thus placed on the list of pages not to be crawled.
+        Otherwise flag = False and the website is free to be crawled.
 
         Args:
-            link (str): Scraped link to be checked with given blacklist.
+            link (str): A url of form "https:\\www...". 
+            link_text (str): A given description of related link.
 
         Returns:
-            boolean: Returns true if domain of given link is in blacklist.
+            bool: Return a boolean "flag". If True is returned the given link will not be crawled, if False is returned the given link will be crawled. 
         """
-        black_list =["suche","formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","configure","github","vimeo","apple","twitter","facebook","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube", "gebrauchtwagen", "neufahrzeug"]
+        black_list =["wikipedia","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
+            "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
+                "vimeo","apple","twitter","facebook","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
+                    "gebrauchtwagen", "neufahrzeug","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
+                        "termin", "store"]
+        journals = ["spiegel", "sueddeutsche", "handelsblatt", "faz"]
+        selected_countryURL = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com|en)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
+
         flag = False
-        if any(pattern in str(link).lower() for pattern in black_list):
+        #check blacklist in link or link description
+        if any(pattern in link.lower() for pattern in black_list) or any(pattern in link_text.lower() for pattern in black_list):
             flag = True
+
+        #check if journal websites like spiegel.de are in category automotive
+        if any(j in link.lower() for j in journals):
+            branche = ['auto', "car", "mobilitaet", "mobilität", "mobility"]
+            if not any(b in link.lower() for b in branche):
+                flag = True
+
+        # if "wikipedia" in link.lower():
+        #     if not "https://de.wikipedia.org/wiki/Portal:Auto_und_Motorrad"
+
+        # if not re.search(selected_countryURL,link.lower()):
+        #     flag = True
+        # if not re.search(selected_countryURL,link_text.lower()):
+        #     flag = True
         return flag
 
     def parse(self, response):
@@ -209,36 +264,46 @@ class SeederSpider(CrawlSpider):
         Yields:
             json: raw_texts_internal.json / raw_texts_external.json
         """
-        try:
-            reqs = requests.get(str(response.url),headers = self.headers).text
-            soup = BeautifulSoup(reqs,'lxml')
-            body = soup.body
-            text = "|".join([str(x) for x in body.strings])
-        except Exception as e:
-            text = "javascript"
-
-        if ("javascript" in text) or ("java script" in text) or ('Access denied' in text):
+        if str(response.url) not in self.visited:
             try:
-                browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=self.options)
-                browser.get(response.url)
+                reqs = requests.get(str(response.url),headers = self.headers).text
+                soup = BeautifulSoup(reqs,'lxml')
+                body = soup.body
+                text = "|".join([str(x) for x in body.strings])
+            except Exception as e:
+                text = "javascript"
 
-                ignored_exceptions=(NoSuchElementException,StaleElementReferenceException,)
-                WebDriverWait(self.browser, 3,ignored_exceptions=ignored_exceptions) \
-                    .until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+            if ("javascript" in text.lower()) or ("java script" in text.lower()) or ('denied' in text.lower()):
+                try:
+                    browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=self.options)
+                    browser.get(response.url)
 
-                content = self.browser.find_element_by_tag_name("body").get_attribute("innerText")
-                text = " ".join([str(x) for x in content])
-            except:
-                text =""
+                    ignored_exceptions=(NoSuchElementException,StaleElementReferenceException,)
+                    WebDriverWait(self.browser, 3,ignored_exceptions=ignored_exceptions) \
+                        .until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
+                    content = self.browser.find_element_by_tag_name("body").get_attribute("innerText")
+                    text = " ".join([str(x) for x in content])
+                except:
+                    text =""
+        
+            yield {
+            'DOMAIN':str(urlparse(str(response.url)).netloc),
+            'URL': response.url,
+            'URL_TEXT':text,
+            }   
+
+            self.visited.append(str(response.url))             
+        #print(self.link_extractor.extract_links(response))
         for link in self.link_extractor.extract_links(response):
-            if link.url not in self.visited:
-                self.visited.append(link.url)                
+            if str(link.url) in self.visited:
+                continue
+            else:             
                 #Filter found links on website based on predfined blacklist
-                if self.filter_link(link.url) == False:
-                    #dynamically allow all domains occuring
+                if self.filter_link(str(link.url), str(link.text)) == False:
                     if self.parse_style == "internal":
                         yield scrapy.Request(url=link.url, callback=self.parse)
+                    #dynamically allow all domains occuring if an external search is triggered
                     else:
                         # Refresh the regex cache for `allowed_domains`
                         self.allowed_domains.append(urlparse(str(link.url)).netloc)
@@ -248,43 +313,6 @@ class SeederSpider(CrawlSpider):
                                 mw.spider_opened(self)
 
                         yield scrapy.Request(url=link.url, callback=self.parse)
-
-        yield {
-        'DOMAIN':str(urlparse(str(response.url)).netloc),
-        'URL': response.url,
-        'URL_TEXT':text,
-        }
-
-def union_data():
-    """Combines all external and internal crawled websites (based on the specified domains). Duplicates are removed. Saves all crawled websites under raw_texts.json.
-    """
-    df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
-    df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
-    df_path_c = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_classes.json"
-
-    internal_data = pd.read_json(df_path_i)
-   
-    try:
-        external_data = pd.read_json(df_path_e)
-        outer = external_data.merge(internal_data, how='outer', indicator=True)
-        merged_df = pd.concat([internal_data,external_data]).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
-        merged_df.to_feather(r'files\raw_texts.feather')
-        #external_data_anti_joined = outer[(outer._merge=='left_only')].drop('_merge', axis=1)
-    except Exception as e:
-        merged_df = internal_data
-
-    try:
-        classes = pd.read_json(df_path_c)
-        classes.to_feather(r"files\raw_classes.feather")
-    except Exception as e:
-        print("Could not read raw_classes.json: ", e)        
-
-    try:
-        os.remove(df_path_c)
-        os.remove(df_path_i)
-        os.remove(df_path_e)
-    except:
-        print("Could not remove files.")
 
 def run_crawler():
     """
@@ -318,15 +346,20 @@ def run_crawler():
         'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ['CLASS','DOMAIN','URL', 'URL_TEXT']}}
         })
 
-    # process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
-    # process2.crawl(SeederSpider, r'files\Seed.feather', 'external')
-    process3.crawl(TopicSpider,'DE')
-    # process.start()
-    # process2.start()
+    process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
+    process2.crawl(SeederSpider, r'files\Seed.feather', 'external')
+    process3.crawl(TopicSpider,'DE', r'files/raw_classes.json')
+    process.start()
+    process2.start()
     process3.start()
     
 if __name__ == '__main__':
     """Main function. Calls run method "run_crawler" and union method "union_data"
     """
     run_crawler()
-    union_data()
+    #union_data()
+
+    # df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
+    # df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
+    # df = pd.read_json(df_path_i,orient = 'records')
+    # print(df[df['URL'].duplicated(keep=False)])
