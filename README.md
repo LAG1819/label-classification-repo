@@ -52,6 +52,8 @@ The general steps to develop the classifier are as follows:
     
 ***
 #### Classification model (BERT-based)
+   A classification model based on BERT is trained. If english is the selected language a pretrained model from tensorflow is choosen. If german is the selected language
+   a pretrained model from hugging face is choosen and modified as classfier in pytorch.
 
 ## Licence
 This work is licensed under a [Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/4.0/legalcode) and of the 
