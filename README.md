@@ -12,6 +12,11 @@ pip install -r environment/requirements.txt
 
 ## Usage
 The generated classifier can classify random texts into the industry-specific topics and trends and returns the most appropriate topic to which the text is related. 
+```python
+example_text = "This is an example text. It contains automovi specific words like battery, electrical, loading station, autonomic driving and many more words."
+classifier = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/classifier.pkl", 'rb')) 
+predicted_topic = classifier.predict(example_text)
+```
 
 ## Description
 The general steps to develop the classifier are as follows:
