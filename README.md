@@ -39,14 +39,18 @@ The general steps to develop the classifier are as follows:
 
    The crawled websites which are based on the seed websites are cleaned in several stages.
    First, any script texts like javascript or xml are removed from the text body. Then the pre-cleaned text body is cleaned according to defined stop words. A distinction is made between industry-specific and website-specific stop words. Website specific stop words can be words like *login*, *privacy policy* or *imprint*. Industry-specific stop words can be words such as *(g/km)*, *services* or *car dealer*. After this advanced text cleaning, a language identification of the texts is performed and all texts that do not correspond to the preset language are filtered. Then the cleaned texts are lemmatized with the correct language and finally any city names are removed from the texts. 
-   
+
    Next, a topic extraction is performed using the [Latent Dirichlet Allocation Algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.LatentDirichletAllocation.html)
 ***
-3.**Automated labeling:** 
+3. **Automated labeling:** 
+   With the help of [automated labeling](https://www.snorkel.org/features/) the cleaned data is labeled. Several labeling functions have been defined for this purpose.
+   * Labeling Function 1: Keyword matching with help of pre-defined keywords per pre-defined industry-specific class, stored in **CLASS_keywords.json**
+   * Labeling Function 2: Labeled data set consisting of 500 samples. The dataset was labeled by a domain expert.
+   * Labeling Function 3: Trained k-Means model with fixed centroids (one centroid per predefined class). The centroids are based on the predefined classes. Two website sources (preferably wikipeda) were used per class. From these sources, the website texts are also extracted and cleaned and the topics are extracted. The topics represent the centroids for the trained k-Mean model. 
 
     
 ***
-4.**Train Classification model (BERT-based):**
+4. **Train Classification model (BERT-based):**
 
 ## Licence
 This work is licensed under a [Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/4.0/legalcode) and of the 
