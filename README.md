@@ -19,6 +19,7 @@ predicted_topic = classifier.predict(example_text)
 ```
 
 ## Description
+It can be selected between German and English with a resulting german or english specified classifier.
 The general steps to develop the classifier are as follows:
 ~~~
 1. Data mining and crawling of website text content using seed url list and seed keywords.
