@@ -25,7 +25,7 @@ The general steps to develop the classifier are as follows:
    1. [Data mining and crawling of website text content using seed url list and seed keywords.](#data-mining-and-crawling-of-website-text-content)
    2. [Data cleansing and topic extraction of website text content.](#data-cleansing-and-topic-extraction)
    3. [Automated labeling of cleaned website text content and of topics.](#automated-labeling)
-   4. [Train Classification model (BERT-based).](#classification-model-(bert-based))
+   4. [Train Classification model (BERT-based).](#classification-model)
 
 ***
 #### Data Mining and crawling of website text content
@@ -51,7 +51,7 @@ The general steps to develop the classifier are as follows:
 
     
 ***
-#### Classification model (BERT-based)
+#### Classification model
    A classification model based on BERT is trained. If english is the selected language a pretrained model from tensorflow is choosen. If german is the selected language
    a pretrained model from hugging face is choosen and modified as classfier in pytorch.
 
