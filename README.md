@@ -25,7 +25,7 @@ The general steps to develop the classifier are as follows:
    1. [Data mining and crawling of website text content using seed url list and seed keywords.](#data-mining-and-crawling-of-website-text-content)
    2. [Data cleansing and topic extraction of website text content.](#data-cleansing-and-topic-extraction)
    3. [Automated labeling of cleaned website text content and of topics.](#automated-labeling)
-   4. [Train Classification model (BERT-based).](#train-classification-model-(bert-based))
+   4. [Train Classification model (BERT-based).](#classification-model-(bert-based))
 
 ***
 #### Data Mining and crawling of website text content
@@ -51,7 +51,7 @@ The general steps to develop the classifier are as follows:
 
     
 ***
-#### Train Classification model (BERT-based)
+#### Classification model (BERT-based)
 
 ## Licence
 This work is licensed under a [Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/4.0/legalcode) and of the 
