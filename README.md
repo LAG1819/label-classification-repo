@@ -35,7 +35,8 @@ The general steps to develop the classifier are as follows:
    **URL_Seed.xlsx** contains 300 pre-selected relevant industry-specific website links (url). 
    **TOPIC_Classes.xlsx** contains 2 pre-selected relevant industry-specific website links (url) per pre-defined class (german and english). Those weblinks are later used as Centroids for K-Means Clustering.
 ***
-2. **Data cleansing and topic extraction.**
+2. **Data cleansing and topic extraction:**
+
    The crawled websites which are based on the seed websites are cleaned in several stages.
    First, any script texts like javascript or xml are removed from the text body. Then the pre-cleaned text body is cleaned according to defined stop words. A distinction is made between industry-specific and website-specific stop words. Website specific stop words can be words like "login", "privacy policy" or "imprint". Industry-specific stop words can be words such as "(g/km)", "services" or "car dealer". After this advanced text cleaning, a language identification of the texts is performed and all texts that do not correspond to the preset language are filtered. Then the cleaned texts are lemmatized with the correct language and finally any city names are removed from the texts. 
 ***
