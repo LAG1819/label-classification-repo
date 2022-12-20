@@ -34,13 +34,13 @@ pip install -r environment/requirements.txt
 ```
 
 [4] Adapt and Review prefered Topics and Keywords (only if needed!):
-- Seed files for crawling:
-   - Labeling classes and related seed keywords to crawl: **TOPIC_Seed.xlsx**,
-   - Companies and others related to industry and url: **URL_Seed.xlsx**, 
-- Cluster Centroids for labeling:
+- Seed file **Seed.xlsx** for crawling:
+   - Labeling classes and related seed keywords to crawl: CLASS,KEYWORD_DE/KEYWORD_EN
+   - Companies and others related to industry and its url: KEYWORD, URL  
+- Class files for labeling:
    - Labeling classes and related url links (2 per class) for Cluster Centroids: **TOPIC_Classes.xlsx** 
-- Keywords for labeling:
    - Labeling classes and matching keywords: **CLASS_keywords.json** 
+   
 
 ## Usage
 The generated classifier can classify random texts into the industry-specific topics and trends and returns the most appropriate topic to which the text is related. 
