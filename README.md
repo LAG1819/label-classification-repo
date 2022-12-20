@@ -5,6 +5,8 @@ This repository was generated and developed as part of the master thesis "Analys
 automotive industry using Deep Learning and Natural Language Processing based on of industry-specific website content.".
 In the context of this work, a BERT-based classification algorithm is trained and developed that can identify and classify topics and trends of a predefined industry.
 
+## Motivation
+
 ## Install
 [0] Install [Python](https://www.python.org/downloads/release/python-3111/) or [Anaconda](https://www.anaconda.com/products/distribution).
 
