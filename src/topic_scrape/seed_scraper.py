@@ -17,6 +17,7 @@
 from bs4 import BeautifulSoup
 from urllib.parse import urlencode, urlunparse
 from urllib.request import urlopen, Request
+import urllib3
 import requests
 import re
 import time
@@ -36,7 +37,9 @@ import os
 import pandas as pd
 import logging
 import secrets_git_luisa as s
+import certifi
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 os.environ['GH_TOKEN'] = s.github_token
 os.environ['WDM_LOG'] = str(logging.NOTSET)
 os.environ['WDM_LOCAL'] = '1'
@@ -53,7 +56,7 @@ class TopicScraper:
         Seed.feather contains the initial set of url links that form the basis (seed) for the overall dataset.
     """
   
-    def __init__(self, lang:str):
+    def __init__(self, lang:str, s_path:str):
         """Initialisation of Topic Crawler. Sets Selenium Browser and calls load_data. 
 
         Args:
@@ -61,8 +64,13 @@ class TopicScraper:
         """
         self.headers = {'Accept-Langugage':'de;q=0.7',
                    'User-agent':"Mozilla/101.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0. 5005.78 Edge/100.01185.39"}
+        self.http = urllib3.PoolManager(
+            cert_reqs='CERT_REQUIRED',
+            ca_certs=certifi.where()
+            )
 
         self.package_dir = str(os.path.dirname(__file__)).split("src")[0]
+        self.source_path = s_path
         self.topics_df, self.url_df = self.load_data()
 
         self.options = webdriver.FirefoxOptions()
@@ -71,7 +79,7 @@ class TopicScraper:
         self.options.add_argument(f'user-agent={self.headers}')
         self.browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=self.options)
         self.wait = WebDriverWait(self.browser, 20)
-        self.lang = lang
+        self.lang = lang        
 
     def load_data(self):
         """Call of both Seed files. TOPIC_Seed.xlsx contains keywords to crawl. URL_Seed.xlsx contains links to crawl.
@@ -79,13 +87,13 @@ class TopicScraper:
         Returns:
             DataFrame: Return loaded predefined topic(keywords) and url links each as pandas DataFrame.  
         """
-        absolute_path = os.path.join(self.package_dir,r'files\TOPIC_Seed.xlsx')
-        absolute_path_url = os.path.join(self.package_dir,r'files\URL_Seed.xlsx')
+        #absolute_path = os.path.join(self.package_dir,r'files\TOPIC_Seed.xlsx')
+        absolute_path = os.path.join(self.package_dir,self.source_path)
 
-        topic_data = pd.read_excel(absolute_path,header = 0) 
-        url_data = pd.read_excel(absolute_path_url,header = 0) 
+        seed_data = pd.read_excel(absolute_path,header = 0) 
+        
   
-        return topic_data,url_data
+        return seed_data[['CLASS', 'KEYWORD_DE', 'KEYWORD_EN']], seed_data[['CLASS_K','KEYWORD', 'URL']].dropna()
         
     def get_url(self,q):
         try:
@@ -109,9 +117,16 @@ class TopicScraper:
         
         soup = BeautifulSoup(req,"html.parser")
         searchResults = soup.find_all(class_="g")
-       
+        searchRefs =[]
+        for sr in searchResults:
+            a_elements = sr.find_all("a")
+            for a in a_elements:
+                searchRefs.append(a.get('href')) 
+        #searchRefs = [sr.find("a")["href"] for sr in searchResults] Not working bc of calling all a is needed before getting href is possible
+        filteredsearchRefs= list(filter(self.filter_resultLinks,searchRefs))
+        #print(filteredsearchRefs)
 
-        return list(filter(self.filter_resultLinks,[sr.find("a")["href"] for sr in searchResults]))
+        return filteredsearchRefs
 
     def google_search_selenium(self,query):
         ignored_exceptions=(NoSuchElementException,StaleElementReferenceException,)
@@ -145,22 +160,36 @@ class TopicScraper:
 
     def filter_resultLinks(self,link):
         if re.match(r'^(http|https)://',str(link)):
-            if(re.search("google",str(link)) or re.search("googleadservices",str(link)) or re.search("home.mobile",str(link)) or re.search("autoscout24",str(link)) or re.search("web2.cylex",str(link)) or re.search("servicesinfo",str(link)) or re.search("11880",str(link)) or re.search("facebook",str(link))):
-                return
-            else:
+            pattern_list = ["google","googleadservices","home.mobile","autoscout24","web2.cylex","servicesinfo","11880",\
+                "wikipedia","accessor","hotel","musical","boutique","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel",\
+                    "conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
+                        "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
+                            "vimeo","apple","twitter","facebook","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
+                                "store", "update"]
+            if not any(re.search(pattern,str(link)) for pattern in pattern_list):
                 return link
         else:
             return
     
     def save_data(self):
+        keyword_col = "KEYWORD_"+ self.lang.upper()
+        self.url_df = self.url_df.rename(columns={"CLASS_K": "CLASS"})
+        self.topics_df = self.topics_df[['CLASS', 'KEYWORD', 'URL']]
+       
         all_seed_df = pd.concat([self.url_df,self.topics_df], ignore_index= True)
-        print(all_seed_df)
-        #all_seed_df.to_csv(os.path.join(self.package_dir,r'files\Seed.csv'), index = False)
+        cols = ["CLASS","KEYWORD","URL"]
+        all_seed_df = all_seed_df[all_seed_df[cols].notnull()].reset_index(drop=True)
+        print(all_seed_df.columns)
+        print(all_seed_df.shape)
+        
+        if os.path.exists(os.path.join(self.package_dir,r'files\Seed.feather')):
+            os.remove(os.path.join(self.package_dir,r'files\Seed.feather'))
         all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed.feather'))
 
     def run(self):
         keyword_col = "KEYWORD_"+ self.lang.upper()
-        self.topics_df['URL'] = self.topics_df[keyword_col].apply(lambda row: self.get_url(row))
+        self.topics_df['KEYWORD'] = self.topics_df[keyword_col]
+        self.topics_df['URL'] = self.topics_df['KEYWORD'].apply(lambda row: self.get_url(row))
         self.topics_df = self.topics_df.explode('URL')
         self.save_data()
         
@@ -168,7 +197,7 @@ class TopicScraper:
 #Main - Init a crawler with given searchlist Searchlist.xsls. Crawls and saves all information (run).
 if __name__ == "__main__":
     start = time.process_time()
-    scrape = TopicScraper("de")
+    scrape = TopicScraper("de",r'files\Seed.xlsx')
     scrape.run()
     print(time.process_time() - start)
 
