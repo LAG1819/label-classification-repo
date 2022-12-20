@@ -93,9 +93,10 @@ class TopicSpider(scrapy.Spider):
             os.remove(package_dir+self.target_path)
 
         package_dir = str(os.path.dirname(__file__)).split("src")[0]
-        absolute_path = os.path.join(package_dir, r'files\TOPIC_Classes.xlsx')
-        seed_df = pd.read_excel(absolute_path,header = 0)
-        seed_df =  seed_df[seed_df['LANG']==self.lang]
+        absolute_path = os.path.join(package_dir, r'files\Seed.xlsx')
+        seed_df = pd.read_excel(absolute_path,header = 0)[['KMEANS_CLASS', 'KMEANS_URL', 'KMEANS_LANG']]
+        seed_df = seed_df.rename(columns={"KMEANS_CLASS": "CLASS", 'KMEANS_URL':'URL','KMEANS_LANG':'LANG'}).dropna()
+        seed_df = seed_df[seed_df['LANG']==self.lang]
 
         return seed_df
 
@@ -181,12 +182,11 @@ class SeederSpider(CrawlSpider):
             allowed.add(urlparse(str(s)).netloc)
         self.allowed_domains = list(allowed) 
 
-        list_test = list(seed_list)
         self.visited = []
         self.get_already_visited()
         
-        self.queue = list_test
-        
+        self.queue = self.data[['CLASS','KEYWORD','URL']].values.tolist()
+        print(self.queue)
         print(self.visited)
 
     def get_data(self,url_path):
@@ -217,7 +217,6 @@ class SeederSpider(CrawlSpider):
                 self.visited += visited
 
         self.visited =list(set(self.visited))
-        print(self.visited)
 
     def start_requests(self):
         """Start of Retrieval of the individual input url links. Scrapy own mandatory function.
@@ -226,7 +225,7 @@ class SeederSpider(CrawlSpider):
             request : calling the scrapy own request query 
         """
         for url in self.queue:      
-            yield scrapy.Request(url = url, callback=self.parse)
+            yield scrapy.Request(url = url[2], meta={'CLASS': url[0], 'KEYWORD':url[1]},callback=self.parse)
         
         
     def filter_link(self,link:str, link_text:str) -> bool:
@@ -241,7 +240,7 @@ class SeederSpider(CrawlSpider):
         Returns:
             bool: Return a boolean "flag". If True is returned the given link will not be crawled, if False is returned the given link will be crawled. 
         """
-        black_list =["wikipedia","boutique","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
+        black_list =["wikipedia","accessor","hotel","musical","boutique","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
             "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
                 "vimeo","apple","twitter","facebook","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
                     "gebrauchtwagen", "neufahrzeug","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
@@ -304,6 +303,8 @@ class SeederSpider(CrawlSpider):
                     text =""
         
             yield {
+            'CLASS':response.meta['CLASS'],
+            'KEYWORD':response.meta['KEYWORD'],
             'DOMAIN':str(urlparse(str(response.url)).netloc),
             'URL': response.url,
             'URL_TEXT':text,
@@ -362,11 +363,11 @@ def run_crawler():
         'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ['CLASS','DOMAIN','URL', 'URL_TEXT']}}
         })
 
-    # process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
-    process2.crawl(SeederSpider, r'files\Seed.feather', 'external')
-    # process3.crawl(TopicSpider,'DE', r'files/raw_classes.json')
-    # process.start()
-    process2.start()
+    process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
+    process.start()
+    # process2.crawl(SeederSpider, r'files\Seed.feather', 'external')
+    # process2.start()
+    # process3.crawl(TopicSpider,'DE', r'files/raw_classes.json')   
     # process3.start()
     
 if __name__ == '__main__':
