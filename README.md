@@ -8,7 +8,7 @@ In the context of this work, a BERT-based classification algorithm is trained an
 ## Install
 [0] Install [Python](https://www.python.org/downloads/release/python-3111/) or [Anaconda](https://www.anaconda.com/products/distribution).
 
-[1] Download Repository.
+[1] Download Repository:
 ```python
 git clone https://github.com/LGHDM/ml-classification-repo.git
 ```
@@ -26,13 +26,19 @@ py -3 -m venv .venv
 .venv\scripts\activate
 ```
 
-[3] Install requirements.
+[3] Install requirements:
 ```python
 pip install -r environment/requirements.txt
 ```
 
-[4] Adapt and Review prefered Topics and Keywords in **TOPIC_Seed.xlsx**, **URL_Seed.xlsx**,**TOPIC_Classes.xlsx** and **CLASS_keywords.json** (only if needed!)
-
+[4] Adapt and Review prefered Topics and Keywords (only if needed!):
+- Seed files for crawling:
+   - Labeling classes and related seed keywords to crawl: **TOPIC_Seed.xlsx**,
+   - Companies and others related to industry and url: **URL_Seed.xlsx**, 
+- Cluster Centroids for labeling:
+   - Labeling classes and related url links (2 per class) for Cluster Centroids: **TOPIC_Classes.xlsx** 
+- Keywords for labeling:
+   - Labeling classes and matching keywords: **CLASS_keywords.json** 
 
 ## Usage
 The generated classifier can classify random texts into the industry-specific topics and trends and returns the most appropriate topic to which the text is related. 
