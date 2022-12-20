@@ -6,9 +6,32 @@ automotive industry using Deep Learning and Natural Language Processing based on
 In the context of this work, a BERT-based classification algorithm is trained and developed that can identify and classify topics and trends of a predefined industry.
 
 ## Install
+[0] Install [Python](https://www.python.org/downloads/release/python-3111/) or [Anaconda](https://www.anaconda.com/products/distribution).
+
+[1] Download Repository.
+```python
+git clone https://github.com/LGHDM/ml-classification-repo.git
+```
+
+[2] Create virtual environment:
+Anaconda:
+```python
+conda env create -f environment.yml
+source activate metal
+```
+Windows:
+```python
+py -3 -m venv .venv
+.venv\scripts\activate
+```
+
+[3] Install requirements.
 ```python
 pip install -r environment/requirements.txt
 ```
+
+[4] Adapt and Review prefered Topics and Keywords in **TOPIC_Seed.xlsx**, **URL_Seed.xlsx**,**TOPIC_Classes.xlsx** and **CLASS_keywords.json** (only if needed!)
+
 
 ## Usage
 The generated classifier can classify random texts into the industry-specific topics and trends and returns the most appropriate topic to which the text is related. 
@@ -54,6 +77,8 @@ The general steps to develop the classifier are as follows:
 #### Classification model
    A classification model based on BERT is trained. If english is the selected language a pretrained model from tensorflow is choosen. If german is the selected language
    a pretrained model from hugging face is choosen and modified as classfier in pytorch.
+
+## References
 
 ## Licence
 This work is licensed under a [Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/4.0/legalcode) and of the 
