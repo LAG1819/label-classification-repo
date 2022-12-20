@@ -14,6 +14,7 @@ git clone https://github.com/LGHDM/ml-classification-repo.git
 ```
 
 [2] Create virtual environment:
+
 Anaconda:
 ```python
 conda env create -f environment.yml
