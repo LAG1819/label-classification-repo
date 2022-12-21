@@ -64,9 +64,9 @@ The general steps to develop the classifier are as follows:
 
    At first one Excel Sheet is assigned: **Seed.xlsx.** This file contains the following sets of data:
    - A base (seed) of website links and a list of keywords to be crawled. The seed is crawled with help of a scrapy spider specified for the industries (BFS). 
-      - seed  of website links (CLASS_K, KEYWORD, URL) manually selected.
-      - seed of keywords (CLASS, KEYOWRD_DE, KEYWORD_EN) manualy selected.
-   - A base of website links and classes (2 per class) used as Centroids for K-Means Clustering for further labeling, manually selected.
+      - seed  of website links (CLASS_K, KEYWORD, URL), manually selected.
+      - seed of keywords (CLASS, KEYOWRD_DE, KEYWORD_EN), manualy selected.
+   - A base of website links and classes (two per class) used as Centroids for K-Means Clustering for further labeling, manually selected.
 ***
 #### Data cleansing and topic extraction
 
@@ -90,9 +90,9 @@ The general steps to develop the classifier are as follows:
  
 ***
 #### Classification model
-   A classification model based on BERT ((Bidirectional Encoder Representations from Transformers))[https://arxiv.org/abs/1810.04805] is trained. 
-   - English Model based on TensorFlow trained model by (google)[https://tfhub.dev/google/collections/bert/1]. 
-   - German Model based on huggingface trained model by (deepset)[https://huggingface.co/bert-base-german-cased]. A classifier layer is placed on top of pretrained model.
+   A classification model based on BERT [Bidirectional Encoder Representations from Transformers](https://arxiv.org/abs/1810.04805) is trained. 
+   - English Model based on TensorFlow trained model by [google](https://tfhub.dev/google/collections/bert/1). 
+   - German Model based on huggingface trained model by [deepset](https://huggingface.co/bert-base-german-cased). A classifier layer is placed on top of pretrained model.
 
 ## References
 
