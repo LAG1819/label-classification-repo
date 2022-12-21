@@ -65,7 +65,7 @@ class TopicSpider(scrapy.Spider):
         self.headers = {'Accept-Language': 'de;q=0.7', 
             'User-agent':"Mozilla/101.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0. 5005.78 Safari/537.36 Edge/100.0.1185.39"}
 
-        self.queue = self.get_data()[['CLASS','URL']].values.tolist()
+        self.queue = self.get_data().values.tolist()
         print(self.queue)
         #dynamically allow all domains occuring
         allowed = set() 
@@ -80,7 +80,7 @@ class TopicSpider(scrapy.Spider):
             request : calling the scrapy own request query 
         """
         for url in self.queue:
-            yield scrapy.Request(url = url[1], meta={'topic': url[0]},callback=self.parse)
+            yield scrapy.Request(url = url[1], meta={'CLASS': url[0]},callback=self.parse)
 
     def get_data(self):
         """Get the input data with the url links to be retrieved. Deletes existing ouput file where crawled data will be saved to.
@@ -88,14 +88,15 @@ class TopicSpider(scrapy.Spider):
         Returns:
             DataFrame: Pandas DataFrame containing the columns CLASS(class labels), URL(url links for retrival), LANG(language), 
         """
-
+        package_dir = str(os.path.dirname(__file__)).split("src")[0]
+        absolute_path = os.path.join(package_dir, r'files\Seed.xlsx')
+        
         if os.path.exists(package_dir+self.target_path):
             os.remove(package_dir+self.target_path)
 
-        package_dir = str(os.path.dirname(__file__)).split("src")[0]
-        absolute_path = os.path.join(package_dir, r'files\Seed.xlsx')
         seed_df = pd.read_excel(absolute_path,header = 0)[['KMEANS_CLASS', 'KMEANS_URL', 'KMEANS_LANG']]
-        seed_df = seed_df.rename(columns={"KMEANS_CLASS": "CLASS", 'KMEANS_URL':'URL','KMEANS_LANG':'LANG'}).dropna()
+        seed_df = seed_df.rename(columns={"KMEANS_CLASS": "CLASS", 'KMEANS_URL':'URL','KMEANS_LANG':'LANG'})
+        seed_df = seed_df[['CLASS','URL', 'LANG']].dropna()
         seed_df = seed_df[seed_df['LANG']==self.lang]
 
         return seed_df
@@ -132,7 +133,7 @@ class TopicSpider(scrapy.Spider):
                 text =""
                 
         yield {
-        'CLASS':response.meta['topic'],
+        'CLASS':response.meta['CLASS'],
         'DOMAIN':str(urlparse(str(response.url)).netloc),
         'URL': response.url,
         'URL_TEXT':text,
@@ -169,9 +170,7 @@ class SeederSpider(CrawlSpider):
         """
         super().__init__(name, **kwargs)
 
-        package_dir = str(os.path.dirname(__file__)).split("src")[0]
-        absolute_path = os.path.join(package_dir,url_path)
-        self.data = pd.read_feather(absolute_path)
+        self.data = self.get_data(url_path)
 
         self.parse_style = parse
 
@@ -186,8 +185,8 @@ class SeederSpider(CrawlSpider):
         self.get_already_visited()
         
         self.queue = self.data[['CLASS','KEYWORD','URL']].values.tolist()
-        print(self.queue)
-        print(self.visited)
+        # print(self.queue)
+        # print(self.visited)
 
     def get_data(self,url_path):
         """Get the input data with the url links to be retrieved.
@@ -197,7 +196,7 @@ class SeederSpider(CrawlSpider):
         """
         package_dir = str(os.path.dirname(__file__)).split("src")[0]
         absolute_path = os.path.join(package_dir,url_path)
-        seed_df = pd.read_csv(absolute_path,header = 0) 
+        seed_df = pd.read_feather(absolute_path).dropna()
         return seed_df
 
     def get_already_visited(self):
@@ -240,11 +239,11 @@ class SeederSpider(CrawlSpider):
         Returns:
             bool: Return a boolean "flag". If True is returned the given link will not be crawled, if False is returned the given link will be crawled. 
         """
-        black_list =["wikipedia","accessor","hotel","musical","boutique","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
+        black_list =["wikipedia","bundesregierung","accessor","hotel","musical","boutique","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
             "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
-                "vimeo","apple","twitter","facebook","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
-                    "gebrauchtwagen", "neufahrzeug","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
-                        "termin", "store", "update"]
+                "vimeo","apple","twitter","facebook","twitch","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
+                    "gebrauchtwagen", "neufahrzeug","garage","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
+                        "termin", "store", "update", "accessor"]
         journals = ["spiegel", "sueddeutsche", "handelsblatt", "faz"]
         selected_countryURL = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com|en)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
 
@@ -319,7 +318,7 @@ class SeederSpider(CrawlSpider):
                 #Filter found links on website based on predfined blacklist
                 if self.filter_link(str(link.url), str(link.text)) == False:
                     if self.parse_style == "internal":
-                        yield scrapy.Request(url=link.url, callback=self.parse)
+                        yield scrapy.Request(url=link.url, meta={'CLASS': response.meta['CLASS'], 'KEYWORD':response.meta['KEYWORD']},callback=self.parse)
                     #dynamically allow all domains occuring if an external search is triggered
                     else:
                         # Refresh the regex cache for `allowed_domains`
@@ -329,7 +328,7 @@ class SeederSpider(CrawlSpider):
                             if isinstance(mw, scrapy.spidermiddlewares.offsite.OffsiteMiddleware):
                                 mw.spider_opened(self)
 
-                        yield scrapy.Request(url=link.url, callback=self.parse)
+                        yield scrapy.Request(url=link.url, meta={'CLASS': response.meta['CLASS'], 'KEYWORD':response.meta['KEYWORD']}, callback=self.parse)
 
 def run_crawler():
     """
@@ -345,7 +344,7 @@ def run_crawler():
         #     'pickle': 'scrapy.exporters.PickleItemExporter'
         # },
         'FEED_EXPORT_ENCODING': 'utf-8',
-        'FEEDS': {'files/raw_texts_internal.json': {'format': 'json','encoding': 'utf8','fields': ["DOMAIN",'URL', 'URL_TEXT']}}
+        'FEEDS': {'files/raw_texts_internal.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD","DOMAIN",'URL', 'URL_TEXT']}}
         })
         #{'files/raw_texts.csv': {'format': 'csv'}}
         #{'files/raw_texts.pkl': {'format': 'pickle'}}
@@ -354,21 +353,25 @@ def run_crawler():
     process2 =  CrawlerProcess({
         'USER_AGENT': 'Mozilla/5.0',
         'FEED_EXPORT_ENCODING': 'utf-8',
-        'FEEDS': {'files/raw_texts_external.json': {'format': 'json','encoding': 'utf8','fields': ["DOMAIN",'URL', 'URL_TEXT']}}
+        'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD",'DOMAIN','URL', 'URL_TEXT']}}
         })
 
-    process3 =  CrawlerProcess({
+    process3 = CrawlerProcess({
         'USER_AGENT': 'Mozilla/5.0',
+        # 'FEED_EXPORTERS': {
+        #     'pickle': 'scrapy.exporters.PickleItemExporter'
+        # },
         'FEED_EXPORT_ENCODING': 'utf-8',
-        'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ['CLASS','DOMAIN','URL', 'URL_TEXT']}}
+        'FEEDS': {'files/raw_texts_external.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD","DOMAIN",'URL', 'URL_TEXT']}}
         })
 
-    process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
-    process.start()
-    # process2.crawl(SeederSpider, r'files\Seed.feather', 'external')
+    # process2.crawl(TopicSpider,'DE', r'files/raw_classes.json')   
     # process2.start()
-    # process3.crawl(TopicSpider,'DE', r'files/raw_classes.json')   
-    # process3.start()
+    process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
+    process3.crawl(SeederSpider, r'files\Seed.feather', 'external')
+    process.start()   
+    process3.start()   
+    
     
 if __name__ == '__main__':
     """Main function. Calls run method "run_crawler" and union method "union_data"
