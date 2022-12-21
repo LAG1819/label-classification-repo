@@ -25,6 +25,7 @@ import pickle
 import json
 import datapackage
 import spacy
+import math
 nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
 
 class textFilter:
@@ -160,29 +161,63 @@ class textFilter:
         #print(" ".join(output_sentence))
         return " ".join(output_sentence)
     
-    def remove_nonText(self):
+    def remove_nonText(self, data:pd.DataFrame) -> pd.DataFrame:
         """Apply rowwise basic text cleaning with regex_remove() on raw texts.
-        """
-        self.data[self.text_col] = self.data[self.text_col].apply(lambda row: self.regex_remove(row))
 
-    def remove_domainStopwords(self):
+        Args:
+            data (pd.DataFrame): DataFrame containing chunk of samples.
+
+        Returns:
+            pd.DataFrame: DataFrame with edited chunk of samples.
+        """
+        data[self.text_col] = data[self.text_col].apply(lambda row: self.regex_remove(row))
+        return data
+
+    def remove_domainStopwords(self, data:pd.DataFrame) -> pd.DataFrame:
         """Apply rowwise advanced text cleaning with stopword_remove() on pre cleaned texts.
-        """
-        self.data[self.text_col] = self.data[self.text_col].apply(lambda row: self.stopword_remove(row))
 
-    def remove_cityNames(self):
+        Args:
+            data (pd.DataFrame): DataFrame containing chunk of samples.
+
+        Returns:
+            pd.DataFrame: DataFrame with edited chunk of samples.
+        """
+        data[self.text_col] = data[self.text_col].apply(lambda row: self.stopword_remove(row))
+        return data
+
+    def remove_cityNames(self, data:pd.DataFrame) -> pd.DataFrame:
         """Removes all city names in text
+
+        Args:
+            data (pd.DataFrame): DataFrame containing chunk of samples.
+
+        Returns:
+            pd.DataFrame: DataFrame with edited chunk of samples.
         """
         regex = re.compile("|".join(map(re.escape, self.cities.keys(  ))))
-        self.data[self.text_col] = self.data[self.text_col].apply(lambda row: regex.sub(lambda match: self.cities[match.group(0)], row) if row else "")
+        data[self.text_col] = data[self.text_col].apply(lambda row: regex.sub(lambda match: self.cities[match.group(0)], row) if row else "")
+        return data
 
-    def lemmatize_text(self):
-        """Lemmatize text with help of spacy 
+    def lemmatize_text(self, data:pd.DataFrame) -> pd.DataFrame:
+        """Lemmatize text with help of spacy
+
+        Args:
+            data (pd.DataFrame): DataFrame containing chunk of samples.
+
+        Returns:
+            pd.DataFrame: DataFrame with edited chunk of samples. 
         """
-        self.data[self.text_col] = self.data[self.text_col].apply(lambda row: " ".join([token.lemma_ for token in nlp(row)]))
+        data[self.text_col] = data[self.text_col].apply(lambda row: " ".join([token.lemma_ for token in nlp(row)]))
+        return data
 
-    def flag_lang(self):
+    def flag_lang(self, data:pd.DataFrame) -> pd.DataFrame:
         """Detect Language of each sample (row) containing text of one crawled website. 
+
+        Args:
+            data (pd.DataFrame): DataFrame containing chunk of samples.
+
+        Returns:
+            pd.DataFrame: DataFrame with edited chunk of samples. 
         """
         def detect_language(text:str) -> str:
             """Helper Function for detecting language of row using langdetect package.
@@ -199,18 +234,27 @@ class textFilter:
                 return_lan = None
             return return_lan
         
-        self.data["LANG"]=self.data[self.text_col].apply(lambda row: detect_language(row))
+        data["LANG"]= data[self.text_col].apply(lambda row: detect_language(row))
         if self.lang != None:
-            self.data = self.data[self.data["LANG"] == self.lang]
-        self.data = self.data.reset_index(drop = True)
-
-    def save_data(self):
+            data = data[data["LANG"] == self.lang]
+        data = data.reset_index(drop = True)
+        return data
+    def save_data(self, chunk_list):
         """Save cleaned texts to target path. 
         """
+        self.data = pd.concat(chunk_list, ignore_index=True).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True) 
+        print(self.data)
         path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
         if os.path.exists(path):
             os.remove(path)
         self.data.to_feather(path)
+    
+    def split_dataframe(self, chunk_size = 1000): 
+        chunks = list()
+        num_chunks = math.ceil(len(self.data) / chunk_size)
+        for i in range(num_chunks):
+            chunks.append(self.data[i*chunk_size:(i+1)*chunk_size])
+        return chunks
 
     def run(self):
         """Run function of textFilter class. Firstly a basic text cleansing will be applied, than an advanced text cleaning and advanced stopwords removal will be applied.
@@ -218,16 +262,22 @@ class textFilter:
         names in texts will be removed and text will be lemmatized.
         Filtered and cleaned texts are finally saved to target path. 
         """
-        self.remove_nonText()
-        self.remove_domainStopwords()
-        print("Non textual elements and stopwords had been removed.")
-        self.flag_lang()
-        print("Languages had been detected and filtered.")
-        self.lemmatize_text()
-        print("Text had been lemmatized.")
-        self.remove_cityNames()
-        print("City names had been removed.")
-        self.save_data()
+        df_chunks = self.split_dataframe()
+        df_modified_chunks = []
+        print("Size of full dataset: {dataset}. Number of chunks: {chunks}".format(dataset = self.data.shape[0], chunks = len(df_chunks)))
+        for i,chunk in enumerate(df_chunks):
+            self.remove_nonText(chunk)
+            self.remove_domainStopwords(chunk)
+            print("Non textual elements and stopwords had been removed.")
+            self.flag_lang(chunk)
+            print("Languages had been detected and filtered.")
+            self.lemmatize_text(chunk)
+            print("Text had been lemmatized.")
+            self.remove_cityNames(chunk)
+            print("City names had been removed.")
+            df_modified_chunks.append(chunk)
+            print("data chunk {number} of shape {shape} had been modified.".format(number = i, shape = chunk.shape))
+        self.save_data(df_modified_chunks)
         print(self.data.shape)
         print(self.data)
         print("Done Cleaning.")
@@ -238,38 +288,36 @@ def union_data():
     df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
     df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
     df_path_c = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_classes.json"
-
-    internal_data = pd.read_json(df_path_i)
    
     try:
+        internal_data = pd.read_json(df_path_i)
         external_data = pd.read_json(df_path_e)
         outer = external_data.merge(internal_data, how='outer', indicator=True)
         merged_df = pd.concat([internal_data,external_data]).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
         merged_df.to_feather(r'files\raw_texts.feather')
         #external_data_anti_joined = outer[(outer._merge=='left_only')].drop('_merge', axis=1)
     except Exception as e:
-        merged_df = internal_data
+        print("Could not union data: ", e)
 
     try:
         classes = pd.read_json(df_path_c)
         classes.to_feather(r"files\raw_classes.feather")
     except Exception as e:
-        print("Could not read raw_classes.json: ", e)        
+        print("Could not read and save raw_classes.json: ", e)        
 
     try:
         os.remove(df_path_c)
-        os.remove(df_path_i)
-        os.remove(df_path_e)
+    #     os.remove(df_path_i)
+    #     os.remove(df_path_e)
     except:
-        print("Could not remove files.")
+        print("Could not remove file(s).")
 
 if __name__ == "__main__":
-    # union_data()
+    union_data()
     f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
-    # f.run()
-    # f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
-    # f2.run()
-
+    f.run()
+    f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
+    f2.run()
     #re.sub( "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$", "", w)
     # result = [re.search( "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$",w) for w in ["https://www.abarth.fr", "https://www.abarth.de","https://www.abarth.gr", "https://www.abarth.com"]]
     # print(result)
