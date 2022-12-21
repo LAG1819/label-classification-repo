@@ -38,8 +38,8 @@ pip install -r environment/requirements.txt
    - Labeling classes and related seed keywords to crawl: CLASS,KEYWORD_DE/KEYWORD_EN
    - Companies and others related to industry and its url: KEYWORD, URL  
 - Class data for labeling:
-   - Labeling classes and related url links (two per class) for Cluster Centroids: **TOPIC_Classes.xlsx** 
-   - Labeling classes and matching keywords: **CLASS_keywords.json** 
+   - Labeling classes and related url links (two per class) for Cluster Centroids: KMEANS_CLASS, KMEANS_URL, KMEANS_LANG
+- Labeling classes and matching keywords: **CLASS_keywords.json** 
    
 
 ## Usage
@@ -60,7 +60,7 @@ The general steps to develop the classifier are as follows:
    4. [Train Classification model (BERT-based).](#classification-model)
 
 ***
-#### Data Mining and crawling of website text content
+#### Data Mining and Crawling 
 
    At first one Excel Sheet is assigned: **Seed.xlsx.** This file contains the following sets of data:
    - A base (seed) of website links and a list of keywords to be crawled. The seed is crawled with help of a scrapy spider specified for the industries (BFS). 
@@ -68,7 +68,7 @@ The general steps to develop the classifier are as follows:
       - seed of keywords (CLASS, KEYOWRD_DE, KEYWORD_EN), manualy selected.
    - A base of website links and classes (two per class) used as Centroids for K-Means Clustering for further labeling, manually selected.
 ***
-#### Data cleansing and topic extraction
+#### Data Cleansing and Topic Extraction
 
    The crawled websites are cleaned in several stages.
    1. Basic text cleaning : Any script texts (like javascript or xml) are removed from the text body. 
@@ -81,15 +81,16 @@ The general steps to develop the classifier are as follows:
 
    After text cleaning a topic extraction is performed using the [Latent Dirichlet Allocation Algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.LatentDirichletAllocation.html)
 ***
-#### Automated labeling
+#### Automated Labeling
    With the help of [automated labeling](https://www.snorkel.org/features/) the cleaned data is labeled. 
    * Labeling Function 1: Keyword matching with help of pre-defined keywords (**CLASS_keywords.json**)
    * Labeling Function 2: Labeled dataset by a domain expert consisting 500 samples.
    * Labeling Function 3: Trained k-Means model with fixed centroids (according to centroids from **Seed.xlsx.**). 
+
    Predefined classes based on literature: AUTONOMOUS, CONNECTIVITY, DIGITALISATION, ELECTRIFICATION, INDIVIDUALISATION, SHARED, SUSTAINABILITY.
  
 ***
-#### Classification model
+#### Classification Model
    A classification model based on BERT [Bidirectional Encoder Representations from Transformers](https://arxiv.org/abs/1810.04805) is trained. 
    - English Model based on TensorFlow trained model by [google](https://tfhub.dev/google/collections/bert/1). 
    - German Model based on huggingface trained model by [deepset](https://huggingface.co/bert-base-german-cased). A classifier layer is placed on top of pretrained model.
