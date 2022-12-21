@@ -33,12 +33,12 @@ py -3 -m venv .venv
 pip install -r environment/requirements.txt
 ```
 
-[4] Adapt and Review prefered Topics and Keywords (only if needed!):
-- Seed file **Seed.xlsx** for crawling:
+[4] Adapt and Review prefered Topics and Keywords in **Seed.xlsx**(only if needed!):
+- Seed data:
    - Labeling classes and related seed keywords to crawl: CLASS,KEYWORD_DE/KEYWORD_EN
    - Companies and others related to industry and its url: KEYWORD, URL  
-- Class files for labeling:
-   - Labeling classes and related url links (2 per class) for Cluster Centroids: **TOPIC_Classes.xlsx** 
+- Class data for labeling:
+   - Labeling classes and related url links (two per class) for Cluster Centroids: **TOPIC_Classes.xlsx** 
    - Labeling classes and matching keywords: **CLASS_keywords.json** 
    
 
