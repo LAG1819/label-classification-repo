@@ -50,7 +50,7 @@ class TopicSpider(scrapy.Spider):
     name = 'topic'
     link_extractor = LinkExtractor()
 
-    def __init__(self, lang:str,t_path:str, name=None, **kwargs):
+    def __init__(self, t_path:str, lang:str,name=None, **kwargs):
         """Initalisation of WebCrawler. 
 
         Args:
@@ -59,7 +59,7 @@ class TopicSpider(scrapy.Spider):
             name (_type_, optional): Name of the scrapy crawler. Defaults to None.
         """
         super().__init__(name, **kwargs)
-        self.lang = lang
+        self.lang = lang.upper()
         self.target_path = t_path
 
         self.headers = {'Accept-Language': 'de;q=0.7', 
@@ -149,7 +149,7 @@ class SeederSpider(CrawlSpider):
         None : None
 
     Yields:
-        json : raw_classes.json 
+        json : files/raw_classes.json 
     """
     name = 'seeder'
     link_extractor = LinkExtractor()
@@ -160,7 +160,7 @@ class SeederSpider(CrawlSpider):
     headers = {'Accept-Language': 'de;q=0.7', 
            'User-agent':"Mozilla/101.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0. 5005.78 Safari/537.36 Edge/100.0.1185.39"}
 
-    def __init__(self, url_path:str,parse:str, name=None, **kwargs):
+    def __init__(self, url_path:str,parse:str,lang:str ,name=None, **kwargs):
         """Initalisation of WebCrawler.
 
         Args:
@@ -184,12 +184,20 @@ class SeederSpider(CrawlSpider):
         self.visited = []
         self.get_already_visited()
         
-        self.queue = self.data[['CLASS','KEYWORD','URL']].values.tolist()
+        self.queue = self.data.values.tolist()
         # print(self.queue)
         # print(self.visited)
+        self.black_list =["wikipedia","bundesregierung","accessor","hotel","musical","boutique","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
+            "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
+                "vimeo","apple","twitter","facebook","twitch","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
+                    "gebrauchtwagen", "neufahrzeug","neuwagen","garage","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
+                        "termin", "store", "update", "accessor", "adbk", "sky"]
 
-    def get_data(self,url_path):
+    def get_data(self,url_path:str):
         """Get the input data with the url links to be retrieved.
+
+        Args:
+            url_path (str): _description_
 
         Returns:
             DataFrame: Pandas DataFrame containing the columns CLASS(class labels), URL(url links for retrival), LANG(language), 
@@ -197,6 +205,8 @@ class SeederSpider(CrawlSpider):
         package_dir = str(os.path.dirname(__file__)).split("src")[0]
         absolute_path = os.path.join(package_dir,url_path)
         seed_df = pd.read_feather(absolute_path).dropna()
+
+        seed_df = seed_df[['CLASS','KEYWORD','URL']]
         return seed_df
 
     def get_already_visited(self):
@@ -239,17 +249,12 @@ class SeederSpider(CrawlSpider):
         Returns:
             bool: Return a boolean "flag". If True is returned the given link will not be crawled, if False is returned the given link will be crawled. 
         """
-        black_list =["wikipedia","bundesregierung","accessor","hotel","musical","boutique","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
-            "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
-                "vimeo","apple","twitter","facebook","twitch","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
-                    "gebrauchtwagen", "neufahrzeug","garage","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
-                        "termin", "store", "update", "accessor"]
+        flag = False
         journals = ["spiegel", "sueddeutsche", "handelsblatt", "faz"]
         selected_countryURL = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com|en)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
-
-        flag = False
+        
         #check blacklist in link or link description
-        if any(pattern in link.lower() for pattern in black_list) or any(pattern in link_text.lower() for pattern in black_list):
+        if any(pattern in link.lower() for pattern in self.black_list) or any(pattern in link_text.lower() for pattern in self.black_list):
             flag = True
 
         #check if journal websites like spiegel.de are in category automotive
@@ -338,7 +343,7 @@ def run_crawler():
     Process 3 generates a crawler that, based on the input url-links/domains, retrieves all domain-specific urls that contain purely information on predefined classes. 
     The 3 crawlers run parallel to each other. 
     """
-    process = CrawlerProcess({
+    process1 = CrawlerProcess({
         'USER_AGENT': 'Mozilla/5.0',
         # 'FEED_EXPORTERS': {
         #     'pickle': 'scrapy.exporters.PickleItemExporter'
@@ -349,28 +354,28 @@ def run_crawler():
         #{'files/raw_texts.csv': {'format': 'csv'}}
         #{'files/raw_texts.pkl': {'format': 'pickle'}}
         #{'files/raw_texts.json': {'format': 'json'}}
+    
+    process2 = CrawlerProcess({
+    'USER_AGENT': 'Mozilla/5.0',
+    # 'FEED_EXPORTERS': {
+    #     'pickle': 'scrapy.exporters.PickleItemExporter'
+    # },
+    'FEED_EXPORT_ENCODING': 'utf-8',
+    'FEEDS': {'files/raw_texts_external.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD","DOMAIN",'URL', 'URL_TEXT']}}
+    })
 
-    process2 =  CrawlerProcess({
+    process3 =  CrawlerProcess({
         'USER_AGENT': 'Mozilla/5.0',
         'FEED_EXPORT_ENCODING': 'utf-8',
         'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD",'DOMAIN','URL', 'URL_TEXT']}}
-        })
+        })   
 
-    process3 = CrawlerProcess({
-        'USER_AGENT': 'Mozilla/5.0',
-        # 'FEED_EXPORTERS': {
-        #     'pickle': 'scrapy.exporters.PickleItemExporter'
-        # },
-        'FEED_EXPORT_ENCODING': 'utf-8',
-        'FEEDS': {'files/raw_texts_external.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD","DOMAIN",'URL', 'URL_TEXT']}}
-        })
-
-    # process2.crawl(TopicSpider,'DE', r'files/raw_classes.json')   
-    # process2.start()
-    process.crawl(SeederSpider, r'files\Seed.feather', 'internal')
-    process3.crawl(SeederSpider, r'files\Seed.feather', 'external')
-    process.start()   
-    process3.start()   
+    # process3.crawl(TopicSpider, r'files/raw_classes.json','de')   
+    # process3.start()
+    process1.crawl(SeederSpider, r'files\Seed.feather', 'internal', 'de')
+    process2.crawl(SeederSpider, r'files\Seed.feather', 'external','de')
+    process1.start()   
+    process2.start()   
     
     
 if __name__ == '__main__':
@@ -380,13 +385,11 @@ if __name__ == '__main__':
 
     # df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
     # df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
+
+    # #check if duplicates exist
     # dfi = pd.read_json(df_path_i,orient = 'records')
-    # dfi = dfi.drop(dfi[~dfi['URL'].str.contains("boutique")].index)
-    # os.remove(df_path_i)
-    # dfi.to_json(df_path_i, orient = 'records')
-    
+    # dfi = dfi.duplicated(subset=['URL']).any()
+    # print(dfi)
     # dfe = pd.read_json(df_path_e,orient = 'records')
-    # dfe = dfe.drop(dfe[~dfe['URL'].str.contains("boutique")].index)
-    # os.remove(df_path_e)
-    # dfe.to_json(df_path_e, orient = 'records')
-    # print("Saved data")
+    # dfe = dfe.duplicated(subset=['URL']).any()
+    # print(dfe)

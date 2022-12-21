@@ -60,7 +60,8 @@ class TopicScraper:
         """Initialisation of Topic Crawler. Sets Selenium Browser and calls load_data. 
 
         Args:
-            lang (str): unicode of language to select column with keywords only in that language 
+            lang (str): unicode of language to select column with keywords only in that language.
+            s_path (str): Source Path of file to be loaded as seed file. 
         """
         self.headers = {'Accept-Langugage':'de;q=0.7',
                    'User-agent':"Mozilla/101.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0. 5005.78 Edge/100.01185.39"}
@@ -69,31 +70,40 @@ class TopicScraper:
             ca_certs=certifi.where()
             )
 
+        self.lang = lang   
         self.package_dir = str(os.path.dirname(__file__)).split("src")[0]
-        self.source_path = s_path
-        self.topics_df, self.url_df = self.load_data()
+        self.topics_df, self.url_df = self.load_data(s_path)
 
         self.options = webdriver.FirefoxOptions()
         self.options.add_argument('--disable-gpu')
         self.options.add_argument('--headless')
         self.options.add_argument(f'user-agent={self.headers}')
         self.browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=self.options)
-        self.wait = WebDriverWait(self.browser, 20)
-        self.lang = lang        
+        self.wait = WebDriverWait(self.browser, 20)     
 
-    def load_data(self):
+    def load_data(self, s_path:str):
         """Call of both Seed files. TOPIC_Seed.xlsx contains keywords to crawl. URL_Seed.xlsx contains links to crawl.
+
+        Args:
+            s_path (str): Source Path of file to be loaded as seed file. 
 
         Returns:
             DataFrame: Return loaded predefined topic(keywords) and url links each as pandas DataFrame.  
         """
-        #absolute_path = os.path.join(self.package_dir,r'files\TOPIC_Seed.xlsx')
-        absolute_path = os.path.join(self.package_dir,self.source_path)
-
+        absolute_path = os.path.join(self.package_dir,s_path)
         seed_data = pd.read_excel(absolute_path,header = 0) 
         
-  
-        return seed_data[['CLASS', 'KEYWORD_DE', 'KEYWORD_EN']], seed_data[['CLASS_K','KEYWORD', 'URL']].dropna()
+        url_col = 'URL_'+self.lang.upper()
+        url_df = seed_data[['CLASS_K','KEYWORD', url_col]]
+        url_df = url_df.rename(columns={url_col:'URL', 'CLASS_K':'CLASS'})
+        url_df = url_df[['CLASS','KEYWORD', 'URL']].dropna()
+
+        keyword_col = "KEYWORD_"+ self.lang.upper()
+        topic_df = seed_data[['CLASS', keyword_col]]
+        topic_df = topic_df.rename(columns={keyword_col:'KEYWORD'})
+        topic_df = topic_df[['CLASS', 'KEYWORD']].dropna()
+        
+        return topic_df,url_df 
         
     def get_url(self,q):
         try:
@@ -172,24 +182,23 @@ class TopicScraper:
             return
     
     def save_data(self):
-        keyword_col = "KEYWORD_"+ self.lang.upper()
-        self.url_df = self.url_df.rename(columns={"CLASS_K": "CLASS"})
-        self.topics_df = self.topics_df[['CLASS', 'KEYWORD', 'URL']]
-       
+        """Concatenates dataframe containing all google search result website links based on keywords withdataframe containing dataframe containing website links.
+        """
         all_seed_df = pd.concat([self.url_df,self.topics_df], ignore_index= True)
-        cols = ["CLASS","KEYWORD","URL"]
-        all_seed_df = all_seed_df[all_seed_df[cols].notnull()].reset_index(drop=True)
+        all_seed_df = all_seed_df[all_seed_df[["CLASS","KEYWORD","URL"]].notnull()].reset_index(drop=True)
+
         print(all_seed_df.columns)
         print(all_seed_df.shape)
-        print(all_seed_df)
+        # print(all_seed_df)
         
         if os.path.exists(os.path.join(self.package_dir,r'files\Seed.feather')):
             os.remove(os.path.join(self.package_dir,r'files\Seed.feather'))
         all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed.feather'))
 
     def run(self):
-        keyword_col = "KEYWORD_"+ self.lang.upper()
-        self.topics_df['KEYWORD'] = self.topics_df[keyword_col]
+        """Run method of class. Applies rowwise google search on given keywords and saves top 10 result website links in new column "URL". 
+        Saves dataframe containing all google search result website links based on keywords with other dataframe containing website links.
+        """
         self.topics_df['URL'] = self.topics_df['KEYWORD'].apply(lambda row: self.get_url(row))
         self.topics_df = self.topics_df.explode('URL')
         self.save_data()
