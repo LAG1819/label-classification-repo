@@ -181,6 +181,7 @@ class TopicScraper:
         all_seed_df = all_seed_df[all_seed_df[cols].notnull()].reset_index(drop=True)
         print(all_seed_df.columns)
         print(all_seed_df.shape)
+        print(all_seed_df)
         
         if os.path.exists(os.path.join(self.package_dir,r'files\Seed.feather')):
             os.remove(os.path.join(self.package_dir,r'files\Seed.feather'))
