@@ -192,7 +192,7 @@ class SeederSpider(CrawlSpider):
             "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
                 "vimeo","apple","twitter","facebook","twitch","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
                     "gebrauchtwagen", "neufahrzeug","neuwagen","garage","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
-                        "termin", "store", "update", "accessor", "adbk", "sky"]
+                        "termin", "store", "update", "accessor", "adbk", "sky", "betriebsanleitung", "manual"]
 
     def get_data(self,url_path:str):
         """Get the input data with the url links to be retrieved.
@@ -379,6 +379,9 @@ def run_crawler():
     # process2.start()
 
 def union_and_save():
+    """Function gets called when crawling is finished or manualy interrupted. The crawled data saved in "raw_texts_internal.json" are concatenated with whole dataset 
+    "raw_texts" and this new dataset is saved(overwrote) as parquet and feather file. Crawled data in "raw_texts_internal.json" are finally removed.
+    """
     path = str(os.path.dirname(__file__)).split("src")[0]
     s_path = r'files/raw_texts_internal.json'
     t_path = r'files/raw_texts.feather'
@@ -391,6 +394,7 @@ def union_and_save():
     if os.path.exists(path+t_path):
         df_all = pd.read_feather(path+t_path)
         df_all_new = pd.concat([df_all,df_new]).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        df_all_new = df_all_new[df_all_new["URL_TEXT"]!= ""]
         # os.remove(path+t_path)
 
     ##save and overwrite total dataset to target paths as feather and parquet
@@ -414,5 +418,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         union_and_save()
     finally:
-        union_and_save()    
+        if os.path.exists(str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_internal.json'):
+            union_and_save()    
     
