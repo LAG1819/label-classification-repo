@@ -23,6 +23,8 @@ SCHEDULER_MEMORY_QUEUE = 'scrapy.squeues.FifoMemoryQueue'
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
+DEPTH_LIMIT = 3
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 

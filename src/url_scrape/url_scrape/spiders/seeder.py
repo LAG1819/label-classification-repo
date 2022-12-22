@@ -153,9 +153,9 @@ class SeederSpider(CrawlSpider):
     """
     name = 'seeder'
     link_extractor = LinkExtractor()
-    # custom_settings = {
-    #     'DEPTH_LIMIT': 2,
-    # }
+    custom_settings = {
+        'DEPTH_LIMIT': 3,
+    }
 
     headers = {'Accept-Language': 'de;q=0.7', 
            'User-agent':"Mozilla/101.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0. 5005.78 Safari/537.36 Edge/100.0.1185.39"}
@@ -373,20 +373,20 @@ def run_crawler():
     # process3.crawl(TopicSpider, r'files/raw_classes.json','de')   
     # process3.start()
     process1.crawl(SeederSpider, r'files\Seed.feather', 'internal', 'de')
-    process2.crawl(SeederSpider, r'files\Seed.feather', 'external','de')
+    # process2.crawl(SeederSpider, r'files\Seed.feather', 'external','de')
     process1.start()   
-    process2.start()   
+    # process2.start()   
     
     
 if __name__ == '__main__':
     """Main function. Calls run method "run_crawler" and union method "union_data"
     """
-    run_crawler()
+    run_crawler() #41668
 
     # df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
     # df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
 
-    # #check if duplicates exist
+    #check if duplicates exist
     # dfi = pd.read_json(df_path_i,orient = 'records')
     # dfi = dfi.duplicated(subset=['URL']).any()
     # print(dfi)
