@@ -250,7 +250,15 @@ class textFilter:
             os.remove(path)
         self.data.to_feather(path)
     
-    def split_dataframe(self, chunk_size = 1000): 
+    def split_dataframe(self, chunk_size:int = 1000) -> list:
+        """Helper function that splits loaded datasets into smaller chunks containing size "chunk_size" which is by default 1000 samples.
+
+        Args:
+            chunk_size (int, optional): Size of DataFrame chunk. Defaults to 1000.
+
+        Returns:
+            list: Returns a list of DataFrames each containting a sampleset of 1000. All DataFrames in list result in the total dataset.
+        """
         chunks = list()
         num_chunks = math.ceil(len(self.data) / chunk_size)
         for i in range(num_chunks):
@@ -283,38 +291,7 @@ class textFilter:
         print(self.data)
         print("Done Cleaning.")
 
-def union_data():
-    """Combines all external and internal crawled websites (based on the specified domains). Duplicates are removed. Saves all crawled websites under raw_texts.json.
-    """
-    df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
-    df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
-    df_path_c = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_classes.json"
-   
-    try:
-        internal_data = pd.read_json(df_path_i)
-        external_data = pd.read_json(df_path_e)
-        outer = external_data.merge(internal_data, how='outer', indicator=True)
-        merged_df = pd.concat([internal_data,external_data]).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
-        merged_df.to_feather(r'files\raw_texts.feather')
-        #external_data_anti_joined = outer[(outer._merge=='left_only')].drop('_merge', axis=1)
-    except Exception as e:
-        print("Could not union data: ", e)
-
-    try:
-        classes = pd.read_json(df_path_c)
-        classes.to_feather(r"files\raw_classes.feather")
-    except Exception as e:
-        print("Could not read and save raw_classes.json: ", e)        
-
-    try:
-        os.remove(df_path_c)
-    #     os.remove(df_path_i)
-    #     os.remove(df_path_e)
-    except:
-        print("Could not remove file(s).")
-
 if __name__ == "__main__":
-    # union_data()
     f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
     f.run()
     # f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
