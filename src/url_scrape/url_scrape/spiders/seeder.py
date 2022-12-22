@@ -33,6 +33,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+import atexit
 
 class TopicSpider(scrapy.Spider):
     """WebCrawler that retrieves the URLs used as future topics from the manually specified classes in TOPIC_Classes.xlsx file,
@@ -213,12 +214,12 @@ class SeederSpider(CrawlSpider):
         """Because of possible long crawling times depending on the size of the seed, crawling can be interrupted because of lost internet connection etc.. 
         Because of that this helper function is created to link to already crawled content and not to crawl again the already crawled pages.
         """
-        df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
+        df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts.parquet"
         df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
         
         if self.parse_style == 'internal':
             if os.path.exists(df_path_i):
-                visited = pd.read_json(df_path_i,orient = 'records')['URL'].tolist()
+                visited = pd.read_parquet(df_path_i)['URL'].tolist()
                 self.visited += visited
         elif self.parse_style == 'external':
             if os.path.exists(df_path_e):
@@ -375,21 +376,43 @@ def run_crawler():
     process1.crawl(SeederSpider, r'files\Seed.feather', 'internal', 'de')
     # process2.crawl(SeederSpider, r'files\Seed.feather', 'external','de')
     process1.start()   
-    # process2.start()   
+    # process2.start()
+
+def union_and_save():
+    path = str(os.path.dirname(__file__)).split("src")[0]
+    s_path = r'files/raw_texts_internal.json'
+    t_path = r'files/raw_texts.feather'
+    t_path2 = r'files/raw_texts.parquet'
+
+    ##load new crawled data
+    df_new = pd.read_json(path+s_path)
+    df_all_new = df_new
+    ##check if target_path already exists
+    if os.path.exists(path+t_path):
+        df_all = pd.read_feather(path+t_path)
+        df_all_new = pd.concat([df_all,df_new]).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        # os.remove(path+t_path)
+
+    ##save and overwrite total dataset to target paths as feather and parquet
+    os.remove(path+s_path)
+    df_all_new.to_feather(path+t_path)
+    df_all_new.to_parquet(path+t_path2)
+
+    ## check if duplicates exist
+    print("Total size of raw dataset: ",df_all_new.shape)
+    dfi = df_all_new.duplicated(subset=['URL']).any()
+    print("Duplicates detecded: ",dfi)
+
+       
     
     
 if __name__ == '__main__':
     """Main function. Calls run method "run_crawler" and union method "union_data"
     """
-    run_crawler() #41668
-
-    # df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_internal.json"
-    # df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
-
-    #check if duplicates exist
-    # dfi = pd.read_json(df_path_i,orient = 'records')
-    # dfi = dfi.duplicated(subset=['URL']).any()
-    # print(dfi)
-    # dfe = pd.read_json(df_path_e,orient = 'records')
-    # dfe = dfe.duplicated(subset=['URL']).any()
-    # print(dfe)
+    try:
+        run_crawler() 
+    except KeyboardInterrupt:
+        union_and_save()
+    finally:
+        union_and_save()    
+    
