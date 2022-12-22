@@ -51,7 +51,8 @@ class textFilter:
         self.lang = lang
 
         df_path = str(os.path.dirname(__file__)).split("src")[0] + path
-        self.data = pd.read_feather(df_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        self.data = pd.read_feather(df_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True).sample(n = 100, axis = 0)
+        self.data = self.data[self.data['URL_TEXT']!=""]
         #self.data = self.data.head(4)
         self.cities = self.load_cities()
 
@@ -313,11 +314,11 @@ def union_data():
         print("Could not remove file(s).")
 
 if __name__ == "__main__":
-    union_data()
+    # union_data()
     f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
     f.run()
-    f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
-    f2.run()
+    # f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
+    # f2.run()
     #re.sub( "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$", "", w)
     # result = [re.search( "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$",w) for w in ["https://www.abarth.fr", "https://www.abarth.de","https://www.abarth.gr", "https://www.abarth.com"]]
     # print(result)
