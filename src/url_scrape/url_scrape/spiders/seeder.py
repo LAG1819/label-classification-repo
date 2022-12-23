@@ -192,7 +192,7 @@ class SeederSpider(CrawlSpider):
             "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
                 "vimeo","apple","twitter","facebook","twitch","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
                     "gebrauchtwagen", "neufahrzeug","neuwagen","garage","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
-                        "termin", "store", "update", "accessor", "adbk", "sky", "betriebsanleitung", "manual"]
+                        "termin", "store", "update", "accessor", "adbk", "sky", "betriebsanleitung", "manual", "kununu"]
 
     def get_data(self,url_path:str):
         """Get the input data with the url links to be retrieved.
@@ -255,7 +255,7 @@ class SeederSpider(CrawlSpider):
         selected_countryURL = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com|en)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
         
         #check blacklist in link or link description
-        if any(pattern in link.lower() for pattern in self.black_list) or any(pattern in link_text.lower() for pattern in self.black_list):
+        if any(pattern in link.lower() for pattern in self.black_list):
             flag = True
 
         #check if journal websites like spiegel.de are in category automotive
@@ -394,8 +394,6 @@ def union_and_save():
     if os.path.exists(path+t_path):
         df_all = pd.read_feather(path+t_path)
         df_all_new = pd.concat([df_all,df_new]).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
-        df_all_new = df_all_new[df_all_new["URL_TEXT"]!= ""]
-        # os.remove(path+t_path)
 
     ##save and overwrite total dataset to target paths as feather and parquet
     os.remove(path+s_path)
@@ -403,21 +401,21 @@ def union_and_save():
     df_all_new.to_parquet(path+t_path2)
 
     ## check if duplicates exist
-    print("Total size of raw dataset: ",df_all_new.shape)
-    dfi = df_all_new.duplicated(subset=['URL']).any()
-    print("Duplicates detecded: ",dfi)
+    dfi = pd.read_feather(path + t_path)
+    print("Total size of raw dataset: ",dfi.shape)
+    duplicated = dfi.duplicated(subset=['URL']).any()
+    print("Duplicates detecded: ",duplicated)
 
-       
-    
     
 if __name__ == '__main__':
     """Main function. Calls run method "run_crawler" and union method "union_data"
     """
     try:
         run_crawler() 
-    except KeyboardInterrupt:
+    except KeyboardInterrupt as e:
         union_and_save()
     finally:
-        if os.path.exists(str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_internal.json'):
+        source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_internal.json'
+        if os.path.exists(source_path):
             union_and_save()    
     
