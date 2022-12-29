@@ -12,6 +12,8 @@ BOT_NAME = 'url_scrape'
 SPIDER_MODULES = ['url_scrape.spiders']
 NEWSPIDER_MODULE = 'url_scrape.spiders'
 
+# PROXY_POOL_BAN_POLICY = 'myproject.policy.BanDetectionPolicyNotText'
+
 # Set scheduler to BFO.
 DEPTH_PRIORITY = 1
 SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleFifoDiskQueue'

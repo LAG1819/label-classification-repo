@@ -191,9 +191,14 @@ class TopicScraper:
         print(all_seed_df.shape)
         # print(all_seed_df)
         
-        if os.path.exists(os.path.join(self.package_dir,r'files\Seed.feather')):
-            os.remove(os.path.join(self.package_dir,r'files\Seed.feather'))
-        all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed.feather'))
+        if self.lang == 'de':
+            if os.path.exists(os.path.join(self.package_dir,r'files\Seed.feather')):
+                os.remove(os.path.join(self.package_dir,r'files\Seed.feather'))
+            all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed.feather'))
+        else:
+            if os.path.exists(os.path.join(self.package_dir,r'files\Seed_en.feather')):
+                os.remove(os.path.join(self.package_dir,r'files\Seed_en.feather'))
+            all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed_en.feather'))
 
     def run(self):
         """Run method of class. Applies rowwise google search on given keywords and saves top 10 result website links in new column "URL". 
@@ -207,7 +212,7 @@ class TopicScraper:
 #Main - Init a crawler with given searchlist Searchlist.xsls. Crawls and saves all information (run).
 if __name__ == "__main__":
     start = time.process_time()
-    scrape = TopicScraper("de",r'files\Seed.xlsx')
+    scrape = TopicScraper("en",r'files\Seed.xlsx')
     scrape.run()
     print(time.process_time() - start)
 

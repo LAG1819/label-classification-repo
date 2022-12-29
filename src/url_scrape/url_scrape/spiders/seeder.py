@@ -67,7 +67,7 @@ class TopicSpider(scrapy.Spider):
             'User-agent':"Mozilla/101.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0. 5005.78 Safari/537.36 Edge/100.0.1185.39"}
 
         self.queue = self.get_data().values.tolist()
-        print(self.queue)
+        #print(self.queue)
         #dynamically allow all domains occuring
         allowed = set() 
         for s in self.queue:
@@ -155,7 +155,7 @@ class SeederSpider(CrawlSpider):
     name = 'seeder'
     link_extractor = LinkExtractor()
     custom_settings = {
-        'DEPTH_LIMIT': 3,
+        'DEPTH_LIMIT': 2,
     }
 
     headers = {'Accept-Language': 'de;q=0.7', 
@@ -170,7 +170,7 @@ class SeederSpider(CrawlSpider):
             name (_type_, optional): Name of the scrapy crawler. Defaults to None.
         """
         super().__init__(name, **kwargs)
-
+        self.lang = lang
         self.data = self.get_data(url_path)
 
         self.parse_style = parse
@@ -182,8 +182,9 @@ class SeederSpider(CrawlSpider):
             allowed.add(urlparse(str(s)).netloc)
         self.allowed_domains = list(allowed) 
 
-        self.visited = []
-        self.get_already_visited()
+        self.visited = self.get_already_visited()
+        print("ALREADY VISITED: ", len(self.visited))
+        
         
         self.queue = self.data.values.tolist()
         # print(self.queue)
@@ -192,7 +193,7 @@ class SeederSpider(CrawlSpider):
             "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
                 "vimeo","apple","twitter","facebook","twitch","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
                     "gebrauchtwagen", "neufahrzeug","neuwagen","garage","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
-                        "termin", "store", "update", "accessor", "adbk", "sky", "betriebsanleitung", "manual", "kununu"]
+                        "termin", "store", "update", "accessor", "adbk", "sky", "betriebsanleitung", "manual", "kununu", "wissen.de", "gutschein", "geo.de" ]
 
     def get_data(self,url_path:str):
         """Get the input data with the url links to be retrieved.
@@ -210,23 +211,24 @@ class SeederSpider(CrawlSpider):
         seed_df = seed_df[['CLASS','KEYWORD','URL']]
         return seed_df
 
-    def get_already_visited(self):
+    def get_already_visited(self) -> list:
         """Because of possible long crawling times depending on the size of the seed, crawling can be interrupted because of lost internet connection etc.. 
         Because of that this helper function is created to link to already crawled content and not to crawl again the already crawled pages.
-        """
-        df_path_i = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts.parquet"
-        df_path_e = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts_external.json"
-        
-        if self.parse_style == 'internal':
-            if os.path.exists(df_path_i):
-                visited = pd.read_parquet(df_path_i)['URL'].tolist()
-                self.visited += visited
-        elif self.parse_style == 'external':
-            if os.path.exists(df_path_e):
-                visited = pd.read_json(df_path_e,orient = 'records')['URL'].tolist()
-                self.visited += visited
 
-        self.visited =list(set(self.visited))
+        Returns:
+            list: Reaturns the list of already visisted url links.
+        """
+        df_path= str(os.path.dirname(__file__)).split("src")[0]
+
+        if self.lang == 'de':
+            file = r"files\raw_texts.parquet"
+        elif self.lang == 'en':
+            file = r"files\raw_texts_en.parquet"
+        else:
+            return []
+
+        visited = pd.read_parquet(df_path+file)['URL'].tolist()
+        return list(set(visited))
 
     def start_requests(self):
         """Start of Retrieval of the individual input url links. Scrapy own mandatory function.
@@ -251,7 +253,7 @@ class SeederSpider(CrawlSpider):
             bool: Return a boolean "flag". If True is returned the given link will not be crawled, if False is returned the given link will be crawled. 
         """
         flag = False
-        journals = ["spiegel", "sueddeutsche", "handelsblatt", "faz"]
+        journals = ["spiegel", "sueddeutsche", "handelsblatt", "faz", "welt.de"]
         selected_countryURL = "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com|en)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$"
         
         #check blacklist in link or link description
@@ -260,7 +262,7 @@ class SeederSpider(CrawlSpider):
 
         #check if journal websites like spiegel.de are in category automotive
         if any(j in link.lower() for j in journals):
-            branche = ['auto', "car", "mobilitaet", "mobilität", "mobility"]
+            branche = ['auto', "car", "mobilitaet", "mobilität", "mobility", "motor"]
             if not any(b in link.lower() for b in branche):
                 flag = True
 
@@ -316,7 +318,6 @@ class SeederSpider(CrawlSpider):
             }   
 
             self.visited.append(str(response.url))             
-        #print(self.link_extractor.extract_links(response))
         for link in self.link_extractor.extract_links(response):
             if str(link.url) in self.visited:
                 continue
@@ -336,7 +337,7 @@ class SeederSpider(CrawlSpider):
 
                         yield scrapy.Request(url=link.url, meta={'CLASS': response.meta['CLASS'], 'KEYWORD':response.meta['KEYWORD']}, callback=self.parse)
 
-def run_crawler():
+def run_crawler(lang:str):
     """
     Run method that generates 3 processes with one Scrapy Crawler each. Each process defines the ouput file to be saved.
     Process 1 generates a crawler that retrieves all domain-specific urls based on the input(seed)-links/domains.
@@ -350,7 +351,7 @@ def run_crawler():
         #     'pickle': 'scrapy.exporters.PickleItemExporter'
         # },
         'FEED_EXPORT_ENCODING': 'utf-8',
-        'FEEDS': {'files/raw_texts_internal.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD","DOMAIN",'URL', 'URL_TEXT']}}
+        'FEEDS': {'files/raw_texts_new.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD","DOMAIN",'URL', 'URL_TEXT']}}
         })
         #{'files/raw_texts.csv': {'format': 'csv'}}
         #{'files/raw_texts.pkl': {'format': 'pickle'}}
@@ -362,7 +363,7 @@ def run_crawler():
     #     'pickle': 'scrapy.exporters.PickleItemExporter'
     # },
     'FEED_EXPORT_ENCODING': 'utf-8',
-    'FEEDS': {'files/raw_texts_external.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD","DOMAIN",'URL', 'URL_TEXT']}}
+    'FEEDS': {'files/raw_texts_new.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD","DOMAIN",'URL', 'URL_TEXT']}}
     })
 
     process3 =  CrawlerProcess({
@@ -371,29 +372,49 @@ def run_crawler():
         'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD",'DOMAIN','URL', 'URL_TEXT']}}
         })   
 
-    # process3.crawl(TopicSpider, r'files/raw_classes.json','de')   
-    # process3.start()
-    process1.crawl(SeederSpider, r'files\Seed.feather', 'internal', 'de')
-    # process2.crawl(SeederSpider, r'files\Seed.feather', 'external','de')
-    process1.start()   
-    # process2.start()
+    if lang == 'de':
+        process3.crawl(TopicSpider, r'files/raw_classes.json','de')   
+        process3.start()
+        process1.crawl(SeederSpider, r'files\Seed.feather', 'internal', 'de')
+        process2.crawl(SeederSpider, r'files\Seed.feather', 'external','de')
+        # process1.start()   
+        process2.start()
+    elif lang == 'en':
+        # process3.crawl(TopicSpider, r'files/raw_classes.json','en')   
+        # process3.start()
+        process1.crawl(SeederSpider, r'files\Seed_en.feather', 'internal', 'en')
+        # process2.crawl(SeederSpider, r'files\Seed_en.feather', 'external','en')
+        process1.start()   
+        # process2.start()
+    else:
+        return
 
-def union_and_save():
+def union_and_save(lang:str):
     """Function gets called when crawling is finished or manualy interrupted. The crawled data saved in "raw_texts_internal.json" are concatenated with whole dataset 
     "raw_texts" and this new dataset is saved(overwrote) as parquet and feather file. Crawled data in "raw_texts_internal.json" are finally removed.
+
+    Args:
+            lang (str): unicode to select texts in that language 
     """
     path = str(os.path.dirname(__file__)).split("src")[0]
-    s_path = r'files/raw_texts_internal.json'
-    t_path = r'files/raw_texts.feather'
-    t_path2 = r'files/raw_texts.parquet'
-
+    s_path = r'files/raw_texts_new.json'
+    if lang == 'en':
+        t_path = r'files/raw_texts_en.feather'
+        t_path2 = r'files/raw_texts_en.parquet'
+    else:
+        t_path = r'files/raw_texts.feather'
+        t_path2 = r'files/raw_texts.parquet'
+    
     ##load new crawled data
     df_new = pd.read_json(path+s_path)
     df_all_new = df_new
     ##check if target_path already exists
     if os.path.exists(path+t_path):
         df_all = pd.read_feather(path+t_path)
-        df_all_new = pd.concat([df_all,df_new]).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        df_all_new = pd.concat([df_all,df_new])
+        duplicates =len(df_all_new['URL'])-len(df_all_new['URL'].drop_duplicates())
+        print("Duplicates detected: ",df_all_new.duplicated(subset=['URL']).any(),", Count: ", duplicates)
+        df_all_new = df_all_new.drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
 
     ##save and overwrite total dataset to target paths as feather and parquet
     os.remove(path+s_path)
@@ -403,19 +424,24 @@ def union_and_save():
     ## check if duplicates exist
     dfi = pd.read_feather(path + t_path)
     print("Total size of raw dataset: ",dfi.shape)
-    duplicated = dfi.duplicated(subset=['URL']).any()
-    print("Duplicates detecded: ",duplicated)
+    print("Classes crawled: ",set(dfi['CLASS'].tolist()))
+    # duplicated = dfi.duplicated(subset=['URL']).any()
+    # print("Duplicates in total raw dataset: ",duplicated)
 
     
 if __name__ == '__main__':
     """Main function. Calls run method "run_crawler" and union method "union_data"
+
+    Args:
+            lang (str): unicode to select texts in that language 
     """
+    lang = 'en'
     try:
-        run_crawler() 
+        run_crawler(lang) 
     except KeyboardInterrupt as e:
-        union_and_save()
+        union_and_save(lang)
     finally:
-        source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_internal.json'
+        source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_new.json'
         if os.path.exists(source_path):
-            union_and_save()    
+            union_and_save(lang)    
     
