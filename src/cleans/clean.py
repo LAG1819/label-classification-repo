@@ -51,7 +51,7 @@ class textFilter:
         self.lang = lang
 
         df_path = str(os.path.dirname(__file__)).split("src")[0] + path
-        self.data = pd.read_feather(df_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True).sample(n = 100, axis = 0)
+        self.data = pd.read_feather(df_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)#.sample(n = 100, axis = 0)
         self.data = self.data[self.data['URL_TEXT']!=""]
         #self.data = self.data.head(4)
         self.cities = self.load_cities()
@@ -293,7 +293,12 @@ class textFilter:
 
 if __name__ == "__main__":
     f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
-    f.run()
+    print(f.data.shape)
+    print(set(f.data['CLASS'].tolist()))
+    data_sample = f.data.sample(frac = 0.007,replace = False,random_state = 1, axis = 0)
+    print(data_sample.shape)
+    print(set(data_sample['CLASS'].tolist()))
+    #f.run()
     # f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
     # f2.run()
     #re.sub( "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$", "", w)
