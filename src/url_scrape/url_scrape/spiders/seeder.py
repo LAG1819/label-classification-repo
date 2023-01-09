@@ -34,6 +34,8 @@ from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 import atexit
+import logging 
+from datetime import datetime
 
 class TopicSpider(scrapy.Spider):
     """WebCrawler that retrieves the URLs used as future topics from the manually specified classes in TOPIC_Classes.xlsx file,
@@ -155,7 +157,7 @@ class SeederSpider(CrawlSpider):
     name = 'seeder'
     link_extractor = LinkExtractor()
     custom_settings = {
-        'DEPTH_LIMIT': 2,
+        'DEPTH_LIMIT': 1,
     }
 
     headers = {'Accept-Language': 'de;q=0.7', 
@@ -175,6 +177,9 @@ class SeederSpider(CrawlSpider):
 
         self.parse_style = parse
 
+        filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\website_scraping_'+self.lang+'.log'
+        logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
+
         # add all domains of input urls to list of allowed domains to crawl
         seed_list = self.data['URL'].tolist()
         allowed = set() 
@@ -193,7 +198,8 @@ class SeederSpider(CrawlSpider):
             "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
                 "vimeo","apple","twitter","facebook","twitch","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
                     "gebrauchtwagen", "neufahrzeug","neuwagen","garage","rent", "impressum", "imprint", "masthead", "newsletter", "kontakt", "contact", "karriere", "career", "login",\
-                        "termin", "store", "update", "accessor", "adbk", "sky", "betriebsanleitung", "manual", "kununu", "wissen.de", "gutschein", "geo.de" ]
+                        "termin", "store", "update", "accessor", "adbk", "sky", "betriebsanleitung", "manual", "kununu", "wissen.de", "gutschein", "geo.de", "linguee",\
+                            "mouser.de" ]
 
     def get_data(self,url_path:str):
         """Get the input data with the url links to be retrieved.
@@ -226,8 +232,11 @@ class SeederSpider(CrawlSpider):
             file = r"files\raw_texts_en.parquet"
         else:
             return []
+        try:
+            visited = pd.read_parquet(df_path+file)['URL'].tolist()
+        except FileNotFoundError:
+            visited =[]
 
-        visited = pd.read_parquet(df_path+file)['URL'].tolist()
         return list(set(visited))
 
     def start_requests(self):
@@ -373,19 +382,15 @@ def run_crawler(lang:str):
         })   
 
     if lang == 'de':
-        process3.crawl(TopicSpider, r'files/raw_classes.json','de')   
-        process3.start()
+        # process3.crawl(TopicSpider, r'files/raw_classes.json','de')   
+        # process3.start()
         process1.crawl(SeederSpider, r'files\Seed.feather', 'internal', 'de')
-        process2.crawl(SeederSpider, r'files\Seed.feather', 'external','de')
-        # process1.start()   
-        process2.start()
+        process1.start()   
     elif lang == 'en':
         # process3.crawl(TopicSpider, r'files/raw_classes.json','en')   
         # process3.start()
         process1.crawl(SeederSpider, r'files\Seed_en.feather', 'internal', 'en')
-        # process2.crawl(SeederSpider, r'files\Seed_en.feather', 'external','en')
         process1.start()   
-        # process2.start()
     else:
         return
 
@@ -427,6 +432,8 @@ def union_and_save(lang:str):
     print("Classes crawled: ",set(dfi['CLASS'].tolist()))
     # duplicated = dfi.duplicated(subset=['URL']).any()
     # print("Duplicates in total raw dataset: ",duplicated)
+    logging.info("[{log}]Crawling has finished".format(log = datetime.date()))
+    logging.info("[{log}]Total size of raw dataset:{s}, Classes crawled:{c}".format(log = datetime.date(),s = dfi.shape, c = set(dfi['CLASS'].tolist())))
 
     
 if __name__ == '__main__':
@@ -434,14 +441,19 @@ if __name__ == '__main__':
 
     Args:
             lang (str): unicode to select texts in that language 
-    """
+    """ 
     lang = 'en'
+    filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
+    logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
     try:
+        logging.info("[{log}]Crawling has started".format(log = datetime.date()))
         run_crawler(lang) 
-    except KeyboardInterrupt as e:
+    except Exception as e:
         union_and_save(lang)
+        logging.warning('[{log}]Crawling had been interrupted by error:{error}'.format(log = datetime.date(), error = e))
     finally:
         source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_new.json'
         if os.path.exists(source_path):
             union_and_save(lang)    
     
+            
