@@ -314,8 +314,10 @@ class textFilter:
         """
         df_chunks = self.split_dataframe()
         print("Size of full dataset: {dataset}. Number of chunks: {chunks}".format(dataset = self.data.shape[0], chunks = len(df_chunks)))
+        logging.info("[{log}]Data cleaning started".format(log = datetime.now()))
         for i,chunk in enumerate(df_chunks):
             try:
+                print("New chunk starts cleaning")
                 chunk_text = self.remove_nonText(chunk)
                 chunk_stopwords = self.remove_domainStopwords(chunk_text)
                 print("Non textual elements and stopwords had been removed.")
@@ -326,13 +328,15 @@ class textFilter:
                 chunk_cit = self.remove_cityNames(chunk_lem)
                 print("City names had been removed.")
                 self.save_data(chunk_cit)
-                print("data chunk {number} with {size} of {shape} total samples had been cleaned.{log}".format(number = i,size =chunk.shape, shape =self.data.shape[0], log = datetime.now()))
-                logging.info("data chunk {number} with {size} of {shape} total samples had been cleaned.{log}".format(number = i,size =chunk.shape, shape = self.data.shape[0], log = datetime.now()))
+                print("[{log}]Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape =self.data.shape[0], log = datetime.now()))
+                logging.info("[{log}]Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape = self.data.shape[0], log = datetime.now()))
             except KeyboardInterrupt:
-                logging.warning('Data cleaning of a chunk of samples had been interrupted.')
+                print(KeyboardInterrupt)
+                logging.warning('[{log}]Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.'.format(log = datetime.now()))
                 return
             except Exception as e:
-                logging.warning('Something with data cleaning of a chunk of samples went wrong: {error}'.format(error =e))
+                print(e)
+                logging.warning('[{log}]Something with data cleaning of a chunk of samples went wrong: {error}.'.format(error =e, log = datetime.now() ))
                 return
                 
             
@@ -341,7 +345,6 @@ class textFilter:
 if __name__ == "__main__":
     d = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
     d.run()
-
     # e = textFilter('en',r"files\raw_texts_en.feather",r"files\cleaned_texts_en.feather")
     # e.run()
 
