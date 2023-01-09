@@ -21,11 +21,12 @@ from langdetect import detect
 import pandas as pd
 import os
 import re
-import pickle
-import json
 import datapackage
 import spacy
 import math
+import logging 
+from datetime import datetime
+
 nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
 
 class textFilter:
@@ -49,15 +50,44 @@ class textFilter:
         self.text_col = 'URL_TEXT'
         self.url_col = 'URL'
         self.lang = lang
-
-        df_path = str(os.path.dirname(__file__)).split("src")[0] + path
-        self.data = pd.read_feather(df_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)#.sample(n = 100, axis = 0)
-        self.data = self.data[self.data['URL_TEXT']!=""]
-        #self.data = self.data.head(4)
-        self.cities = self.load_cities()
-
         self.target_path = t_path
+        
+        self.data = self.load_data(path, t_path)
+        self.cities = self.load_cities()
+        
+        filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\cleaning_'+lang+'.log'
+        logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
 
+    def load_data(self, path:str, t_path:str) -> pd.DataFrame:
+        """Loads raw dataset containing all data samples that not had been already cleaned.
+
+        Args:
+            path (str): source path to file containing raw texts to be cleaned
+            t_path (str): target path to save file with cleaned texts
+
+        Returns:
+            pd.DataFrame: DataFrame with raw dataset excluding all samples that had been already cleaned
+        """
+        df_path = str(os.path.dirname(__file__)).split("src")[0] + path
+        data = pd.read_feather(df_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        data = data[data['URL_TEXT']!=""]
+
+        df_t_path = str(os.path.dirname(__file__)).split("src")[0] + t_path
+        if os.path.exists(df_t_path):
+            cleaned_data = pd.read_feather(df_t_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        else:
+            cleaned_data = pd.DataFrame(columns=data.columns.tolist())
+
+        # Identify what values are in raw data and not already in cleaned data
+        left_join = data.merge(cleaned_data, on='URL', how='left', indicator=True)
+        left_join_df = left_join.loc[left_join['_merge'] == 'left_only', 'URL']
+        raw_data = data[data['URL'].isin(left_join_df)]
+        if "LANG" in raw_data.columns:
+            raw_data = raw_data.drop(columns="LANG", axis = 1)
+        print("Raw data (total):", data.shape)
+        print("Raw data:", raw_data.shape)
+        print("Cleaned data:", cleaned_data.shape)
+        return raw_data
 
     def load_cities(self) -> dict:
         """Load a complete list of citynames of a cities above 15,000 inhabitants. All data is licensed under the Creative Common 
@@ -159,63 +189,39 @@ class textFilter:
             out_sentence = list(set(list(filter(None,out_sentence))))
             if out_sentence:
                 output_sentence.append(" ".join(out_sentence))
-        #print(" ".join(output_sentence))
         return " ".join(output_sentence)
     
-    def remove_nonText(self, data:pd.DataFrame) -> pd.DataFrame:
+    def remove_nonText(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Apply rowwise basic text cleaning with regex_remove() on raw texts.
 
         Args:
-            data (pd.DataFrame): DataFrame containing chunk of samples.
+            input_data (pd.DataFrame): DataFrame containing chunk of samples.
 
         Returns:
             pd.DataFrame: DataFrame with edited chunk of samples.
         """
+        data = input_data.copy()
         data[self.text_col] = data[self.text_col].apply(lambda row: self.regex_remove(row))
         return data
 
-    def remove_domainStopwords(self, data:pd.DataFrame) -> pd.DataFrame:
+    def remove_domainStopwords(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Apply rowwise advanced text cleaning with stopword_remove() on pre cleaned texts.
 
         Args:
-            data (pd.DataFrame): DataFrame containing chunk of samples.
+            input_data (pd.DataFrame): DataFrame containing chunk of samples.
 
         Returns:
             pd.DataFrame: DataFrame with edited chunk of samples.
         """
+        data = input_data.copy()
         data[self.text_col] = data[self.text_col].apply(lambda row: self.stopword_remove(row))
         return data
 
-    def remove_cityNames(self, data:pd.DataFrame) -> pd.DataFrame:
-        """Removes all city names in text
-
-        Args:
-            data (pd.DataFrame): DataFrame containing chunk of samples.
-
-        Returns:
-            pd.DataFrame: DataFrame with edited chunk of samples.
-        """
-        regex = re.compile("|".join(map(re.escape, self.cities.keys(  ))))
-        data[self.text_col] = data[self.text_col].apply(lambda row: regex.sub(lambda match: self.cities[match.group(0)], row) if row else "")
-        return data
-
-    def lemmatize_text(self, data:pd.DataFrame) -> pd.DataFrame:
-        """Lemmatize text with help of spacy
-
-        Args:
-            data (pd.DataFrame): DataFrame containing chunk of samples.
-
-        Returns:
-            pd.DataFrame: DataFrame with edited chunk of samples. 
-        """
-        data[self.text_col] = data[self.text_col].apply(lambda row: " ".join([token.lemma_ for token in nlp(row)]))
-        return data
-
-    def flag_lang(self, data:pd.DataFrame) -> pd.DataFrame:
+    def flag_lang(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Detect Language of each sample (row) containing text of one crawled website. 
 
         Args:
-            data (pd.DataFrame): DataFrame containing chunk of samples.
+            input_data (pd.DataFrame): DataFrame containing chunk of samples.
 
         Returns:
             pd.DataFrame: DataFrame with edited chunk of samples. 
@@ -235,29 +241,48 @@ class textFilter:
                 return_lan = None
             return return_lan
         
+        data = input_data.copy()
         data["LANG"]= data[self.text_col].apply(lambda row: detect_language(row))
         if self.lang != None:
             data = data[data["LANG"] == self.lang]
         data = data.reset_index(drop = True)
         return data
-    def save_data(self, chunk_list):
-        """Save cleaned texts to target path. 
-        """
-        self.data = pd.concat(chunk_list, ignore_index=True).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True) 
-        print(self.data)
-        path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
-        if os.path.exists(path):
-            os.remove(path)
-        self.data.to_feather(path)
-    
-    def split_dataframe(self, chunk_size:int = 1000) -> list:
-        """Helper function that splits loaded datasets into smaller chunks containing size "chunk_size" which is by default 1000 samples.
+
+    def lemmatize_text(self, input_data:pd.DataFrame) -> pd.DataFrame:
+        """Lemmatize text with help of spacy
 
         Args:
-            chunk_size (int, optional): Size of DataFrame chunk. Defaults to 1000.
+            input_data (pd.DataFrame): DataFrame containing chunk of samples.
 
         Returns:
-            list: Returns a list of DataFrames each containting a sampleset of 1000. All DataFrames in list result in the total dataset.
+            pd.DataFrame: DataFrame with edited chunk of samples. 
+        """
+        data = input_data.copy()
+        data[self.text_col] = data[self.text_col].apply(lambda row: " ".join([token.lemma_ for token in nlp(row)]))
+        return data
+
+    def remove_cityNames(self, input_data:pd.DataFrame) -> pd.DataFrame:
+        """Removes all city names in text
+
+        Args:
+            input_data (pd.DataFrame): DataFrame containing chunk of samples.
+
+        Returns:
+            pd.DataFrame: DataFrame with edited chunk of samples.
+        """
+        data = input_data.copy()
+        regex = re.compile("|".join(map(re.escape, self.cities.keys(  ))))
+        data[self.text_col] = data[self.text_col].apply(lambda row: regex.sub(lambda match: self.cities[match.group(0)], row) if row else "")
+        return data
+    
+    def split_dataframe(self, chunk_size:int = 300) -> list:
+        """Helper function that splits loaded dataset into smaller chunks containing size "chunk_size" which is by default 300 samples.
+
+        Args:
+            chunk_size (int, optional): Size of DataFrame chunk. Defaults to 300.
+
+        Returns:
+            list: Returns a list of DataFrames each containting a sampleset of 300 samples. All DataFrames in list result in the total dataset.
         """
         chunks = list()
         num_chunks = math.ceil(len(self.data) / chunk_size)
@@ -265,39 +290,65 @@ class textFilter:
             chunks.append(self.data[i*chunk_size:(i+1)*chunk_size])
         return chunks
 
+    def save_data(self, cleaned_chunk:pd.DataFrame):
+        """Concatenate new chunk of cleaned data to already exisiting cleaned data.
+
+        Args:
+            cleaned_chunk (pd.DataFrame): Chunk of 300 (by default) cleaned samples of data.
+        """
+        df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        if os.path.exists(df_t_path):
+            cleaned_data = pd.read_feather(df_t_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        else:
+            cleaned_data = pd.DataFrame(columns=cleaned_chunk.columns.tolist())
+
+        data_to_save = pd.concat([cleaned_data,cleaned_chunk], ignore_index=True).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True) 
+        print(data_to_save.shape)
+
+        data_to_save.to_feather(df_t_path)
+
     def run(self):
         """Run function of textFilter class. Firstly a basic text cleansing will be applied, than an advanced text cleaning and advanced stopwords removal will be applied.
-        Than the language of cleaned texts is applied and all texts that are not matching the initialised lang are filtered. In advance all city 
-        names in texts will be removed and text will be lemmatized.
-        Filtered and cleaned texts are finally saved to target path. 
+        Than the language of cleaned texts is applied and all texts that are not matching the initialised lang are filtered. In advance all city names in texts 
+        will be removed and text will be lemmatized. Filtered and cleaned texts are finally saved to target path. 
         """
         df_chunks = self.split_dataframe()
-        df_modified_chunks = []
         print("Size of full dataset: {dataset}. Number of chunks: {chunks}".format(dataset = self.data.shape[0], chunks = len(df_chunks)))
         for i,chunk in enumerate(df_chunks):
-            self.remove_nonText(chunk)
-            self.remove_domainStopwords(chunk)
-            print("Non textual elements and stopwords had been removed.")
-            self.flag_lang(chunk)
-            print("Languages had been detected and filtered.")
-            self.lemmatize_text(chunk)
-            print("Text had been lemmatized.")
-            self.remove_cityNames(chunk)
-            print("City names had been removed.")
-            df_modified_chunks.append(chunk)
-            print("data chunk {number} of shape {shape} had been modified.".format(number = i, shape = chunk.shape))
-        self.save_data(df_modified_chunks)
-        print(self.data.shape)
-        print(self.data)
-        print("Done Cleaning.")
+            try:
+                chunk_text = self.remove_nonText(chunk)
+                chunk_stopwords = self.remove_domainStopwords(chunk_text)
+                print("Non textual elements and stopwords had been removed.")
+                chunk_lang = self.flag_lang(chunk_stopwords)
+                print("Languages had been detected and filtered.")
+                chunk_lem = self.lemmatize_text(chunk_lang)
+                print("Text had been lemmatized.")
+                chunk_cit = self.remove_cityNames(chunk_lem)
+                print("City names had been removed.")
+                self.save_data(chunk_cit)
+                print("data chunk {number} with {size} of {shape} total samples had been cleaned.{log}".format(number = i,size =chunk.shape, shape =self.data.shape[0], log = datetime.now()))
+                logging.info("data chunk {number} with {size} of {shape} total samples had been cleaned.{log}".format(number = i,size =chunk.shape, shape = self.data.shape[0], log = datetime.now()))
+            except KeyboardInterrupt:
+                logging.warning('Data cleaning of a chunk of samples had been interrupted.')
+                return
+            except Exception as e:
+                logging.warning('Something with data cleaning of a chunk of samples went wrong: {error}'.format(error =e))
+                return
+                
+            
+        
 
 if __name__ == "__main__":
-    f = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
-    print(f.data.shape)
-    print(set(f.data['CLASS'].tolist()))
-    data_sample = f.data.sample(frac = 0.007,replace = False,random_state = 1, axis = 0)
-    print(data_sample.shape)
-    print(set(data_sample['CLASS'].tolist()))
+    d = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
+    d.run()
+
+    # e = textFilter('en',r"files\raw_texts_en.feather",r"files\cleaned_texts_en.feather")
+    # e.run()
+
+
+    # data_sample = f.data.sample(frac = 0.007,replace = False,random_state = 1, axis = 0)
+    # print(data_sample.shape)
+    # print(set(data_sample['CLASS'].tolist()))
     #f.run()
     # f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
     # f2.run()
