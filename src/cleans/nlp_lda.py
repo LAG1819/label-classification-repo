@@ -27,6 +27,9 @@ from nltk.corpus import stopwords
 from lda_coherence import get_coherence 
 import numpy as np
 import nltk
+import math
+import logging
+import datetime
 nltk.download('stopwords')
 
 class TopicExtractor:
@@ -55,6 +58,10 @@ class TopicExtractor:
             self.stopwords = stopwords.words('english')
         else:
             self.stopwords = stopwords.words('german')
+
+        filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\topic_extraction_'+self.lang+'.log'
+        logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
+        logging.info("Topic Extraction with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = self.lang, path = self.source_path, tpath = self.target_path))
        
 
     def load_data(self):
@@ -64,21 +71,42 @@ class TopicExtractor:
             DataFrame: Returns a pandas DataFrame containing domain name of url link (DOMAIN), url link (URL), cleaned texts(URL_TEXT), language of text (LANG) and CLASS (optional).
         """
         df_path = str(os.path.dirname(__file__)).split("src")[0] + self.source_path
+        #if topic dataset than group by class#
         if self.topic:
             data = pd.read_feather(df_path).groupby("CLASS").agg({'URL_TEXT':lambda x: "|".join(list(x))})#['URL_TEXT'].apply(list)
         else:
             data = pd.read_feather(df_path)
-        #group by class#
-        return data
 
-    def save_data(self):
-        """Save data as feather file to defined target path.
+        df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        if os.path.exists(df_t_path):
+            topiced_data = pd.read_feather(df_t_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        else:
+            topiced_data = pd.DataFrame(columns=data.columns.tolist())          
+
+        # Identify what values are in cleaned data and not already in topiced data
+        left_join = data.merge(topiced_data, on='URL', how='left', indicator=True)
+        left_join_df = left_join.loc[left_join['_merge'] == 'left_only', 'URL']
+        raw_data = data[data['URL'].isin(left_join_df)]
+        if "TOPIC" in raw_data.columns:
+            raw_data = raw_data.drop(columns="LANG", axis = 1)        
+        return raw_data
+
+    def save_data(self, topiced_chunk:pd.Dataframe):
+        """Concatenate new chunk of generated topics data to already exisiting data containing topics.
+
+        Args:
+            topiced_chunk (pd.Dataframe): Chunk of 300 (by default) samples of data with extracted topics.
         """
-        self.data = self.data.reset_index()
-        path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
-        if os.path.exists(path):
-            os.remove(path)
-        self.data.to_feather(path)
+        df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        if os.path.exists(df_t_path):
+            topiced_data = pd.read_feather(df_t_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+        else:
+            topiced_data = pd.DataFrame(columns=topiced_chunk.columns.tolist())
+
+        data_to_save = pd.concat([topiced_data,topiced_chunk], ignore_index=True).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True) 
+        print(data_to_save.shape)
+
+        data_to_save.to_feather(df_t_path)
 
     def generate_tfIdf(self,doc_list:list):
         """Apply rowwise generation of Tfidf-Vector and fit to cleaned texts (URL_TEXT).
@@ -156,19 +184,44 @@ class TopicExtractor:
             print(e)
             return ''
 
+    def split_dataframe(self, chunk_size:int = 300) -> list:
+        """Helper function that splits loaded dataset into smaller chunks containing size "chunk_size" which is by default 300 samples.
+
+        Args:
+            chunk_size (int, optional): Size of DataFrame chunk. Defaults to 300.
+
+        Returns:
+            list: Returns a list of DataFrames each containting a sampleset of 300 samples. All DataFrames in list result in the total dataset.
+        """
+        chunks = list()
+        num_chunks = math.ceil(len(self.data) / chunk_size)
+        for i in range(num_chunks):
+            chunks.append(self.data[i*chunk_size:(i+1)*chunk_size])
+        return chunks
+
 
     def run(self):
         """Run function of TopicExtractor class. First generate_topic() is rowwise called, than empty values will be replaced by empty strings.
         """
-        self.data['TOPIC']=self.data[self.text_col].apply(lambda row: self.generate_topic(row))
-        self.data.replace(np.nan, "",regex = False, inplace = True)
-        self.save_data()
+        df_chunks = self.split_dataframe()
+        print("Size of full dataset: {dataset}. Number of chunks: {chunks}".format(dataset = self.data.shape[0], chunks = len(df_chunks)))
+        logging.info("[{log}]Topic extraction started".format(log = datetime.now()))
+        for i, chunk in enumerate(df_chunks):
+            logging.info("[{log}]Topic extraction with LDA of data sampleset {number} with size {size} started".format(log = datetime.now(), number = i, size = chunk.shape))
+            chunk_c = chunk.copy()
+            chunk_c['TOPIC']=chunk_c[self.text_col].apply(lambda row: self.generate_topic(row))
+            chunk_c.replace(np.nan, "",regex = False, inplace = True)
+            self.save_data(chunk_c)
+            logging.info("[{log}]Topic extraction of data sampleset {number} with size {size} of dataframe {df} is finished.".format(log = datetime.now(), number = i,size =chunk_c.shape, df = self.data.shape))
 
 
 if __name__ == "__main__":
-    t = TopicExtractor(7,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
-    t.run() 
-    # print(t.data['TOPIC'].tolist()[:3])
-    t2 = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
-    t2.run()
+    texts_d = TopicExtractor(7,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
+    texts_d.run() 
+    topics_d = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
+    topics_d.run()
+    texts_e = TopicExtractor(7,r"files\cleaned_texts_en.feather",r"files\topiced_texts_en.feather", "en")
+    texts_e.run() 
+    topics_e = TopicExtractor(7,r"files\cleaned_classes_en.feather",r"files\topiced_classes_en.feather","en",True)
+    topics_e.run()
     # print(t2.data['TOPIC'].tolist())
