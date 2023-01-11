@@ -57,6 +57,7 @@ class textFilter:
         
         filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\cleaning_'+lang+'.log'
         logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
+        logging.info("Data Preprocessing and Cleaning with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = self.lang, path = path, tpath = self.target_path))
 
     def load_data(self, path:str, t_path:str) -> pd.DataFrame:
         """Loads raw dataset containing all data samples that not had been already cleaned.
@@ -345,8 +346,8 @@ class textFilter:
 if __name__ == "__main__":
     d = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
     d.run()
-    # e = textFilter('en',r"files\raw_texts_en.feather",r"files\cleaned_texts_en.feather")
-    # e.run()
+    e = textFilter('en',r"files\raw_texts_en.feather",r"files\cleaned_texts_en.feather")
+    e.run()
 
 
     # data_sample = f.data.sample(frac = 0.007,replace = False,random_state = 1, axis = 0)
