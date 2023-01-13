@@ -1,6 +1,5 @@
 .venv/*
 *.csv
-*.log
 *.pyc
 *.py[cod]
 src/*/__pychache__*
@@ -16,3 +15,5 @@ src/cleans/__pycache__/*
 */kmeans.pkl
 */kmeans_vectorizer.pkl
 *.parquet
+!setup.cfg
+!setup.py
