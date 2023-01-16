@@ -29,7 +29,7 @@ import numpy as np
 import nltk
 import math
 import logging
-import datetime
+from datetime import datetime
 nltk.download('stopwords')
 
 class TopicExtractor:
@@ -59,7 +59,7 @@ class TopicExtractor:
         else:
             self.stopwords = stopwords.words('german')
 
-        filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\topic_extraction_'+self.lang+'.log'
+        filenames =  str(os.path.dirname(__file__)).split("src")[0] +r'doc\topic_extraction_'+lang+'.log'
         logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
         logging.info("Topic Extraction with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = self.lang, path = self.source_path, tpath = self.target_path))
        
@@ -71,27 +71,29 @@ class TopicExtractor:
             DataFrame: Returns a pandas DataFrame containing domain name of url link (DOMAIN), url link (URL), cleaned texts(URL_TEXT), language of text (LANG) and CLASS (optional).
         """
         df_path = str(os.path.dirname(__file__)).split("src")[0] + self.source_path
+        df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+
         #if topic dataset than group by class#
         if self.topic:
-            data = pd.read_feather(df_path).groupby("CLASS").agg({'URL_TEXT':lambda x: "|".join(list(x))})#['URL_TEXT'].apply(list)
+            raw_data = pd.read_feather(df_path)
+            raw_data = raw_data.groupby("CLASS").agg({'URL_TEXT':lambda x: "|".join(list(x))})#['URL_TEXT'].apply(list)
         else:
             data = pd.read_feather(df_path)
 
-        df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
-        if os.path.exists(df_t_path):
-            topiced_data = pd.read_feather(df_t_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
-        else:
-            topiced_data = pd.DataFrame(columns=data.columns.tolist())          
+            if os.path.exists(df_t_path):
+                topiced_data = pd.read_feather(df_t_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+            else:
+                topiced_data = pd.DataFrame(columns=data.columns.tolist())          
 
-        # Identify what values are in cleaned data and not already in topiced data
-        left_join = data.merge(topiced_data, on='URL', how='left', indicator=True)
-        left_join_df = left_join.loc[left_join['_merge'] == 'left_only', 'URL']
-        raw_data = data[data['URL'].isin(left_join_df)]
-        if "TOPIC" in raw_data.columns:
-            raw_data = raw_data.drop(columns="LANG", axis = 1)        
+            # Identify what values are in cleaned data and not already in topiced data
+            left_join = data.merge(topiced_data, on='URL', how='left', indicator=True)
+            left_join_df = left_join.loc[left_join['_merge'] == 'left_only', 'URL']
+            raw_data = data[data['URL'].isin(left_join_df)]
+            if "TOPIC" in raw_data.columns:
+                raw_data = raw_data.drop(columns="LANG", axis = 1)        
         return raw_data
 
-    def save_data(self, topiced_chunk:pd.Dataframe):
+    def save_data(self, topiced_chunk:pd.DataFrame):
         """Concatenate new chunk of generated topics data to already exisiting data containing topics.
 
         Args:
@@ -216,12 +218,12 @@ class TopicExtractor:
 
 
 if __name__ == "__main__":
-    texts_d = TopicExtractor(7,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
-    texts_d.run() 
-    topics_d = TopicExtractor(7,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
+    # texts_d = TopicExtractor(7,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
+    # texts_d.run() 
+    topics_d = TopicExtractor(5,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
     topics_d.run()
-    texts_e = TopicExtractor(7,r"files\cleaned_texts_en.feather",r"files\topiced_texts_en.feather", "en")
-    texts_e.run() 
-    topics_e = TopicExtractor(7,r"files\cleaned_classes_en.feather",r"files\topiced_classes_en.feather","en",True)
-    topics_e.run()
+    # texts_e = TopicExtractor(7,r"files\cleaned_texts_en.feather",r"files\topiced_texts_en.feather", "en")
+    # texts_e.run() 
+    # topics_e = TopicExtractor(5,r"files\cleaned_classes_en.feather",r"files\topiced_classes_en.feather","en",True)
+    # topics_e.run()
     # print(t2.data['TOPIC'].tolist())

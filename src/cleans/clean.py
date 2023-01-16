@@ -27,8 +27,6 @@ import math
 import logging 
 from datetime import datetime
 
-nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
-
 class textFilter:
     """Class to clean and filter raw texts (raw_texts.json) that had been crawled in previous step. 
     """
@@ -46,6 +44,7 @@ class textFilter:
         # file.close()
         # # dict= pd.read_pickle(df_path)
         # # self.data = pd.DataFrame.from_dict(dict, orient = 'index').T
+        
 
         self.text_col = 'URL_TEXT'
         self.url_col = 'URL'
@@ -54,6 +53,11 @@ class textFilter:
         
         self.data = self.load_data(path, t_path)
         self.cities = self.load_cities()
+
+        if self.lang == 'de':
+            self.nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
+        else:
+            self.nlp = spacy.load("en_core_web_trf")
         
         filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\cleaning_'+lang+'.log'
         logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
@@ -62,7 +66,7 @@ class textFilter:
     def load_data(self, path:str, t_path:str) -> pd.DataFrame:
         """Loads raw dataset containing all data samples that not had been already cleaned.
 
-        Args:
+        Args: 
             path (str): source path to file containing raw texts to be cleaned
             t_path (str): target path to save file with cleaned texts
 
@@ -161,18 +165,20 @@ class textFilter:
         zip = ["^[0-9]{5}(?:-[0-9]{4})?\s?\w*$"]
         phone = ["^\\+?[1-9][0-9]{7,14}$"]
         dates = ["^[0-9]{1,2}\\/[0-9]{1,2}\\/[0-9]{4}$","^[0-9]{1,2}\\-[0-9]{1,2}\\-[0-9]{4}$", "^[0-9]{4}\\-[0-9]{1,2}\\-[0-9]{1,2}$"]
-        website_stopwords = ["explore","allgemeine geschäftsbedingungen","allgemein\*",'richtlinie\w*',"\w*recht\w* hinweis\w*","\w*recht\w*","\w*datenschutz\w*", "privacy","policy\w*","cooky\w*","cookie\w*","content\w*"," to ",\
-                "anmeld\w*",  "abmeld\w*", "login","log in","logout", "log out", "kunden login", "online","zurück","back","start","select\w*", "ausw\w*","close",\
-                    "extras","news","report\w*","impressum","newsletter\w*", "owner","internet", "website\w*", "email\w*", "e-mail\w*", "mail\w*", "isbn", "issn",\
-                        "produkte", "partner","übersicht", "veranstaltungen", "suche\w*","kauf\w*", "angebot\w*", "konfigur\w*", "configur\w*","nutzer\w*","icon\w*",\
-                            "zubehör", "garantie", "mehr", "modell\w*", "kontakt\w*","contact\w*","anfrage\w*","skip",'useful links','link\w*',"pin\w*","passw\w*", "password\w*",\
-                                "buchen","book" "anfahrt", "finanzdienstleistung\w*" "connected", "required", "sitemap\w*", "\w*\s?abo\w*", 'social media', "socialmedia",\
+        website_stopwords = ["explore","allgemeine geschäftsbedingungen","general terms and conditions","allgemein\*",'richtlinie\w*','guideline\w*',"\w*recht\w* hinweis\w*",\
+            "\w*recht\w*","\w*datenschutz\w*","data privacy", "privacy","policy\w*","cooky\w*","cookie\w*","content\w*",\
+                "anmeld\w*",  "abmeld\w*", "login","log in","logout", "log out", "kunden login","customer login", "online","zurück","back","start","select\w*", "ausw\w*","close",\
+                    "extra\w*","news","report\w*","impressum","newsletter\w*", "owner","internet", "website\w*", "email\w*", "e-mail\w*", "mail\w*", "isbn", "issn",\
+                        "produkte", "products","partner","übersicht","overview", "veranstaltungen", "suche\w*","kauf\w*", "angebot\w*", "konfigur\w*", "configur\w*","nutzer\w*","icon\w*",\
+                            "zubehör", "garantie", "mehr", "modell\w*", "kontakt\w*","contact\w*","anfrage\w*","skip",'useful links','link\w*',"passw\w*", "password\w*",\
+                                "buchen","book" "anfahrt","directory", "finanzdienstleistung\w*","financial servic\w*", "connected", "required", "sitemap\w*", "\w*\s?abo\w*", 'social media', "socialmedia",\
                                     "englisch", "english","deutsch","german","google", "wikipedia", "navigation","\w*shop\w*", "\w*magazin\w*", "lifestyle",\
                                         "facebook\w*", "youtube\w*","instagram\w*","xing\w*","linkedin\w*", "blog\w*","spiegel\w*","twitter\w*","sms","video"\
-                                            "archiv\w*", "artikel\w*", "article\w*","side\w*", "seite\w*","site","app\w*","\s?abgerufen\s?\w*\s*\d*",\
+                                            "archiv\w*", "artikel\w*", "article\w*","side\w*", "seite\w*","site","app\w*","\s?abgerufen\s?\w*\s*\d*","\s?retrieved\s?\w*\s*\d*"\
                                                 "januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember",\
+                                                    "january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december",\
                                                     "dbx707", "db11","\w*\s?straße\s?\d*","\w*\s?strasse\w*", "tel\w*", "\w*\s?download\w*",\
-                                                        "covid\w*\s?\d*", "corona\w*\s?\d*"]
+                                                        "covid\w*\s?\d*", "corona\w*\s?\d*","\w*\s?street\s?\d*",]
                                        
         domain_stopwords = ["(g/km)","use case\w*", "unternehme\w*", "gmbh", "cokg", "co kg", "consult\w*", "handel\w*", "händler\w*", "leistung\w*"]
         numbers_only = ["^\\d+$","^\s?[0-9]+(\s+[0-9]+)*\s?$", "\(.*\)","\[.*\]", "^\d+.\d+"," \\d+ "]
@@ -259,7 +265,7 @@ class textFilter:
             pd.DataFrame: DataFrame with edited chunk of samples. 
         """
         data = input_data.copy()
-        data[self.text_col] = data[self.text_col].apply(lambda row: " ".join([token.lemma_ for token in nlp(row)]))
+        data[self.text_col] = data[self.text_col].apply(lambda row: " ".join([token.lemma_ for token in self.nlp(row)]))
         return data
 
     def remove_cityNames(self, input_data:pd.DataFrame) -> pd.DataFrame:
@@ -326,9 +332,9 @@ class textFilter:
                 print("Languages had been detected and filtered.")
                 chunk_lem = self.lemmatize_text(chunk_lang)
                 print("Text had been lemmatized.")
-                chunk_cit = self.remove_cityNames(chunk_lem)
-                print("City names had been removed.")
-                self.save_data(chunk_cit)
+                #chunk_cit = self.remove_cityNames(chunk_lem)
+                #print("City names had been removed.")
+                self.save_data(chunk_lem)
                 print("[{log}]Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape =self.data.shape[0], log = datetime.now()))
                 logging.info("[{log}]Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape = self.data.shape[0], log = datetime.now()))
             except KeyboardInterrupt:
@@ -339,23 +345,21 @@ class textFilter:
                 print(e)
                 logging.warning('[{log}]Something with data cleaning of a chunk of samples went wrong: {error}.'.format(error =e, log = datetime.now() ))
                 return
+        logging.info("[{log}] Done cleaning!".format(log = datetime.now()))
                 
             
         
 
 if __name__ == "__main__":
+    # d_class = textFilter('de',r"files\raw_classes.feather",r"files\cleaned_classes.feather")
+    # d_class.run()
+    # e_class = textFilter('en',r"files\raw_classes_en.feather",r"files\cleaned_classes_en.feather")
+    # e_class.run()
     d = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
     d.run()
     e = textFilter('en',r"files\raw_texts_en.feather",r"files\cleaned_texts_en.feather")
     e.run()
-
-
     # data_sample = f.data.sample(frac = 0.007,replace = False,random_state = 1, axis = 0)
     # print(data_sample.shape)
     # print(set(data_sample['CLASS'].tolist()))
-    #f.run()
-    # f2 = textFilter("de",r"files\raw_classes.feather",r"files\cleaned_classes.feather")
-    # f2.run()
-    #re.sub( "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$", "", w)
-    # result = [re.search( "^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.(de|com)\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$",w) for w in ["https://www.abarth.fr", "https://www.abarth.de","https://www.abarth.gr", "https://www.abarth.com"]]
-    # print(result)
+    
