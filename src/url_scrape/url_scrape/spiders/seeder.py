@@ -365,36 +365,27 @@ def run_crawler(lang:str):
         #{'files/raw_texts.csv': {'format': 'csv'}}
         #{'files/raw_texts.pkl': {'format': 'pickle'}}
         #{'files/raw_texts.json': {'format': 'json'}}
-    
-    process2 = CrawlerProcess({
+
+    process2 =  CrawlerProcess({
     'USER_AGENT': 'Mozilla/5.0',
-    # 'FEED_EXPORTERS': {
-    #     'pickle': 'scrapy.exporters.PickleItemExporter'
-    # },
     'FEED_EXPORT_ENCODING': 'utf-8',
-    'FEEDS': {'files/raw_texts_new.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD","DOMAIN",'URL', 'URL_TEXT']}}
+    'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD",'DOMAIN','URL', 'URL_TEXT']}}
     })
 
-    process3 =  CrawlerProcess({
-        'USER_AGENT': 'Mozilla/5.0',
-        'FEED_EXPORT_ENCODING': 'utf-8',
-        'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD",'DOMAIN','URL', 'URL_TEXT']}}
-        })   
-
     if lang == 'de':
-        # process3.crawl(TopicSpider, r'files/raw_classes.json','de')   
-        # process3.start()
+        process2.crawl(TopicSpider, r'files/raw_classes.json','de')   
+        process2.start()   
         process1.crawl(SeederSpider, r'files\Seed.feather', 'internal', 'de')
-        process1.start()   
+        process1.start()
     elif lang == 'en':
-        # process3.crawl(TopicSpider, r'files/raw_classes.json','en')   
-        # process3.start()
+        process2.crawl(TopicSpider, r'files/raw_classes.json','en')   
+        process2.start()
         process1.crawl(SeederSpider, r'files\Seed_en.feather', 'internal', 'en')
-        process1.start()   
+        process1.start()    
     else:
         return
 
-def union_and_save(lang:str):
+def union_and_save_texts(lang:str):
     """Function gets called when crawling is finished or manualy interrupted. The crawled data saved in "raw_texts_internal.json" are concatenated with whole dataset 
     "raw_texts" and this new dataset is saved(overwrote) as parquet and feather file. Crawled data in "raw_texts_internal.json" are finally removed.
 
@@ -432,9 +423,31 @@ def union_and_save(lang:str):
     print("Classes crawled: ",set(dfi['CLASS'].tolist()))
     # duplicated = dfi.duplicated(subset=['URL']).any()
     # print("Duplicates in total raw dataset: ",duplicated)
-    logging.info("[{log}]Crawling has finished".format(log = datetime.date()))
-    logging.info("[{log}]Total size of raw dataset:{s}, Classes crawled:{c}".format(log = datetime.date(),s = dfi.shape, c = set(dfi['CLASS'].tolist())))
+    logging.info("[{log}]Crawling of texts has finished".format(log = datetime.now()))
+    logging.info("[{log}]Total size of raw dataset:{s}, Classes crawled:{c}".format(log = datetime.now(),s = dfi.shape, c = set(dfi['CLASS'].tolist())))
 
+def union_and_save_class(lang:str):
+    """Function gets called when crawling is finished or manualy interrupted. The crawled data saved in "raw_classes.json" are saved(overwrote) as feather file. 
+    Crawled data in "raw_classes.json" are finally removed.
+
+    Args:
+        lang (str): unicode to select texts in that language 
+    """
+    path = str(os.path.dirname(__file__)).split("src")[0]
+    s_path = r'files/raw_classes.json'
+    if lang == 'en':
+        t_path = r'files/raw_classes_en.feather'
+    else:
+        t_path = r'files/raw_classes.feather'
+
+    df_new = pd.read_json(path+s_path)
+    os.remove(path+s_path)  
+    df_new.to_feather(path+t_path)
+
+    print("Total size of raw dataset: ",df_new.shape)
+    print("Classes crawled: ",set(df_new['CLASS'].tolist()))
+    logging.info("[{log}]Crawling of topics has finished".format(log = datetime.now()))
+    logging.info("[{log}]Total size of raw classes dataset:{s}, Classes crawled:{c}".format(log = datetime.now(),s = df_new.shape, c = set(df_new['CLASS'].tolist())))
     
 if __name__ == '__main__':
     """Main function. Calls run method "run_crawler" and union method "union_data"
@@ -442,18 +455,21 @@ if __name__ == '__main__':
     Args:
             lang (str): unicode to select texts in that language 
     """ 
-    lang = 'en'
+    lang = 'de'
     filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
     logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
     try:
-        logging.info("[{log}]Crawling has started".format(log = datetime.date()))
+        logging.info("[{log}]Crawling has started".format(log = datetime.now()))
         run_crawler(lang) 
     except Exception as e:
-        union_and_save(lang)
-        logging.warning('[{log}]Crawling had been interrupted by error:{error}'.format(log = datetime.date(), error = e))
+        logging.warning('[{log}]Crawling had been interrupted by error:{error}'.format(log = datetime.now(), error = e))
     finally:
         source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_new.json'
+        class_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_classes.json'
         if os.path.exists(source_path):
-            union_and_save(lang)    
+            union_and_save_texts(lang)
+        if os.path.exists(class_path):
+            union_and_save_class(lang)
+      
     
             
