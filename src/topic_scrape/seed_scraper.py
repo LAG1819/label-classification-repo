@@ -210,11 +210,11 @@ class TopicScraper:
         
 
 #Main - Init a crawler with given searchlist Searchlist.xsls. Crawls and saves all information (run).
-if __name__ == "__main__":
-    start = time.process_time()
-    scrape = TopicScraper("en",r'files\Seed.xlsx')
-    scrape.run()
-    print(time.process_time() - start)
+# if __name__ == "__main__":
+#     start = time.process_time()
+#     scrape = TopicScraper("en",r'files\Seed.xlsx')
+#     scrape.run()
+#     print(time.process_time() - start)
 
 
 

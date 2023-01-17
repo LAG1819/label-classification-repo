@@ -449,27 +449,27 @@ def union_and_save_class(lang:str):
     logging.info("[{log}]Crawling of topics has finished".format(log = datetime.now()))
     logging.info("[{log}]Total size of raw classes dataset:{s}, Classes crawled:{c}".format(log = datetime.now(),s = df_new.shape, c = set(df_new['CLASS'].tolist())))
     
-if __name__ == '__main__':
-    """Main function. Calls run method "run_crawler" and union method "union_data"
+# if __name__ == '__main__':
+#     """Main function. Calls run method "run_crawler" and union method "union_data"
 
-    Args:
-            lang (str): unicode to select texts in that language 
-    """ 
-    lang = 'de'
-    filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
-    logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
-    try:
-        logging.info("[{log}]Crawling has started".format(log = datetime.now()))
-        run_crawler(lang) 
-    except Exception as e:
-        logging.warning('[{log}]Crawling had been interrupted by error:{error}'.format(log = datetime.now(), error = e))
-    finally:
-        source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_new.json'
-        class_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_classes.json'
-        if os.path.exists(source_path):
-            union_and_save_texts(lang)
-        if os.path.exists(class_path):
-            union_and_save_class(lang)
+#     Args:
+#             lang (str): unicode to select texts in that language 
+#     """ 
+#     lang = 'de'
+#     filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
+#     logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
+#     try:
+#         logging.info("[{log}]Crawling has started".format(log = datetime.now()))
+#         run_crawler(lang) 
+#     except Exception as e:
+#         logging.warning('[{log}]Crawling had been interrupted by error:{error}'.format(log = datetime.now(), error = e))
+#     finally:
+#         source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_new.json'
+#         class_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_classes.json'
+#         if os.path.exists(source_path):
+#             union_and_save_texts(lang)
+#         if os.path.exists(class_path):
+#             union_and_save_class(lang)
       
     
             
