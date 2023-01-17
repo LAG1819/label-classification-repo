@@ -1,17 +1,15 @@
 .venv/*
 *.csv
 *.pyc
+__pycache__/
 *.py[cod]
-src/*/__pychache__*
 secrets_git_luisa.py
 src/archive/*
-src/cleans/__pycache__/*
+# src/cleans/__pycache__/*
 *.json
 *.exe
 *.zip
 *.feather
-*.__pycache__*
-!CLASS_keywords.json
 */kmeans.pkl
 */kmeans_vectorizer.pkl
 *.parquet
