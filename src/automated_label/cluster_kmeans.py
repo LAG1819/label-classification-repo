@@ -156,6 +156,6 @@ class TOPIC_KMeans:
         self.save_clusterNames()
 
 
-kmeans = TOPIC_KMeans('de',r"files\topiced_classes.feather",r"files\topiced_texts.feather")
-kmeans.run()
+# kmeans = TOPIC_KMeans('de',r"files\topiced_classes.feather",r"files\topiced_texts.feather")
+# kmeans.run()
 

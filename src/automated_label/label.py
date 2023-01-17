@@ -266,9 +266,9 @@ class Labeler:
         self.show_samples_per_class()
         #self.save_data()
 
-if __name__ == "__main__":
-    l = Labeler(r"files\topiced_texts.feather",r"files\labeled_texts.feather")
-    l.run()
+# if __name__ == "__main__":
+#     l = Labeler(r"files\topiced_texts.feather",r"files\labeled_texts.feather")
+#     l.run()
     #print(l.data['LABEL'].tolist())
 
     #kmeans test
