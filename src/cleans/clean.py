@@ -52,7 +52,7 @@ class textFilter:
         self.target_path = t_path
         
         self.data = self.load_data(path, t_path)
-        self.cities = self.load_cities()
+        #self.cities = self.load_cities()
 
         if self.lang == 'de':
             self.nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
@@ -353,10 +353,10 @@ class textFilter:
 if __name__ == "__main__":
     # d_class = textFilter('de',r"files\raw_classes.feather",r"files\cleaned_classes.feather")
     # d_class.run()
-    # e_class = textFilter('en',r"files\raw_classes_en.feather",r"files\cleaned_classes_en.feather")
+    # e_class = textFilter('en'sr"files\raw_classes_en.feather",r"files\cleaned_classes_en.feather")
     # e_class.run()
-    d = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
-    d.run()
+    # d = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
+    # d.run()
     e = textFilter('en',r"files\raw_texts_en.feather",r"files\cleaned_texts_en.feather")
     e.run()
     # data_sample = f.data.sample(frac = 0.007,replace = False,random_state = 1, axis = 0)

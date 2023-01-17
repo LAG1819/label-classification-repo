@@ -24,7 +24,7 @@ import os
 import pandas as pd
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
-from lda_coherence import get_coherence 
+from src.cleans.lda_coherence import get_coherence 
 import numpy as np
 import nltk
 import math
@@ -230,9 +230,9 @@ class TopicExtractor:
             logging.info("[{log}]Topic extraction of data sampleset {number} with size {size} of dataframe {df} is finished.".format(log = datetime.now(), number = i,size =chunk_c.shape, df = self.data.shape))
         logging.info("[{log}]Topic extraction of dataframe {df} is finished.".format(log = datetime.now(), df = self.data.shape))
 
-if __name__ == "__main__":
-    texts_d = TopicExtractor(2,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
-    texts_d.run() 
+# if __name__ == "__main__":
+#     texts_d = TopicExtractor(2,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
+#     texts_d.run() 
     # topics_d = TopicExtractor(2,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
     # topics_d.run()
     # texts_e = TopicExtractor(2,r"files\cleaned_texts_en.feather",r"files\topiced_texts_en.feather", "en")
