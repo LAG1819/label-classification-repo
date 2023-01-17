@@ -152,38 +152,38 @@ class CustomModel(nn.Module):
 
 
 
-tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
+# tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
 
-data, train_data = load_data()
-len_train_data = train_data['LABEL'].tolist()
-tokenized_data = preprocess_data(data)
-print(tokenized_data.keys)
-#add label column to tokenized!!! 
-data_collator = DataCollatorWithPadding(tokenizer=tokenizer)#return_tensors="tf"
-train_dataloader,eval_dataloader = transform_data_asTR(tokenized_data, data_collator)
+# data, train_data = load_data()
+# len_train_data = train_data['LABEL'].tolist()
+# tokenized_data = preprocess_data(data)
+# print(tokenized_data.keys)
+# #add label column to tokenized!!! 
+# data_collator = DataCollatorWithPadding(tokenizer=tokenizer)#return_tensors="tf"
+# train_dataloader,eval_dataloader = transform_data_asTR(tokenized_data, data_collator)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model=CustomModel(checkpoint="bert-base-german-cased",num_labels=2).to(device)
-num_training_steps,num_epochs, metric, optimizer, lr_scheduler = set_params(len_train_data)
-progress_bar_train = range(num_training_steps)
-progress_bar_eval = range(num_epochs * len(eval_dataloader))
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# model=CustomModel(checkpoint="bert-base-german-cased",num_labels=2).to(device)
+# num_training_steps,num_epochs, metric, optimizer, lr_scheduler = set_params(len_train_data)
+# progress_bar_train = range(num_training_steps)
+# progress_bar_eval = range(num_epochs * len(eval_dataloader))
 
 
-###training of model###
-for epoch in range(num_epochs):
-  model.train()
-  for batch in train_dataloader:
-      batch = {k: v.to(device) for k, v in batch.items()}
+# ###training of model###
+# for epoch in range(num_epochs):
+#   model.train()
+#   for batch in train_dataloader:
+#       batch = {k: v.to(device) for k, v in batch.items()}
       
-      outputs = model(**batch)
+#       outputs = model(**batch)
     
-      loss = outputs.loss
-      loss.backward()
+#       loss = outputs.loss
+#       loss.backward()
 
-      optimizer.step()
-      lr_scheduler.step()
-      optimizer.zero_grad()
-      progress_bar_train.update(1)
+#       optimizer.step()
+#       lr_scheduler.step()
+#       optimizer.zero_grad()
+#       progress_bar_train.update(1)
 
 ### eval of model ###
 #   model.eval()

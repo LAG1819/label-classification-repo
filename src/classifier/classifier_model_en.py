@@ -405,15 +405,15 @@ class Transformer():
     def run(self):
         c.apply_classifier()
 
-if __name__ == "__main__":
-    c = Transformer()
+# if __name__ == "__main__":
+#     c = Transformer()
     # for text_batch, label_batch in c.train_df.take(1):
     #     for i in range(1):
     #         print(f'Review: {text_batch.numpy()[i]}')
     
     # c.model_preprocess_test()
-    c.apply_classifier()
-    c.evaluate_model()
+    # c.apply_classifier()
+    # c.evaluate_model()
 
     
     
