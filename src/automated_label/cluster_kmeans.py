@@ -29,10 +29,11 @@ class TOPIC_KMeans:
     """Class to predict predefined clusters (topics/classes) with kMeans Algorithm based on predefined fixed centroids.
     The centroids are based on TOPIC_Classes.xlsx with cleaned and generated topics in topiced_classes.feather 
     """
-    def __init__(self, topics_path:str,data_path:str):
+    def __init__(self,lang:str ,topics_path:str,data_path:str):
         """Initialisation of a cluster generator object. Loads predefined clusters and cleaned texts to predict clusters on.
 
         Args:
+            lang(str):unicode of language selected texts to create cluster with 
             topics_path (str): Path to predefined cluster data.
             data_path (str): Source path to file containing cleaned texts and generated topics to predict cluster.
         """
@@ -155,6 +156,6 @@ class TOPIC_KMeans:
         self.save_clusterNames()
 
 
-kmeans = TOPIC_KMeans(r"files\topiced_classes.feather",r"files\topiced_texts.feather")
+kmeans = TOPIC_KMeans('de',r"files\topiced_classes.feather",r"files\topiced_texts.feather")
 kmeans.run()
 
