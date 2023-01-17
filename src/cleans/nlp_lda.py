@@ -75,8 +75,10 @@ class TopicExtractor:
 
         #if topic dataset than group by class#
         if self.topic:
-            raw_data = pd.read_feather(df_path)
-            raw_data = raw_data.groupby("CLASS").agg({'URL_TEXT':lambda x: "|".join(list(x))})#['URL_TEXT'].apply(list)
+            data = pd.read_feather(df_path)
+            raw_data = data.groupby("CLASS").agg({'URL_TEXT':lambda x: "|".join(list(x))})#['URL_TEXT'].apply(list)
+            logging.info("[{log}]Total of k-Means centroid data to extract topics: {all}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, l=raw_data.shape))
+            print("[{log}]Total of k-Means centroid data to extract topics: {all}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, l=raw_data.shape))
         else:
             data = pd.read_feather(df_path)
 
@@ -90,25 +92,15 @@ class TopicExtractor:
             left_join_df = left_join.loc[left_join['_merge'] == 'left_only', 'URL']
             raw_data = data[data['URL'].isin(left_join_df)]
             if "TOPIC" in raw_data.columns:
-                raw_data = raw_data.drop(columns="LANG", axis = 1)        
+                raw_data = raw_data.drop(columns="LANG", axis = 1)  
+
+            print("Raw data (total):", data.shape)
+            print("Raw data:", raw_data.shape)
+            print("Topiced data:", topiced_data.shape)
+            logging.info("[{log}]Total of data to extract topics: {all}. Total of data already with extracted topic: {t}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, t = topiced_data.shape,l=raw_data.shape))
+            print("[{log}]Total of data to extract topics: {all}. Total of data already with extracted topic: {t}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, t = topiced_data.shape,l=raw_data.shape))          
         return raw_data
 
-    def save_data(self, topiced_chunk:pd.DataFrame):
-        """Concatenate new chunk of generated topics data to already exisiting data containing topics.
-
-        Args:
-            topiced_chunk (pd.Dataframe): Chunk of 300 (by default) samples of data with extracted topics.
-        """
-        df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
-        if os.path.exists(df_t_path):
-            topiced_data = pd.read_feather(df_t_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
-        else:
-            topiced_data = pd.DataFrame(columns=topiced_chunk.columns.tolist())
-
-        data_to_save = pd.concat([topiced_data,topiced_chunk], ignore_index=True).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True) 
-        print(data_to_save.shape)
-
-        data_to_save.to_feather(df_t_path)
 
     def generate_tfIdf(self,doc_list:list):
         """Apply rowwise generation of Tfidf-Vector and fit to cleaned texts (URL_TEXT).
@@ -201,6 +193,27 @@ class TopicExtractor:
             chunks.append(self.data[i*chunk_size:(i+1)*chunk_size])
         return chunks
 
+    def save_data(self, topiced_chunk:pd.DataFrame):
+        """Concatenate new chunk of generated topics data to already exisiting data containing topics.
+
+        Args:
+            topiced_chunk (pd.Dataframe): Chunk of 300 (by default) samples of data with extracted topics.
+        """
+        df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        if self.topic:            
+            data_to_save = topiced_chunk.reset_index(drop=True) 
+        else:
+            if os.path.exists(df_t_path):
+                topiced_data = pd.read_feather(df_t_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
+            else:
+                topiced_data = pd.DataFrame(columns=topiced_chunk.columns.tolist())
+
+            data_to_save = pd.concat([topiced_data,topiced_chunk], ignore_index=True).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True) 
+        
+        print(data_to_save.shape)
+        print("Topic extraction of one data sampleset finished.")
+        data_to_save.to_feather(df_t_path)
+
 
     def run(self):
         """Run function of TopicExtractor class. First generate_topic() is rowwise called, than empty values will be replaced by empty strings.
@@ -215,15 +228,14 @@ class TopicExtractor:
             chunk_c.replace(np.nan, "",regex = False, inplace = True)
             self.save_data(chunk_c)
             logging.info("[{log}]Topic extraction of data sampleset {number} with size {size} of dataframe {df} is finished.".format(log = datetime.now(), number = i,size =chunk_c.shape, df = self.data.shape))
-
+        logging.info("[{log}]Topic extraction of dataframe {df} is finished.".format(log = datetime.now(), df = self.data.shape))
 
 if __name__ == "__main__":
-    # texts_d = TopicExtractor(7,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
-    # texts_d.run() 
-    topics_d = TopicExtractor(5,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
-    topics_d.run()
-    # texts_e = TopicExtractor(7,r"files\cleaned_texts_en.feather",r"files\topiced_texts_en.feather", "en")
+    texts_d = TopicExtractor(2,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
+    texts_d.run() 
+    # topics_d = TopicExtractor(2,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
+    # topics_d.run()
+    # texts_e = TopicExtractor(2,r"files\cleaned_texts_en.feather",r"files\topiced_texts_en.feather", "en")
     # texts_e.run() 
-    # topics_e = TopicExtractor(5,r"files\cleaned_classes_en.feather",r"files\topiced_classes_en.feather","en",True)
+    # topics_e = TopicExtractor(2,r"files\cleaned_classes_en.feather",r"files\topiced_classes_en.feather","en",True)
     # topics_e.run()
-    # print(t2.data['TOPIC'].tolist())
