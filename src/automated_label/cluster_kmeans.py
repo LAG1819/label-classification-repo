@@ -39,6 +39,7 @@ class TOPIC_KMeans:
         """
         self.topics = self.load_centroids(topics_path)
         self.raw_data = self.load_data(data_path)
+        self.lang = lang
 
     def load_centroids(self,source_path:str) -> pd.DataFrame:
         """Load data containing predefined clusters. The data contain the Cluster (CLASS), the url link (DOMAIN), 
@@ -53,7 +54,9 @@ class TOPIC_KMeans:
             generated topics (TOPIC) based on cleaned texts. 
         """
         df_path = str(os.path.dirname(__file__)).split("src")[0] + source_path
-        return pd.read_feather(df_path)
+        df = pd.read_feather(df_path)
+        df.reset_index(drop=True, inplace=True)
+        return df
 
     def load_data(self,source_path:str) -> pd.DataFrame:
         """Load data containing data for which clusters are to be predicted. The data contain the domain of url link (DOMAIN), 
@@ -80,10 +83,13 @@ class TOPIC_KMeans:
             TfidfVectorizer: Returns Tfifd Vectorizer fitted to all topics of data for which clusters are to be predicted and all topics of data containing predefined clusters.
         """
         tokenizer = RegexpTokenizer(r'\w+')
-        german_stopwords = stopwords.words('german')
+        if self.lang == 'de':
+            stopwords_l = stopwords.words('german')
+        if self.lang == 'en':
+            stopwords_l = stopwords.words('english')
 
         tfidf_v = TfidfVectorizer(lowercase=True,
-                                stop_words=german_stopwords,
+                                stop_words=stopwords_l,
                                 ngram_range = (1,2),
                                 tokenizer = tokenizer.tokenize)
 
@@ -112,8 +118,8 @@ class TOPIC_KMeans:
         Args:
             model (KMeans): Fitted KMeans model.
         """
-        path_m = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans.pkl"
-        path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans_vectorizer.pkl"
+        path_m = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans_"+str(self.lang)+".pkl"
+        path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans_vectorizer_"+str(self.lang)+".pkl"
 
         if os.path.exists(path_m):
             os.remove(path_m)
@@ -133,9 +139,9 @@ class TOPIC_KMeans:
             dic[str(i+2)] = [t]
         #save cluster dictionary
         cluster_names =  pd.DataFrame.from_dict(dic)
-        print(dic)
+        #print(dic)
 
-        path = r"files\kMeans_cluster.feather"
+        path = str(os.path.dirname(__file__)).split("src")[0] +r"files\kMeans_cluster_"+str(self.lang)+".feather"
         if os.path.exists(path):
             os.remove(path)
         cluster_names.to_feather(path)
@@ -158,4 +164,5 @@ class TOPIC_KMeans:
 
 # kmeans = TOPIC_KMeans('de',r"files\topiced_classes.feather",r"files\topiced_texts.feather")
 # kmeans.run()
-
+# kmeans = TOPIC_KMeans('en',r"files\topiced_classes_en.feather",r"files\topiced_texts_en.feather")
+# kmeans.run()
