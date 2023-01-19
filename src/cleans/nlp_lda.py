@@ -204,7 +204,8 @@ class TopicExtractor:
         """
         df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
         if self.topic:            
-            data_to_save = topiced_chunk.reset_index(drop=True) 
+            data_to_save = topiced_chunk
+            data_to_save.reset_index(inplace=True)
         else:
             if os.path.exists(df_t_path):
                 topiced_data = pd.read_feather(df_t_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
@@ -233,12 +234,12 @@ class TopicExtractor:
             logging.info("[{log}]Topic extraction of data sampleset {number} with size {size} of dataframe {df} is finished.".format(log = datetime.now(), number = i,size =chunk_c.shape, df = self.data.shape))
         logging.info("[{log}]Topic extraction of dataframe {df} is finished.".format(log = datetime.now(), df = self.data.shape))
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 #     texts_d = TopicExtractor(2,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
 #     texts_d.run() 
     # topics_d = TopicExtractor(2,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
     # topics_d.run()
-    texts_e = TopicExtractor(2,r"files\cleaned_texts_en.feather",r"files\topiced_texts_en.feather", "en")
-    texts_e.run() 
+    # texts_e = TopicExtractor(2,r"files\cleaned_texts_en.feather",r"files\topiced_texts_en.feather", "en")
+    # texts_e.run() 
     # topics_e = TopicExtractor(2,r"files\cleaned_classes_en.feather",r"files\topiced_classes_en.feather","en",True)
     # topics_e.run()
