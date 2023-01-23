@@ -30,12 +30,12 @@ from datetime import datetime
 class textFilter:
     """Class to clean and filter raw texts (raw_texts.json) that had been crawled in previous step. 
     """
-    def __init__(self,lang:str, path:str, t_path:str):
+    def __init__(self,lang:str, s_path:str, t_path:str):
         """Initialise a textFilter object that can clean raw html text.
 
         Args:
             lang (str): unicode of language to filter raw texts only in that language 
-            path (str): source path to file containing raw texts to clean
+            s_path (str): source path to file containing raw texts to clean
             t_path (str): target path to save file with cleaned texts
         """
         # df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts.pkl"
@@ -51,7 +51,7 @@ class textFilter:
         self.lang = lang
         self.target_path = t_path
         
-        self.data = self.load_data(path, t_path)
+        self.data = self.load_data(s_path, t_path)
         #self.cities = self.load_cities()
 
         if self.lang == 'de':
