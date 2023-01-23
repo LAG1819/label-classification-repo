@@ -17,3 +17,6 @@ models/*
 src/url_scrape/url_scrape/spiders/__pycache__/__init__.cpython-39.pyc
 src/url_scrape/url_scrape/__pycache__/__init__.cpython-39.pyc
 src/url_scrape/url_scrape/spiders/__pycache__/seeder.cpython-39.pyc
+src/url_scrape/url_scrape/__pycache__/__init__.cpython-39.pyc
+src/url_scrape/url_scrape/spiders/__pycache__/__init__.cpython-39.pyc
+src/url_scrape/url_scrape/spiders/__pycache__/seeder.cpython-39.pyc
