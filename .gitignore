@@ -10,8 +10,7 @@ src/archive/*
 *.exe
 *.zip
 *.feather
-*/kmeans.pkl
-*/kmeans_vectorizer.pkl
+models/*
 *.parquet
 !setup.cfg
 !setup.py
