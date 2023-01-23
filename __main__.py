@@ -59,6 +59,7 @@ def execute_full_process(lang:str):
     crawl_data(lang)
     clean_data(lang)
     extract_topics(lang)
+    set_kMeans(lang)
     label_data(lang)
     classify_data(lang)
 
@@ -112,15 +113,20 @@ def extract_topics(lang:str):
         topics_e = TopicExtractor(2,r"files\cleaned_classes_en.feather",r"files\topiced_classes_en.feather",lang,True)
         topics_e.run()
 
-def label_data(lang:str):
-    if lang == 'de':
+def set_kMeans(lang:str):
+     if lang == 'de':
         kmeans = TOPIC_KMeans(lang,r"files\topiced_classes.feather",r"files\topiced_texts.feather")
         kmeans.run()
+     if lang == 'en': 
+        kmeans = TOPIC_KMeans(lang,r"files\topiced_classes_en.feather",r"files\topiced_texts_en.feather")
+        kmeans.run()
+
+
+def label_data(lang:str):
+    if lang == 'de':
         l = Labeler(r"files\topiced_texts.feather",r"files\labeled_texts.feather")
         l.run()
     if lang == 'en': 
-        kmeans = TOPIC_KMeans(lang,r"files\topiced_classes_en.feather",r"files\topiced_texts_en.feather")
-        kmeans.run()
         l = Labeler(r"files\topiced_texts_en.feather",r"files\labeled_texts_en.feather")
         l.run()
 
@@ -132,15 +138,26 @@ def classify_data(lang:str):
         pass
 
 def main_menu(lang:str):
-    print("Welcome to Main Menu!\n\
-        Please select an Option:\n\
+    """Main Menu defined for external user.
+
+    Args:
+        lang (str): unicode of language to do apply whole process with
+    """
+    print("\n \
+           ###################################################################################### \n \
+           #######################-------------TALC---------------############################### \n \
+           ##########-------------Topic based automated labeled classifer---------------######### \n \
+           ###################################################################################### \n \
+           Welcome to Main Menu!\n\
+            Please select an Option:\n\
             (0) End session.\n\
             (1) Execute full process.\n\
             (2) Execute data crawling.\n\
             (3) Execute data cleaning.\n\
             (4) Execute topic extraction.\n\
-            (5) Execute automated labeling.\n\
-            (6) Execute classification. ")
+            (5) Exercute automated labeling: k-Means. \n\
+            (6) Execute automated labeling: Labeling.\n\
+            (7) Execute classification. ")
 
     wrongInput = True
     while wrongInput:
@@ -173,9 +190,11 @@ def main_menu(lang:str):
         clean_data()
     elif selected_execution == 4:
         extract_topics()
-    elif selected_execution == 5:
-        label_data()
+    elif selected_execution == 4:
+        extract_topics()
     elif selected_execution == 6:
+        label_data()
+    elif selected_execution == 7:
         classify_data()
 
 
