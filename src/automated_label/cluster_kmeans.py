@@ -105,11 +105,11 @@ class TOPIC_KMeans:
         """
         kmeans = KMeans(init = centroids, n_clusters=7, random_state=1, n_init = 1)
         kmeans.fit(centroids)
-        print(kmeans.labels_)
+        #print(kmeans.labels_)
         cluster_centers = kmeans.cluster_centers_
         # print(cluster_centers)
 
-        self.save_model(kmeans,vectorizer)
+        #self.save_model(kmeans,vectorizer)
         
 
     def save_model(self,model:KMeans, vectorizer:TfidfVectorizer):
