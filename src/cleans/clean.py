@@ -38,14 +38,22 @@ class textFilter:
             s_path (str): source path to file containing raw texts to clean
             t_path (str): target path to save file with cleaned texts
         """
-        # df_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\raw_texts.pkl"
-        # file = open(df_path, 'rb')
-        # data = pickle.load(file)
-        # file.close()
-        # # dict= pd.read_pickle(df_path)
-        # # self.data = pd.DataFrame.from_dict(dict, orient = 'index').T
-        
+        # Create logger and assign handler
+        logger = logging.getLogger("Cleaining")
 
+        handler  = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+
+        filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\data_cleaning.log'
+        fh = logging.FileHandler(filename=filenames)
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+        logger.addHandler(fh)
+
+        logger.info("Data Preprocessing and Cleaning with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = self.lang, path = s_path, tpath = self.target_path))
+        
         self.text_col = 'URL_TEXT'
         self.url_col = 'URL'
         self.lang = lang
@@ -57,11 +65,7 @@ class textFilter:
         if self.lang == 'de':
             self.nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
         else:
-            self.nlp = spacy.load("en_core_web_trf")
-        
-        filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\cleaning_'+lang+'.log'
-        logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
-        logging.info("Data Preprocessing and Cleaning with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = self.lang, path = path, tpath = self.target_path))
+            self.nlp = spacy.load("en_core_web_trf")        
 
     def load_data(self, path:str, t_path:str) -> pd.DataFrame:
         """Loads raw dataset containing all data samples that not had been already cleaned.
@@ -319,33 +323,33 @@ class textFilter:
         Than the language of cleaned texts is applied and all texts that are not matching the initialised lang are filtered. In advance all city names in texts 
         will be removed and text will be lemmatized. Filtered and cleaned texts are finally saved to target path. 
         """
+        logger = logging.getLogger("Cleaining")
         df_chunks = self.split_dataframe()
         print("Size of full dataset: {dataset}. Number of chunks: {chunks}".format(dataset = self.data.shape[0], chunks = len(df_chunks)))
-        logging.info("[{log}]Data cleaning started".format(log = datetime.now()))
+        logger.info("Data cleaning started")
         for i,chunk in enumerate(df_chunks):
             try:
-                print("New chunk starts cleaning")
+                logger.info("New chunk starts cleaning. Total cleaned:",i*chunk.shape[0])
                 chunk_text = self.remove_nonText(chunk)
                 chunk_stopwords = self.remove_domainStopwords(chunk_text)
-                print("Non textual elements and stopwords had been removed.")
+                logger.info("Non textual elements and stopwords had been removed.")
                 chunk_lang = self.flag_lang(chunk_stopwords)
-                print("Languages had been detected and filtered.")
+                logger.info("Languages had been detected and filtered.")
                 chunk_lem = self.lemmatize_text(chunk_lang)
-                print("Text had been lemmatized.")
+                logger.info("Text had been lemmatized.")
                 #chunk_cit = self.remove_cityNames(chunk_lem)
                 #print("City names had been removed.")
                 self.save_data(chunk_lem)
-                print("[{log}]Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape =self.data.shape[0], log = datetime.now()))
-                logging.info("[{log}]Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape = self.data.shape[0], log = datetime.now()))
+                logger.info("Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape = self.data.shape[0]))
             except KeyboardInterrupt:
                 print(KeyboardInterrupt)
-                logging.warning('[{log}]Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.'.format(log = datetime.now()))
+                logger.warning('Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.')
                 return
             except Exception as e:
                 print(e)
-                logging.warning('[{log}]Something with data cleaning of a chunk of samples went wrong: {error}.'.format(error =e, log = datetime.now() ))
+                logger.warning('Something with data cleaning of a chunk of samples went wrong: {error}.'.format(error =e))
                 return
-        logging.info("[{log}] Done cleaning!".format(log = datetime.now()))
+        logger.info("Done cleaning of whole dataset!")
                 
             
         
