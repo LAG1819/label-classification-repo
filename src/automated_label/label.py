@@ -163,15 +163,15 @@ class Labeler:
                 autonomous_keywords,electrification_keywords,digitalisation_keywords,connectivity_keywords,sustainability_keywords,individualisation_keywords,shared_keywords]
          
         logger = logging.getLogger("Labeler")
-
+        self.lang = lang
         self.k = k
         self.L_train = None
         self.label_model = None
         self.source_path = s_path
         self.target_path = t_path
-        self.text_col = 'TOPIC'#'URL_TEXT'
+        self.text_col = 'URL_TEXT'
         self.data = self.load_data()
-        self.train_df, self.validate_df, self.test_df = self.generate_trainTestdata(lang)
+        self.train_df, self.validate_df, self.test_df, self.train_test_df = self.generate_trainTestdata(lang)
         logger.info("Automated Labeling started with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = s_path, tpath = t_path))
     
     def load_data(self) -> pd.DataFrame:
@@ -182,7 +182,6 @@ class Labeler:
         """
         df_path = str(os.path.dirname(__file__)).split("src")[0] + self.source_path
         df = pd.read_feather(df_path)
-        df = df.rename(columns = {self.text_col : 'text'})
         return df.replace(np.nan, "",regex = False)
 
     def generate_trainTestdata(self, lang:str) -> pd.DataFrame:
@@ -199,6 +198,7 @@ class Labeler:
             test = pd.read_excel(test_path, index_col = 0)
             test = test[test['LABEL']!= 0]
             train = pd.read_feather(train_path)
+            train = train.rename(columns = {'text':'TOPIC'})
             validate = pd.read_excel(val_path, index_col = 0)
             validate = validate[validate['LABEL']!= 0]
         else:
@@ -210,10 +210,21 @@ class Labeler:
             train.to_feather(train_path)
             test.to_excel(test_path)
             validate.to_excel(val_path)
-            print("Train, Test and Validate Dataset were generated. Please label train and validate data before further proceeding!")
+            logger = logging.getLogger("Labeler")
+            logger.info("Train, Test and Validate Dataset were generated. Please label train and validate data before further proceeding!")
             exit("No labeled Test and Validate data exist!")
         print(train.shape,test.shape,validate.shape)
-        return train, validate, test
+        train['LABEL'] = 0
+        train_test = pd.concat([train,test])
+        train_test.reset_index(inplace = True)
+
+        train = train.rename(columns = {self.text_col : 'text'})
+        validate = validate.rename(columns = {self.text_col : 'text'})
+        test = test.rename(columns = {self.text_col : 'text'})
+        train_test = train_test.rename(columns = {self.text_col : 'text'})
+        self.data = self.data.rename(columns = {self.text_col : 'text'})
+
+        return train, validate, test, train_test
 
     def save_data(self):
         """Saves labeled data as feather into files folder.
@@ -234,10 +245,17 @@ class Labeler:
         training_folds = KFold(n_splits = self.k,shuffle = True, random_state = 12)
         self.L_train_list =[]
         i = 1
-        for split in training_folds.split(self.train_df):
-            fold_train_df = self.train_df.iloc[split[0]]
+        #self.train_df
+        for split in training_folds.split(self.train_test_df):
+            fold_train_df = self.train_test_df.iloc[split[0]]
+            
+            fold_test_df = self.train_test_df.iloc[split[1]]
+            fold_test_df = fold_test_df[fold_test_df['LABEL']!= 0]
+            y_test = fold_test_df['LABEL'].to_numpy()
+
             l_train = applier.apply(df=fold_train_df)
-            self.L_train_list.append(l_train)
+            l_test = applier.apply(df=fold_test_df)
+            self.L_train_list.append((l_train,l_test,y_test))
 
             L_analyis = LFAnalysis(L=l_train, lfs=self.lfs)
 
@@ -245,7 +263,8 @@ class Labeler:
             logger.info(L_analyis.lf_summary())
             i+=1
         # self.L_train = applier.apply(df=self.train_df)
-        #self.L_val = applier.apply(df=self.validate_df)
+        
+        self.L_val = applier.apply(df=self.validate_df)
         self.L_test = applier.apply(df=self.test_df)
 
 
@@ -258,7 +277,7 @@ class Labeler:
         for L_train_fold in self.L_train_list:
             logger.info(f"Validate metrics of {self.k}-fold Cross Validation with Trainingset {i}")
             autonomous_cl, electrification_cl,digitalisation_cl,connectivity_cl, sustainability_cl,individualisation_cl, shared_cl,\
-                    autonomous_k,electrification_k,digitalisation_k,connectivity_k,sustainability_k,individualisation_k,shared_k = (L_train_fold != ABSTAIN).mean(axis=0)
+                    autonomous_k,electrification_k,digitalisation_k,connectivity_k,sustainability_k,individualisation_k,shared_k = (L_train_fold[0] != ABSTAIN).mean(axis=0)
 
             logger.info(f"coverage_cluster_autonomous: {autonomous_cl * 100:.1f}%")
             logger.info(f"coverage_cluster_electrification: {electrification_cl * 100:.1f}%")
@@ -282,13 +301,14 @@ class Labeler:
         """Evaluation of the best parameters for Snorkels Labeling Model by (Hyper-)parameter Tuning.
         Selected optimizer are: Grid Search, Random Search and Bayesian Optimization. 
         """
-        Y_test = self.test_df['LABEL'].to_numpy()
+        #Y_test = self.test_df['LABEL'].to_numpy()
 
         best_model_list = {}
         best_param_list = {}
         self.evaluation_data = []
         i=0
-        for L_train_fold in self.L_train_list:
+        for trainset in self.L_train_list:
+            L_train_fold, L_test_fold,Y_test = trainset[0],trainset[1],trainset[2]
             logger = logging.getLogger("Labeler")
             logger.info(f"Evaluationg of best Model with {self.k}-fold Cross Validation with Trainingset {i}")
             #random search
@@ -296,7 +316,7 @@ class Labeler:
             highest_acc = None
             best_param  = None
             try:
-                rand_param, rand_acc = self.apply_randomSearch(L_train_fold , self.L_test,Y_test)
+                rand_param, rand_acc = self.apply_randomSearch(L_train_fold , L_test_fold,Y_test)
                 loggerr.info(f"Max. accuracy {rand_acc} with Parameters (n_epochs,log_freq,l2,lr):{rand_param}")
             except Exception as e:
                 loggerr.info("Error occurred: ", e)
@@ -307,7 +327,7 @@ class Labeler:
             #grid search
             loggerg = logging.getLogger("Labeler.gridSearch")
             try:
-                grid_param, grid_acc = self.apply_gridSearch(L_train_fold , self.L_test,Y_test)
+                grid_param, grid_acc = self.apply_gridSearch(L_train_fold , L_test_fold,Y_test)
                 loggerg.info(f"Max. accuracy {grid_acc} with Parameters (n_epochs,log_freq,l2,lr):{grid_param}")
             except Exception as e:
                 loggerg.info("Error occurred: ", e)
@@ -319,7 +339,7 @@ class Labeler:
             #baysian optimization
             loggerb = logging.getLogger("Labeler.bayesianOptim")
             try:
-                bayes_acc,bayes_param = self.apply_bayesianOptimization(L_train_fold , self.L_test,Y_test)
+                bayes_acc,bayes_param = self.apply_bayesianOptimization(L_train_fold , L_test_fold,Y_test)
                 loggerb.info(f"Max. accuracy {bayes_acc} with Parameters (n_epochs,log_freq,l2,lr):{bayes_param}")
             except Exception as e:
                 loggerb.info("Error occurred: ", e)
@@ -336,7 +356,7 @@ class Labeler:
         
         logger.info(f"{self.k} best Parameter settings: {best_param_list}")
         final = max(best_model_list.items(), key=operator.itemgetter(1))[0]
-        final_trainset = self.L_train_list[final]
+        final_trainset = self.L_train_list[final][0]
         final_param = best_param_list[final]
         final_acc = best_model_list[final]
 
@@ -434,7 +454,7 @@ class Labeler:
             return label_model_acc
 
         optimizer = bayes_opt.BayesianOptimization(f=model_train,pbounds =hyperparameter_space ,verbose = 2, random_state = 4)
-        optimizer.maximize(init_points = 5, n_iter = 25)        
+        optimizer.maximize(init_points = 5, n_iter = 50)        
 
         best_parameters = optimizer.max["params"]
         highest_accuracy = optimizer.max["target"]
@@ -442,28 +462,23 @@ class Labeler:
         print(f"[Bayesian Optimization]: Max. accuracy {highest_accuracy} with Parameters: {best_parameters}")
         return highest_accuracy,best_parameters
 
-    def plot_bayseian(optimizer):
-        plt.figure(figsize = (15, 5))
-        plt.plot(range(1, 1 + len(optimizer.space.target)), optimizer.space.target, "-o")
-        plt.grid(True)
-        plt.xlabel("Iteration", fontsize = 14)
-        plt.ylabel("Black box function f(x)", fontsize = 14)
-        plt.xticks(fontsize = 14)
-        plt.yticks(fontsize = 14)
-        plt.show()
-
     def apply_trained_model(self):
+        logger = logging.getLogger("Labeler")
+        logger.info(f"Langauge:{self.lang}. Applying trained model with best parameters and trainset on train and validation set.")
         preds_test_label = self.label_model.predict(L=self.L_test)
         self.test_df['LABEL'] = preds_test_label
-        print(self.test_df.shape)
+        before_test_shape = self.test_df.shape
         self.test_df = self.test_df[self.test_df['LABEL'] != 1]
-        print(self.test_df.shape)
+        after_test_shape = self.test_df.shape
+        logger.info(f"Shape of Testset before: {before_test_shape} and after: {after_test_shape}")
         
-        # preds_val_label = self.label_model.predict(L=self.L_val)
-        # self.validate_df['LABEL'] = preds_val_label
-        # print(self.validate_df.shape)
-        # self.validate_df = self.validate_df[self.validate_df['LABEL'] != 1]
-        # print(self.validate_df.shape)    
+        preds_val_label = self.label_model.predict(L=self.L_val)
+        self.validate_df['LABEL'] = preds_val_label
+        print(self.validate_df.shape)
+        before_val_shape = self.validate_df.shape
+        self.validate_df = self.validate_df[self.validate_df['LABEL'] != 1]
+        after_val_shape = self.validate_df.shape
+        logger.info(f"Shape of Validationset before: {before_val_shape} and after: {after_val_shape}")    
 
 
     def show_samples_per_class(self):
@@ -490,11 +505,9 @@ class Labeler:
 
 if __name__ == "__main__":
     l = Labeler('de',r"files\topiced_texts.feather",r"files\labeled_texts.feather")
-    test = l.data['text'].tolist()
-    print(test)
     l.run()
-    # e = Labeler('en',r"files\topiced_texts_en.feather",r"files\labeled_texts_en.feather")
-    # e.run()
+    e = Labeler('en',r"files\topiced_texts_en.feather",r"files\labeled_texts_en.feather")
+    e.run()
     
 
 
