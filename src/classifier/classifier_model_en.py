@@ -18,6 +18,8 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import tensorflow_text as text
 from official.nlp import optimization
+from bohb import BOHB
+import bohb.configspace as cs
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -29,6 +31,7 @@ tf.get_logger().setLevel('ERROR')
 
 class Transformer():
     def __init__(self, bert_model_name = 'bert_multi_cased_L-12_H-768_A-12'):
+        self.text_col = 'URL_TEXT'
         self.data = None
         self.bert_model_name = bert_model_name
         self.classifier_model = None
@@ -41,14 +44,13 @@ class Transformer():
         AUTOTUNE = tf.data.AUTOTUNE
         batch_size = 32
 
-        df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\Output_texts_labeled.csv")
-        df = pd.read_csv(df_path, header = 0, delimiter=",")
+        df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\label_testset_en.xlsx")
+        df = pd.read_excel(df_path, index_col = 0)
         self.data = df.replace(np.nan, "",regex = False)
-        self.data['text'] = self.data['text'].apply(lambda row: row.replace("|","."))
-        self.data['sentences'] = self.data['text']
+        self.data['sentences'] = self.data[self.text_col]
         
         target = self.data.pop('LABEL')
-        features = self.data[['sentences']]
+        features = self.data[['sentences','TOPICS']]
 
         # # set aside 20% of train and test data for evaluation
         train_ds, test_ds, train_label, test_label = train_test_split(features, target,
@@ -93,54 +95,51 @@ class Transformer():
 
         return train_ds,test_ds,val_ds
     
-    # A utility method to create a tf.data dataset from a Pandas Dataframe
-    def df_to_dataset(dataframe, shuffle=True, batch_size=32):
-        dataframe = dataframe.copy()
-        labels = dataframe.pop('target').astype('float64')
-        ds = tf.data.Dataset.from_tensor_slices((dict(dataframe), labels))
-        if shuffle:
-            ds = ds.shuffle(buffer_size=len(dataframe))
-        ds = ds.batch(batch_size)
-        return ds
+    # # A utility method to create a tf.data dataset from a Pandas Dataframe
+    # def df_to_dataset(dataframe, shuffle=True, batch_size=32):
+    #     dataframe = dataframe.copy()
+    #     labels = dataframe.pop('target').astype('float64')
+    #     ds = tf.data.Dataset.from_tensor_slices((dict(dataframe), labels))
+    #     if shuffle:
+    #         ds = ds.shuffle(buffer_size=len(dataframe))
+    #     ds = ds.batch(batch_size)
+    #     return ds
 
-    def load_data_keras(self):
-        AUTOTUNE = tf.data.AUTOTUNE
-        batch_size = 32
-        seed = 42
-        df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\Output_texts_labeled.csv")
+    # def load_data_keras(self):
+        # AUTOTUNE = tf.data.AUTOTUNE
+        # batch_size = 32
+        # seed = 42
+        # df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\Output_texts_labeled.csv")
 
-        ds = tf.keras.utils.get_file(df_path).shuffle(buffer_size=batch_size)
-        print(ds)
+        # ds = tf.keras.utils.get_file(df_path).shuffle(buffer_size=batch_size)
+        # print(ds)
 
-        raw_train_ds = tf.keras.utils.get_file(
-            df_path)
-            #batch_size=batch_size,
-            #validation_split=0.2,
-            #subset='training',
-            #seed=seed)
+        # raw_train_ds = tf.keras.utils.get_file(
+        #     df_path)
+        #     #batch_size=batch_size,
+        #     #validation_split=0.2,
+        #     #subset='training',
+        #     #seed=seed)
 
-        class_names = raw_train_ds.class_names
-        train_ds = raw_train_ds.cache().prefetch(buffer_size=AUTOTUNE)
+        # class_names = raw_train_ds.class_names
+        # train_ds = raw_train_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
-        val_ds = tf.keras.utils.text_dataset_from_directory(
-            df_path,
-            batch_size=batch_size,
-            validation_split=0.2,
-            subset='validation',
-            seed=seed)
+        # val_ds = tf.keras.utils.text_dataset_from_directory(
+        #     df_path,
+        #     batch_size=batch_size,
+        #     validation_split=0.2,
+        #     subset='validation',
+        #     seed=seed)
 
-        val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+        # val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
-        test_ds = tf.keras.utils.text_dataset_from_directory(
-            df_path,
-            batch_size=batch_size)
+        # test_ds = tf.keras.utils.text_dataset_from_directory(
+        #     df_path,
+        #     batch_size=batch_size)
 
-        test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
+        # test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
-        return train_ds, test_ds, val_ds
-
-    def save_data(self):
-        self.data.to_csv(str(os.path.dirname(__file__)).split("src")[0] + r"files\Output_texts_classified.csv", index = False)
+        # return train_ds, test_ds, val_ds
 
     def create_set_up(self):
         epochs = 3
@@ -308,8 +307,7 @@ class Transformer():
         bert_model = hub.KerasLayer(self.tfhub_handle_encoder)
         bert_preprocess_model = hub.KerasLayer(self.tfhub_handle_preprocess)
 
-        text_test = self.data['text'].tolist()[0]
-        text_test = text_test.replace("|",".")
+        text_test = self.data[self.text_col].tolist()[0]
         text_test = [text_test]
         print("Test: "+str(text_test))
 
@@ -329,7 +327,7 @@ class Transformer():
         print(f'Sequence Outputs Shape:{bert_results["sequence_output"].shape}')
         print(f'Sequence Outputs Values:{bert_results["sequence_output"][0, :12]}')
 
-        classifier_model = c.create_classifier_model()
+        classifier_model = self.create_classifier_model()
         bert_raw_result = classifier_model(tf.constant(text_test))
         print(tf.sigmoid(bert_raw_result))        
 
@@ -368,7 +366,7 @@ class Transformer():
         reloaded_model = tf.saved_model.load(saved_model_path)
         return reloaded_model
     
-    def evaluate_model(self):
+    def evaluate_model_plot(self):
         loss, accuracy = self.classifier_model.evaluate(self.test_df)
 
         history_dict = self.history.history
@@ -403,7 +401,8 @@ class Transformer():
         plt.show()
 
     def run(self):
-        c.apply_classifier()
+        self.model_preprocess_test()
+        self.apply_classifier()
 
 # if __name__ == "__main__":
 #     c = Transformer()
