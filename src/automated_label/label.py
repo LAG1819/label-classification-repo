@@ -50,7 +50,7 @@ def loggingdecorator(name):
             return _decor
 
 
-ABSTAIN = 1
+ABSTAIN = -1
 AUTONOMOUS = 2
 CONNECTIVITY = 3
 DIGITALISATION = 4
@@ -68,7 +68,8 @@ def kMeans_cluster(x, label, kmeans, kmeans_vectorizer):
 
     if int(cluster) == int(label):
         return label
-    return ABSTAIN
+    else:
+        return ABSTAIN
 
 def make_cluster_lf(label, kmeans, kmeans_vectorizer):
     return LabelingFunction(
@@ -80,7 +81,8 @@ def make_cluster_lf(label, kmeans, kmeans_vectorizer):
 def keyword_lookup(x, keywords, label):
     if any(word in x.text.lower() for word in keywords):
         return label
-    return ABSTAIN
+    else:
+        return ABSTAIN
 
 def make_keyword_lf(keywords, label):
     return LabelingFunction(
@@ -155,12 +157,39 @@ class Labeler:
         logger.setLevel(logging.INFO)
 
         if lang == 'de':
-            # self.lfs = [autonomous_keywords,electrification_keywords,digitalisation_keywords]
-            self.lfs = [autonomous_cluster_d, electrification_cluster_d,digitalisation_cluster_d,connectivity_cluster_d, sustainability_cluster_d,individualisation_cluster_d, shared_cluster_d,\
-                autonomous_keywords,electrification_keywords,digitalisation_keywords,connectivity_keywords,sustainability_keywords,individualisation_keywords,shared_keywords]
+            self.lfs = [
+                autonomous_cluster_d,
+                electrification_cluster_d,
+                digitalisation_cluster_d,
+                connectivity_cluster_d, 
+                sustainability_cluster_d,
+                individualisation_cluster_d, 
+                shared_cluster_d,
+                autonomous_keywords,
+                electrification_keywords,
+                digitalisation_keywords,
+                connectivity_keywords,
+                sustainability_keywords,
+                individualisation_keywords,
+                shared_keywords,
+                ]
         if lang == 'en':
-            self.lfs = [autonomous_cluster_e, electrification_cluster_e, digitalisation_cluster_e, connectivity_cluster_e,sustainability_cluster_e,individualisation_cluster_e,shared_cluster_e,\
-                autonomous_keywords,electrification_keywords,digitalisation_keywords,connectivity_keywords,sustainability_keywords,individualisation_keywords,shared_keywords]
+            self.lfs = [
+                autonomous_cluster_e,
+                electrification_cluster_e, 
+                digitalisation_cluster_e, 
+                connectivity_cluster_e,
+                sustainability_cluster_e,
+                individualisation_cluster_e,
+                shared_cluster_e,
+                autonomous_keywords,
+                electrification_keywords,
+                digitalisation_keywords,
+                connectivity_keywords,
+                sustainability_keywords,
+                individualisation_keywords,
+                shared_keywords,
+                ]
          
         logger = logging.getLogger("Labeler")
         self.lang = lang
@@ -169,7 +198,7 @@ class Labeler:
         self.label_model = None
         self.source_path = s_path
         self.target_path = t_path
-        self.text_col = 'URL_TEXT'
+        self.text_col = 'TOPIC'
         self.data = self.load_data()
         self.train_df, self.validate_df, self.test_df, self.train_test_df = self.generate_trainTestdata(lang)
         logger.info("Automated Labeling started with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = s_path, tpath = t_path))
@@ -197,10 +226,15 @@ class Labeler:
         if os.path.exists(test_path):
             test = pd.read_excel(test_path, index_col = 0)
             test = test[test['LABEL']!= 0]
+
             train = pd.read_feather(train_path)
             train = train.rename(columns = {'text':'TOPIC'})
+
             validate = pd.read_excel(val_path, index_col = 0)
             validate = validate[validate['LABEL']!= 0]
+            
+            test = test.replace(1,-1)
+            validate = validate.replace(1,-1)
         else:
             self.data['LABEL'] = 0
             train, validate, test = np.split(self.data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(self.data)), int(.8*len(self.data))])
@@ -214,8 +248,9 @@ class Labeler:
             logger.info("Train, Test and Validate Dataset were generated. Please label train and validate data before further proceeding!")
             exit("No labeled Test and Validate data exist!")
         print(train.shape,test.shape,validate.shape)
-        train['LABEL'] = 0
-        train_test = pd.concat([train,test])
+        tr = train
+        tr['LABEL'] = 0
+        train_test = pd.concat([tr,test])
         train_test.reset_index(inplace = True)
 
         train = train.rename(columns = {self.text_col : 'text'})
@@ -226,14 +261,6 @@ class Labeler:
 
         return train, validate, test, train_test
 
-    def save_data(self):
-        """Saves labeled data as feather into files folder.
-        """
-        path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
-        if os.path.exists(path):
-            os.remove(path)
-        self.data.to_feather(path)
-
     def apply_labeling_functions(self):
         """First step of Snorkel. Previous defined Labeling Functions are applied to the loaded Training, Test and Validation Datasets.
         """
@@ -241,7 +268,7 @@ class Labeler:
         logger.info("Application of Labeling Functions: {f}".format(f = self.lfs))
 
         #k_fold Cross Validation
-        applier = PandasLFApplier(lfs=self.lfs)
+        self.applier = PandasLFApplier(lfs=self.lfs)
         training_folds = KFold(n_splits = self.k,shuffle = True, random_state = 12)
         self.L_train_list =[]
         i = 1
@@ -253,19 +280,25 @@ class Labeler:
             fold_test_df = fold_test_df[fold_test_df['LABEL']!= 0]
             y_test = fold_test_df['LABEL'].to_numpy()
 
-            l_train = applier.apply(df=fold_train_df)
-            l_test = applier.apply(df=fold_test_df)
+            l_train = self.applier.apply(df=fold_train_df)
+            l_test = self.applier.apply(df=fold_test_df)
             self.L_train_list.append((l_train,l_test,y_test))
 
+            # polarity = The set of unique labels this LF outputs (excluding abstains)
+            # coverage = percentage of objects the LF labels
+            # overlap  = percentage of objects with more than one label. 
+            # conflict = percentage of objects with conflicting labels.
             L_analyis = LFAnalysis(L=l_train, lfs=self.lfs)
 
             logger.info(f"Training set coverage of {self.k}-fold Cross Validation with Trainingset {i}: {100 * L_analyis.label_coverage(): 0.1f}%")
+          
             logger.info(L_analyis.lf_summary())
+
             i+=1
         # self.L_train = applier.apply(df=self.train_df)
         
-        self.L_val = applier.apply(df=self.validate_df)
-        self.L_test = applier.apply(df=self.test_df)
+        self.L_val = self.applier.apply(df=self.validate_df)
+        self.L_test = self.applier.apply(df=self.test_df)
 
 
     def analysis_training_result(self):
@@ -277,7 +310,7 @@ class Labeler:
         for L_train_fold in self.L_train_list:
             logger.info(f"Validate metrics of {self.k}-fold Cross Validation with Trainingset {i}")
             autonomous_cl, electrification_cl,digitalisation_cl,connectivity_cl, sustainability_cl,individualisation_cl, shared_cl,\
-                    autonomous_k,electrification_k,digitalisation_k,connectivity_k,sustainability_k,individualisation_k,shared_k = (L_train_fold[0] != ABSTAIN).mean(axis=0)
+            autonomous_k,electrification_k,digitalisation_k,connectivity_k,sustainability_k,individualisation_k,shared_k = (L_train_fold[0] != ABSTAIN).mean(axis=0)
 
             logger.info(f"coverage_cluster_autonomous: {autonomous_cl * 100:.1f}%")
             logger.info(f"coverage_cluster_electrification: {electrification_cl * 100:.1f}%")
@@ -294,8 +327,6 @@ class Labeler:
             logger.info(f"coverage_keyword_connectivity: {connectivity_k * 100:.1f}%")
             logger.info(f"coverage_keyword_individualisation: {individualisation_k * 100:.1f}%")
             logger.info(f"coverage_keyword_shared: {shared_k * 100:.1f}%")
-            
-        #print(self.label_model.score(L_validate, Y=validate_labels,metrics=["f1","accuracy",'precision','recall']))
 
     def eval_labeling_model(self):
         """Evaluation of the best parameters for Snorkels Labeling Model by (Hyper-)parameter Tuning.
@@ -320,7 +351,7 @@ class Labeler:
                 loggerr.info(f"Max. accuracy {rand_acc} with Parameters (n_epochs,log_freq,l2,lr):{rand_param}")
             except Exception as e:
                 loggerr.info("Error occurred: ", e)
-                rand_param, rand_acc = {'n_epochs':1,'log_freq':1,'l2':1,'lr':1},0
+                rand_param, rand_acc = [1,1,1,1],0
 
             highest_acc = rand_acc
             best_param = {'n_epochs':rand_param[0],'log_freq':rand_param[1],'l2':rand_param[2],'lr':rand_param[3]}
@@ -360,12 +391,12 @@ class Labeler:
         final_param = best_param_list[final]
         final_acc = best_model_list[final]
 
-        final_result_df = pd.DataFrame(self.evaluation_data).sort_values(by=['accuracy'], ascending=False)
-        logger.info('\t'+ final_result_df.to_string().replace('\n', '\n\t')) 
-        #logger.info('dataframe head - {}'.format(final_result_df.to_string()))
-
-
+        final_result_df = pd.DataFrame(self.evaluation_data).sort_values(by=['accuracy'], ascending=[False,False])
+        #final_top_param = final_result_df.to_dict('records')[0]
+        logger.info('\t'+ final_result_df.to_string().replace('\n', '\n\t'))
+        
         logger.info(f"Best Model with {self.k}-fold Cross Validation identified: Maximum reached accuracy: {final_acc} with Parameters: {final_param}")
+
         self.label_model = LabelModel(cardinality = 9, verbose=False)
         if final_param['l2'] == 0: 
             final_param['l2'] = 0.1
@@ -462,23 +493,47 @@ class Labeler:
         print(f"[Bayesian Optimization]: Max. accuracy {highest_accuracy} with Parameters: {best_parameters}")
         return highest_accuracy,best_parameters
 
+    def test_model(self,model):
+        preds_test_label = model.predict(L=self.L_test)
+        test_df = self.test_df
+        test_df['LABEL'] = preds_test_label
+        # before_test_shape = test_df.shape
+        test_df = test_df[test_df['LABEL'] != 1]
+        after_test_shape = test_df.shape
+        return after_test_shape
+        
+    def validate_model(self, model):
+        preds_val_label = model.predict(L=self.L_val)
+        validation_df = self.validate_df
+        validation_df['LABEL'] = preds_val_label
+        # print(self.validate_df.shape)
+        # before_val_shape = self.validate_df.shape
+        validation_df = validation_df[validation_df['LABEL'] != 1]
+        after_val_shape = validation_df.shape
+        return after_val_shape
+       
+
     def apply_trained_model(self):
         logger = logging.getLogger("Labeler")
-        logger.info(f"Langauge:{self.lang}. Applying trained model with best parameters and trainset on train and validation set.")
-        preds_test_label = self.label_model.predict(L=self.L_test)
-        self.test_df['LABEL'] = preds_test_label
-        before_test_shape = self.test_df.shape
-        self.test_df = self.test_df[self.test_df['LABEL'] != 1]
-        after_test_shape = self.test_df.shape
-        logger.info(f"Shape of Testset before: {before_test_shape} and after: {after_test_shape}")
-        
-        preds_val_label = self.label_model.predict(L=self.L_val)
-        self.validate_df['LABEL'] = preds_val_label
-        print(self.validate_df.shape)
-        before_val_shape = self.validate_df.shape
-        self.validate_df = self.validate_df[self.validate_df['LABEL'] != 1]
-        after_val_shape = self.validate_df.shape
-        logger.info(f"Shape of Validationset before: {before_val_shape} and after: {after_val_shape}")    
+        # logger.info(f"Langauge:{self.lang}. Applying trained model with best parameters and trainset on test set.")
+       
+        self.L_data = self.applier.apply(df= self.data)
+
+        logger.info(f"Langauge:{self.lang}. Applying trained model with best parameters and trainset on whole data set.")
+        label = self.label_model.predict(L=self.L_data)
+        self.data['LABEL'] = label
+        before_data_shape = self.data.shape
+        self.data = self.data[self.data['LABEL'] != 1]
+        after_data_shape = self.data.shape
+        logger.info(f"Shape of Dataset before: {before_data_shape} and after: {after_data_shape}")
+
+    def save_data(self):
+        """Saves labeled data as feather into files folder.
+        """
+        path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        if os.path.exists(path):
+            os.remove(path)
+        self.data.to_feather(path)    
 
 
     def show_samples_per_class(self):
