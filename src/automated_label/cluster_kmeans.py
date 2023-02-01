@@ -118,8 +118,8 @@ class TOPIC_KMeans:
         Args:
             model (KMeans): Fitted KMeans model.
         """
-        path_m = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans_"+str(self.lang)+".pkl"
-        path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\kmeans_vectorizer_"+str(self.lang)+".pkl"
+        path_m = str(os.path.dirname(__file__)).split("src")[0] + "models\label\kmeans_"+str(self.lang)+".pkl"
+        path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\label\kmeans_vectorizer_"+str(self.lang)+".pkl"
 
         if os.path.exists(path_m):
             os.remove(path_m)
@@ -166,3 +166,5 @@ class TOPIC_KMeans:
 # kmeans.run()
 # kmeans = TOPIC_KMeans('en',r"files\topiced_classes_en.feather",r"files\topiced_texts_en.feather")
 # kmeans.run()
+
+        
