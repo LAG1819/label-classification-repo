@@ -269,7 +269,7 @@ class Labeler:
 
         #k_fold Cross Validation
         self.L_train_list =[]
-        for j in range(2,11):
+        for j in range(2,7):
             training_folds = KFold(n_splits = j,shuffle = True, random_state = 12)
             i = 1
             for split in training_folds.split(self.train_test_df):
@@ -468,7 +468,7 @@ class Labeler:
         return after_test_shape
         
     def validate_model(self):
-        preds_val_label = self.model.predict(L=self.L_val)
+        preds_val_label = self.label_model.predict(L=self.L_val)
         validation_df = self.validate_df
         validation_df['LABEL'] = preds_val_label
         before_val_shape = self.validate_df.shape
@@ -518,6 +518,7 @@ class Labeler:
     
         with open(path, "wb") as f:
             pickle.dump(self.model, f)
+        print("Model saved!")
   
 
 
