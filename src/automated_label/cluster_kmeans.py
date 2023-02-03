@@ -168,3 +168,20 @@ class TOPIC_KMeans:
 # kmeans.run()
 
         
+    #kmeans test
+    # cluster_names = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\kMeans_cluster.feather").to_dict('records')[0]
+    # kmeans = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/kmeans.pkl", 'rb'))
+    # kmeans_vectoizer = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/kmeans_vectorizer.pkl", 'rb')) 
+    # transformed = kmeans_vectoizer.transform(["Electric"])
+    # cluster = str(kmeans.predict(transformed.toarray())[0]+1)
+    # value = ABSTAIN
+    # list_of_values = [ABSTAIN, AUTONOMOUS,ELECTRIFICATION,CONNECTIVITY,SHARED,SUSTAINABILITY,DIGITALISATION,INDIVIDUALISATION]
+    # try:
+    #     value = cluster_names[str(cluster)]
+    # except IndexError:
+    #     value = ABSTAIN
+
+    # for v in list_of_values:
+    #     if str(value) == str(v):
+    #         value = v
+    # print(value)
