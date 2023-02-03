@@ -1,0 +1,64 @@
+INFO:root:Topic Extraction with Language en and data file files\cleaned_texts_en.feather (source) created. Target file is files\topiced_texts_en.feather
+INFO:root:[2023-01-14 19:22:15.108874]Topic extraction started
+INFO:root:[2023-01-14 19:22:15.108874]Topic extraction with LDA of data sampleset 0 with size (300, 6) started
+INFO:root:[2023-01-14 19:25:24.419382]Topic extraction of data sampleset 0 with size (300, 7) of dataframe (24303, 6) is finished.
+INFO:root:[2023-01-14 19:25:24.419382]Topic extraction with LDA of data sampleset 1 with size (300, 6) started
+INFO:root:Topic Extraction with Language en and data file files\cleaned_texts_en.feather (source) created. Target file is files\topiced_texts_en.feather
+INFO:root:[2023-01-14 19:27:16.834385]Topic extraction started
+INFO:root:[2023-01-14 19:27:16.834385]Topic extraction with LDA of data sampleset 0 with size (300, 6) started
+INFO:root:[2023-01-14 19:29:26.086718]Topic extraction of data sampleset 0 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 19:29:26.086718]Topic extraction with LDA of data sampleset 1 with size (300, 6) started
+INFO:root:[2023-01-14 19:34:55.799574]Topic extraction of data sampleset 1 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 19:34:55.799574]Topic extraction with LDA of data sampleset 2 with size (300, 6) started
+INFO:root:[2023-01-14 19:39:12.052100]Topic extraction of data sampleset 2 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 19:39:12.052100]Topic extraction with LDA of data sampleset 3 with size (300, 6) started
+INFO:root:[2023-01-14 19:43:13.707460]Topic extraction of data sampleset 3 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 19:43:13.707460]Topic extraction with LDA of data sampleset 4 with size (300, 6) started
+INFO:root:[2023-01-14 19:47:22.482157]Topic extraction of data sampleset 4 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 19:47:22.482157]Topic extraction with LDA of data sampleset 5 with size (300, 6) started
+INFO:root:[2023-01-14 19:50:07.121366]Topic extraction of data sampleset 5 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 19:50:07.121366]Topic extraction with LDA of data sampleset 6 with size (300, 6) started
+INFO:root:[2023-01-14 19:52:59.009460]Topic extraction of data sampleset 6 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 19:52:59.010458]Topic extraction with LDA of data sampleset 7 with size (300, 6) started
+INFO:root:[2023-01-14 19:57:53.343830]Topic extraction of data sampleset 7 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 19:57:53.343830]Topic extraction with LDA of data sampleset 8 with size (300, 6) started
+INFO:root:[2023-01-14 20:01:12.139693]Topic extraction of data sampleset 8 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:01:12.139693]Topic extraction with LDA of data sampleset 9 with size (300, 6) started
+INFO:root:[2023-01-14 20:05:12.337285]Topic extraction of data sampleset 9 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:05:12.337285]Topic extraction with LDA of data sampleset 10 with size (300, 6) started
+INFO:root:[2023-01-14 20:13:00.475254]Topic extraction of data sampleset 10 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:13:00.475254]Topic extraction with LDA of data sampleset 11 with size (300, 6) started
+INFO:root:[2023-01-14 20:15:44.432939]Topic extraction of data sampleset 11 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:15:44.432939]Topic extraction with LDA of data sampleset 12 with size (300, 6) started
+INFO:root:[2023-01-14 20:18:52.401134]Topic extraction of data sampleset 12 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:18:52.401134]Topic extraction with LDA of data sampleset 13 with size (300, 6) started
+INFO:root:[2023-01-14 20:22:40.796451]Topic extraction of data sampleset 13 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:22:40.797447]Topic extraction with LDA of data sampleset 14 with size (300, 6) started
+INFO:root:[2023-01-14 20:26:57.542661]Topic extraction of data sampleset 14 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:26:57.542661]Topic extraction with LDA of data sampleset 15 with size (300, 6) started
+INFO:root:[2023-01-14 20:30:28.886182]Topic extraction of data sampleset 15 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:30:28.886182]Topic extraction with LDA of data sampleset 16 with size (300, 6) started
+INFO:root:[2023-01-14 20:33:44.671577]Topic extraction of data sampleset 16 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:33:44.671577]Topic extraction with LDA of data sampleset 17 with size (300, 6) started
+INFO:root:[2023-01-14 20:37:27.597118]Topic extraction of data sampleset 17 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:37:27.597118]Topic extraction with LDA of data sampleset 18 with size (300, 6) started
+INFO:root:[2023-01-14 20:41:44.591919]Topic extraction of data sampleset 18 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:41:44.592917]Topic extraction with LDA of data sampleset 19 with size (300, 6) started
+INFO:root:[2023-01-14 20:47:52.221925]Topic extraction of data sampleset 19 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:47:52.221925]Topic extraction with LDA of data sampleset 20 with size (300, 6) started
+INFO:root:[2023-01-14 20:51:22.141299]Topic extraction of data sampleset 20 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:51:22.141299]Topic extraction with LDA of data sampleset 21 with size (300, 6) started
+INFO:root:[2023-01-14 20:58:47.339744]Topic extraction of data sampleset 21 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 20:58:47.339744]Topic extraction with LDA of data sampleset 22 with size (300, 6) started
+INFO:root:[2023-01-14 21:02:07.640101]Topic extraction of data sampleset 22 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 21:02:07.640101]Topic extraction with LDA of data sampleset 23 with size (300, 6) started
+INFO:root:[2023-01-14 21:14:40.766388]Topic extraction of data sampleset 23 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 21:14:40.766388]Topic extraction with LDA of data sampleset 24 with size (300, 6) started
+INFO:root:[2023-01-14 21:18:42.881190]Topic extraction of data sampleset 24 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 21:18:42.881190]Topic extraction with LDA of data sampleset 25 with size (300, 6) started
+INFO:root:[2023-01-14 21:25:52.142364]Topic extraction of data sampleset 25 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 21:25:52.142364]Topic extraction with LDA of data sampleset 26 with size (300, 6) started
+INFO:root:[2023-01-14 21:30:53.463446]Topic extraction of data sampleset 26 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 21:30:53.464441]Topic extraction with LDA of data sampleset 27 with size (300, 6) started
+INFO:root:[2023-01-14 21:37:44.900274]Topic extraction of data sampleset 27 with size (300, 7) of dataframe (24003, 6) is finished.
+INFO:root:[2023-01-14 21:37:44.900274]Topic extraction with LDA of data sampleset 28 with size (300, 6) started

@@ -1,0 +1,357 @@
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-12 18:59:13.787017]Data cleaning started
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-12 19:12:43.694851]Data cleaning started
+INFO:root:[2023-01-12 19:19:49.245898]Data chunk 0 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 19:29:11.790244]Data chunk 1 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 19:35:40.297858]Data chunk 2 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 19:52:15.101529]Data chunk 3 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 20:13:15.895074]Data chunk 4 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 20:19:09.024264]Data chunk 5 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 20:24:41.261814]Data chunk 6 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 20:40:24.645651]Data chunk 7 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 20:51:25.628770]Data chunk 8 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 21:05:22.018644]Data chunk 9 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 21:12:59.246713]Data chunk 10 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 21:23:26.858224]Data chunk 11 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 21:30:56.494758]Data chunk 12 with (300, 5) of 33756 total samples had been cleaned.
+INFO:root:[2023-01-12 21:39:54.483741]Data chunk 13 with (300, 5) of 33756 total samples had been cleaned.
+WARNING:root:[2023-01-12 21:57:32.682260]Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-13 08:49:25.126486]Data cleaning started
+WARNING:root:[2023-01-13 08:50:10.876785]Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-13 08:50:38.420063]Data cleaning started
+INFO:root:[2023-01-13 08:51:33.269553]Data chunk 0 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 08:53:00.353337]Data chunk 1 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 09:00:46.455618]Data chunk 2 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 09:43:08.425565]Data chunk 3 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 09:48:49.036973]Data chunk 4 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 09:55:47.913884]Data chunk 5 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 10:01:16.246228]Data chunk 6 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 10:16:55.082201]Data chunk 7 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 10:40:52.706897]Data chunk 8 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 10:45:26.201987]Data chunk 9 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 11:23:56.210171]Data chunk 10 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 11:30:14.454592]Data chunk 11 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 11:40:58.145276]Data chunk 12 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 11:58:50.260519]Data chunk 13 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 12:12:16.698663]Data chunk 14 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 12:23:54.388393]Data chunk 15 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 12:43:11.672898]Data chunk 16 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 12:52:52.052391]Data chunk 17 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 12:56:31.004727]Data chunk 18 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 13:02:25.832043]Data chunk 19 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 13:08:53.667295]Data chunk 20 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 13:11:49.390274]Data chunk 21 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 13:18:42.074150]Data chunk 22 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 13:31:46.367566]Data chunk 23 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 13:40:28.489059]Data chunk 24 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 13:48:38.388239]Data chunk 25 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 13:55:03.317610]Data chunk 26 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 13:58:53.897477]Data chunk 27 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 14:07:15.812813]Data chunk 28 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 14:09:53.877610]Data chunk 29 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 14:17:32.685616]Data chunk 30 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 14:27:21.822094]Data chunk 31 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 14:30:08.833750]Data chunk 32 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 14:37:29.087906]Data chunk 33 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 14:51:56.214287]Data chunk 34 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 14:54:06.757989]Data chunk 35 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 14:56:39.708728]Data chunk 36 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 15:01:16.641807]Data chunk 37 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 15:06:43.840351]Data chunk 38 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 15:12:32.171294]Data chunk 39 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 15:23:49.411076]Data chunk 40 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 15:28:53.323187]Data chunk 41 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 15:33:26.047049]Data chunk 42 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 15:38:28.242918]Data chunk 43 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 15:57:08.853306]Data chunk 44 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 16:08:08.840022]Data chunk 45 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 16:09:21.915736]Data chunk 46 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 16:12:06.727742]Data chunk 47 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 16:23:44.535243]Data chunk 48 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 16:33:56.576487]Data chunk 49 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 16:42:53.567097]Data chunk 50 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 16:56:10.111297]Data chunk 51 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 16:58:10.804176]Data chunk 52 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 17:04:02.450515]Data chunk 53 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 17:11:06.028215]Data chunk 54 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 17:19:45.792675]Data chunk 55 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 17:31:48.074873]Data chunk 56 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 17:46:54.033084]Data chunk 57 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 18:02:01.934120]Data chunk 58 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 18:18:45.304818]Data chunk 59 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 18:31:38.335472]Data chunk 60 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 18:42:28.644669]Data chunk 61 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 18:51:08.812571]Data chunk 62 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 18:59:29.626319]Data chunk 63 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 19:01:32.968285]Data chunk 64 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 19:04:25.780742]Data chunk 65 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 19:09:45.915052]Data chunk 66 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 19:13:45.559153]Data chunk 67 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 19:27:58.207444]Data chunk 68 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 19:34:38.994887]Data chunk 69 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 20:04:53.319574]Data chunk 70 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 20:41:48.289016]Data chunk 71 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 20:51:46.334976]Data chunk 72 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 21:05:46.842948]Data chunk 73 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 21:21:29.982398]Data chunk 74 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 21:36:01.041948]Data chunk 75 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 21:50:04.107490]Data chunk 76 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 21:59:45.677020]Data chunk 77 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 22:08:27.598362]Data chunk 78 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 22:18:30.605248]Data chunk 79 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 22:25:06.366865]Data chunk 80 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 22:30:46.655505]Data chunk 81 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 22:37:33.625227]Data chunk 82 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 22:44:16.247556]Data chunk 83 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 22:51:09.713366]Data chunk 84 with (300, 5) of 30420 total samples had been cleaned.
+INFO:root:[2023-01-13 22:58:07.824841]Data chunk 85 with (300, 5) of 30420 total samples had been cleaned.
+WARNING:root:[2023-01-13 22:58:28.336721]Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-14 11:03:00.710259]Data cleaning started
+INFO:root:[2023-01-14 11:03:47.510233]Data chunk 0 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:04:54.376826]Data chunk 1 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:07:37.726137]Data chunk 2 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:09:18.256683]Data chunk 3 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:10:22.992089]Data chunk 4 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:10:59.523315]Data chunk 5 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:11:45.772894]Data chunk 6 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:13:15.605137]Data chunk 7 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:15:06.782325]Data chunk 8 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:16:47.455285]Data chunk 9 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:18:41.638631]Data chunk 10 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:19:57.826791]Data chunk 11 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:20:27.455368]Data chunk 12 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:20:47.449693]Data chunk 13 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:24:09.687359]Data chunk 14 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:26:35.380081]Data chunk 15 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:30:00.711509]Data chunk 16 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:30:44.666555]Data chunk 17 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:31:39.406917]Data chunk 18 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:32:31.471899]Data chunk 19 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:33:20.498563]Data chunk 20 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:34:29.722953]Data chunk 21 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:35:13.833860]Data chunk 22 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:35:51.606702]Data chunk 23 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:39:06.389441]Data chunk 24 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:40:08.612981]Data chunk 25 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:41:35.819294]Data chunk 26 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:42:27.119506]Data chunk 27 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:43:28.283268]Data chunk 28 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:44:53.395155]Data chunk 29 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:46:07.119843]Data chunk 30 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:48:24.530489]Data chunk 31 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:50:39.694985]Data chunk 32 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:53:23.184893]Data chunk 33 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 11:58:31.014537]Data chunk 34 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 12:00:59.826275]Data chunk 35 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 12:02:15.098671]Data chunk 36 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 12:05:05.472793]Data chunk 37 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 12:11:36.147292]Data chunk 38 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 12:21:43.293827]Data chunk 39 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 12:36:22.009878]Data chunk 40 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 12:48:39.305738]Data chunk 41 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 13:01:58.480283]Data chunk 42 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 13:09:47.462437]Data chunk 43 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 13:12:25.826247]Data chunk 44 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 13:18:42.759789]Data chunk 45 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 13:26:43.052720]Data chunk 46 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 13:35:28.505704]Data chunk 47 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 13:42:36.005475]Data chunk 48 with (300, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 13:44:21.550099]Data chunk 49 with (79, 5) of 14779 total samples had been cleaned.
+INFO:root:[2023-01-14 13:44:21.550099] Done cleaning!
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_classes_en.feather (source) created. Target file is files\cleaned_classes_en.feather
+INFO:root:[2023-01-14 14:20:36.429358]Data cleaning started
+INFO:root:[2023-01-14 14:23:31.465484]Data chunk 0 with (13, 4) of 13 total samples had been cleaned.
+INFO:root:[2023-01-14 14:23:31.466495] Done cleaning!
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_classes_en.feather (source) created. Target file is files\cleaned_classes_en.feather
+INFO:root:[2023-01-15 13:36:47.551140]Data cleaning started
+INFO:root:[2023-01-15 13:42:10.577431]Data chunk 0 with (13, 4) of 13 total samples had been cleaned.
+INFO:root:[2023-01-15 13:42:10.578427] Done cleaning!
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-17 06:23:43.345933]Data cleaning started
+INFO:root:[2023-01-17 06:29:01.778860]Data chunk 0 with (300, 5) of 36288 total samples had been cleaned.
+INFO:root:[2023-01-17 06:35:28.654122]Data chunk 1 with (300, 5) of 36288 total samples had been cleaned.
+INFO:root:[2023-01-17 06:45:28.489609]Data chunk 2 with (300, 5) of 36288 total samples had been cleaned.
+INFO:root:[2023-01-17 06:56:04.993080]Data chunk 3 with (300, 5) of 36288 total samples had been cleaned.
+INFO:root:[2023-01-17 07:04:49.824038]Data chunk 4 with (300, 5) of 36288 total samples had been cleaned.
+INFO:root:[2023-01-17 07:14:34.132391]Data chunk 5 with (300, 5) of 36288 total samples had been cleaned.
+INFO:root:[2023-01-17 07:20:54.791033]Data chunk 6 with (300, 5) of 36288 total samples had been cleaned.
+INFO:root:[2023-01-17 07:28:13.923885]Data chunk 7 with (300, 5) of 36288 total samples had been cleaned.
+INFO:root:[2023-01-17 07:37:22.601285]Data chunk 8 with (300, 5) of 36288 total samples had been cleaned.
+INFO:root:[2023-01-17 07:46:23.257704]Data chunk 9 with (300, 5) of 36288 total samples had been cleaned.
+INFO:root:[2023-01-17 07:50:47.275137]Data chunk 10 with (300, 5) of 36288 total samples had been cleaned.
+INFO:root:[2023-01-17 07:57:48.381308]Data chunk 11 with (300, 5) of 36288 total samples had been cleaned.
+WARNING:root:[2023-01-17 08:08:37.252020]Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-17 08:09:35.479429]Data cleaning started
+INFO:root:[2023-01-17 08:10:15.431259]Data chunk 0 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 08:22:44.719513]Data chunk 1 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 08:34:34.964544]Data chunk 2 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 08:38:21.358630]Data chunk 3 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 08:43:53.672140]Data chunk 4 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 08:55:24.919160]Data chunk 5 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 09:03:51.723286]Data chunk 6 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 09:12:22.603188]Data chunk 7 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 09:18:28.095587]Data chunk 8 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 09:26:07.004392]Data chunk 9 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 09:33:29.332583]Data chunk 10 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 10:07:58.506569]Data chunk 11 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 10:23:29.986216]Data chunk 12 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 10:28:01.932307]Data chunk 13 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 10:33:15.245303]Data chunk 14 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 10:36:55.463811]Data chunk 15 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 10:56:49.792106]Data chunk 16 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 11:09:45.918456]Data chunk 17 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 11:13:41.237999]Data chunk 18 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 11:41:26.869691]Data chunk 19 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 11:45:49.431396]Data chunk 20 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 11:54:30.408567]Data chunk 21 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 12:07:54.154747]Data chunk 22 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 12:19:36.186396]Data chunk 23 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 12:32:28.617565]Data chunk 24 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 12:50:19.989704]Data chunk 25 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 12:57:58.997671]Data chunk 26 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 13:00:40.127557]Data chunk 27 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 13:06:10.997405]Data chunk 28 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 13:11:19.332333]Data chunk 29 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 13:14:48.202676]Data chunk 30 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 13:22:43.001863]Data chunk 31 with (300, 5) of 33068 total samples had been cleaned.
+INFO:root:[2023-01-17 13:35:29.592257]Data chunk 32 with (300, 5) of 33068 total samples had been cleaned.
+WARNING:root:[2023-01-17 13:35:32.440447]Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-17 13:36:43.315890]Data cleaning started
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-17 13:39:21.665559]Data cleaning started
+INFO:root:[2023-01-17 13:40:22.810966]Data chunk 0 with (300, 5) of 26295 total samples had been cleaned.
+WARNING:root:[2023-01-17 13:41:32.500549]Something with data cleaning of a chunk of samples went wrong: [E088] Text of length 1051375 exceeds maximum of 1000000. The parser and NER models require roughly 1GB of temporary memory per 100,000 characters in the input. This means long texts may cause memory allocation errors. If you're not using the parser or NER, it's probably safe to increase the `nlp.max_length` limit. The limit is in number of characters, so you can check whether your inputs are too long by checking `len(text)`..
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-17 13:42:39.655113]Data cleaning started
+INFO:root:[2023-01-17 13:43:28.948031]Data chunk 0 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 13:44:54.531606]Data chunk 1 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 13:49:51.897829]Data chunk 2 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 13:51:29.429123]Data chunk 3 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 13:52:37.796071]Data chunk 4 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 13:53:15.427099]Data chunk 5 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 13:54:01.442229]Data chunk 6 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 13:55:40.960521]Data chunk 7 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 13:57:36.820432]Data chunk 8 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 13:59:23.932165]Data chunk 9 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 14:05:35.236501]Data chunk 10 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 14:14:25.754763]Data chunk 11 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 14:21:43.154265]Data chunk 12 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 14:26:24.656940]Data chunk 13 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 14:33:11.123819]Data chunk 14 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 14:38:09.453364]Data chunk 15 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 14:44:21.709342]Data chunk 16 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 14:55:59.056783]Data chunk 17 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 14:58:36.939419]Data chunk 18 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 15:03:15.563161]Data chunk 19 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 15:19:04.503650]Data chunk 20 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 15:21:31.727069]Data chunk 21 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 15:26:47.084350]Data chunk 22 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 15:31:52.878011]Data chunk 23 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 15:36:38.348448]Data chunk 24 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 15:42:43.922860]Data chunk 25 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 15:54:34.484895]Data chunk 26 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 16:02:07.154052]Data chunk 27 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 16:05:35.013907]Data chunk 28 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 16:08:08.015033]Data chunk 29 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 16:20:39.785497]Data chunk 30 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 16:30:06.771233]Data chunk 31 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 16:31:00.165694]Data chunk 32 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 16:32:32.812383]Data chunk 33 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 16:39:30.904887]Data chunk 34 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 16:50:21.690151]Data chunk 35 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 16:59:52.172958]Data chunk 36 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 17:13:53.304753]Data chunk 37 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 17:20:05.119155]Data chunk 38 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 17:24:25.012909]Data chunk 39 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 17:34:59.166982]Data chunk 40 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 17:41:07.836570]Data chunk 41 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 17:53:25.916844]Data chunk 42 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 18:11:51.071143]Data chunk 43 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 18:27:06.495557]Data chunk 44 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 18:45:51.086261]Data chunk 45 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 18:59:37.499596]Data chunk 46 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 19:12:38.658362]Data chunk 47 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 19:21:51.417695]Data chunk 48 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 19:32:20.893528]Data chunk 49 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 19:33:54.360814]Data chunk 50 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 19:37:07.095439]Data chunk 51 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 19:41:25.167535]Data chunk 52 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 19:46:28.778201]Data chunk 53 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 19:57:37.750205]Data chunk 54 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 20:05:52.142799]Data chunk 55 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 20:33:51.338404]Data chunk 56 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 21:14:18.693689]Data chunk 57 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 21:31:18.796262]Data chunk 58 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 21:46:39.445403]Data chunk 59 with (300, 5) of 26290 total samples had been cleaned.
+INFO:root:[2023-01-17 22:00:48.417842]Data chunk 60 with (300, 5) of 26290 total samples had been cleaned.
+WARNING:root:[2023-01-17 22:02:42.034761]Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-17 22:03:40.250398]Data cleaning started
+INFO:root:[2023-01-17 22:04:24.706014]Data chunk 0 with (300, 5) of 16812 total samples had been cleaned.
+WARNING:root:[2023-01-17 22:05:32.400182]Something with data cleaning of a chunk of samples went wrong: [E088] Text of length 1051375 exceeds maximum of 1000000. The parser and NER models require roughly 1GB of temporary memory per 100,000 characters in the input. This means long texts may cause memory allocation errors. If you're not using the parser or NER, it's probably safe to increase the `nlp.max_length` limit. The limit is in number of characters, so you can check whether your inputs are too long by checking `len(text)`..
+INFO:root:Data Preprocessing and Cleaning with Language en and data file files\raw_texts_en.feather (source) created. Target file is files\cleaned_texts_en.feather
+INFO:root:[2023-01-17 22:06:02.140710]Data cleaning started
+INFO:root:[2023-01-17 22:06:42.825488]Data chunk 0 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:07:50.693173]Data chunk 1 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:09:50.753289]Data chunk 2 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:11:38.071639]Data chunk 3 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:12:43.173953]Data chunk 4 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:13:07.946187]Data chunk 5 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:14:03.247900]Data chunk 6 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:15:41.324243]Data chunk 7 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:17:42.441062]Data chunk 8 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:19:26.743443]Data chunk 9 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:21:08.301350]Data chunk 10 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:22:10.676087]Data chunk 11 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:22:42.881189]Data chunk 12 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:23:07.412356]Data chunk 13 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:24:03.847382]Data chunk 14 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:24:27.668262]Data chunk 15 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:25:35.775637]Data chunk 16 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:26:14.187913]Data chunk 17 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:27:12.174405]Data chunk 18 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:28:24.815677]Data chunk 19 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:29:12.307342]Data chunk 20 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:30:19.966381]Data chunk 21 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:31:01.768135]Data chunk 22 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:31:45.128337]Data chunk 23 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:32:44.440297]Data chunk 24 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:33:49.800688]Data chunk 25 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:35:09.582647]Data chunk 26 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:36:08.564800]Data chunk 27 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:37:15.690323]Data chunk 28 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 22:50:34.010904]Data chunk 29 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 23:03:09.097529]Data chunk 30 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 23:19:58.208206]Data chunk 31 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 23:28:25.296049]Data chunk 32 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 23:38:59.689154]Data chunk 33 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 23:49:11.012040]Data chunk 34 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-17 23:54:52.989705]Data chunk 35 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 00:01:22.088411]Data chunk 36 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 00:08:50.115039]Data chunk 37 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 00:16:23.760744]Data chunk 38 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 00:22:37.610488]Data chunk 39 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 00:29:47.992243]Data chunk 40 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 00:33:52.618158]Data chunk 41 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 00:36:09.318775]Data chunk 42 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 00:37:43.385975]Data chunk 43 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 00:40:30.789018]Data chunk 44 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 00:49:04.974817]Data chunk 45 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 00:59:40.335983]Data chunk 46 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 01:13:36.901747]Data chunk 47 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 01:25:09.788217]Data chunk 48 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 01:37:18.011578]Data chunk 49 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 01:42:59.075962]Data chunk 50 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 01:45:01.126520]Data chunk 51 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 01:51:42.783485]Data chunk 52 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 01:59:52.736612]Data chunk 53 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 02:07:41.051284]Data chunk 54 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 02:15:28.773592]Data chunk 55 with (300, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 02:15:40.690134]Data chunk 56 with (9, 5) of 16809 total samples had been cleaned.
+INFO:root:[2023-01-18 02:15:40.690134] Done cleaning!
