@@ -1,4 +1,4 @@
-# <one line to give the program's name and a brief idea of what it does.>
+# <Classificator that gets trained and classifies data in user defined classes.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify
@@ -18,154 +18,50 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import tensorflow_text as text
 from official.nlp import optimization
-from bohb import BOHB
-import bohb.configspace as cs
+# from bohb import BOHB
+# import bohb.configspace as cs
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import pandas as pd
 import shutil
 import os
 import numpy as np
+import logging
+from sklearn.model_selection import KFold 
+import bayes_opt
+import keras_tuner as kt
 
 tf.get_logger().setLevel('ERROR')
 
 class Transformer():
-    def __init__(self, bert_model_name = 'bert_multi_cased_L-12_H-768_A-12'):
-        self.text_col = 'URL_TEXT'
-        self.data = None
+    def __init__(self, bert_model_name = 'bert_multi_cased_L-12_H-768_A-12',text_col ='URL_TEXT',lang = 'en'):
+        # Create logger and assign handler
+        logger = logging.getLogger("Labeler")
+
+        handler  = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+        
+        self.text_col = text_col
+        self.lang = lang
         self.bert_model_name = bert_model_name
         self.classifier_model = None
         self.history = None
-        self.train_df, self.test_df, self.val_df = self.load_data()
+        self.batch_size = 32
+        self.AUTOTUNE = tf.data.AUTOTUNE
+
         self.tfhub_handle_encoder, self.tfhub_handle_preprocess = self.select_bert_model()
-        self.optimizer, self.loss, self.metrics, self.epochs = self.create_set_up()
-
-    def load_data(self):
-        AUTOTUNE = tf.data.AUTOTUNE
-        batch_size = 32
-
-        df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\label_testset_en.xlsx")
-        df = pd.read_excel(df_path, index_col = 0)
-        self.data = df.replace(np.nan, "",regex = False)
-        self.data['sentences'] = self.data[self.text_col]
-        
-        target = self.data.pop('LABEL')
-        features = self.data[['sentences','TOPICS']]
-
-        # # set aside 20% of train and test data for evaluation
-        train_ds, test_ds, train_label, test_label = train_test_split(features, target,
-            test_size=0.2, shuffle = True, random_state = 8)
-
-        # # Use the same function above for the validation set
-        train_ds, val_ds, train_label, val_label = train_test_split(train_ds, train_label, 
-            test_size=0.25, random_state= 8) # 0.25 x 0.8 = 0.2
-        
-        print(train_ds.shape,val_ds.shape,test_ds.shape)
-
-        train_ds['LABEL'] = train_label.to_frame()['LABEL'].tolist()
-        val_ds['LABEL'] = val_label.to_frame()['LABEL'].tolist()
-        test_ds['LABEL'] = test_label.to_frame()['LABEL'].tolist()
+        self.data,self.val_df, self.val_label = self.load_data()
        
-        features = ['sentences']
-
-        train_ds = (tf.data.Dataset.from_tensor_slices(
-                (
-                    tf.cast(train_ds[features].values, tf.string),
-                    tf.cast(train_ds['LABEL'].values, tf.float32)
-                )
-            )
-        ).batch(batch_size=batch_size)
-        train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
-        test_ds = (tf.data.Dataset.from_tensor_slices(
-                (
-                    tf.cast(test_ds[features].values, tf.string),
-                    tf.cast(test_ds['LABEL'].values, tf.float32)
-                )
-            )
-        ).batch(batch_size=batch_size)
-        test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
-        val_ds = (tf.data.Dataset.from_tensor_slices(
-                (
-                    tf.cast(val_ds[features].values, tf.string),
-                    tf.cast(val_ds['LABEL'].values, tf.float32)
-                )
-            )
-        ).batch(batch_size=batch_size)
-        val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
-
-        return train_ds,test_ds,val_ds
-    
-    # # A utility method to create a tf.data dataset from a Pandas Dataframe
-    # def df_to_dataset(dataframe, shuffle=True, batch_size=32):
-    #     dataframe = dataframe.copy()
-    #     labels = dataframe.pop('target').astype('float64')
-    #     ds = tf.data.Dataset.from_tensor_slices((dict(dataframe), labels))
-    #     if shuffle:
-    #         ds = ds.shuffle(buffer_size=len(dataframe))
-    #     ds = ds.batch(batch_size)
-    #     return ds
-
-    # def load_data_keras(self):
-        # AUTOTUNE = tf.data.AUTOTUNE
-        # batch_size = 32
-        # seed = 42
-        # df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\Output_texts_labeled.csv")
-
-        # ds = tf.keras.utils.get_file(df_path).shuffle(buffer_size=batch_size)
-        # print(ds)
-
-        # raw_train_ds = tf.keras.utils.get_file(
-        #     df_path)
-        #     #batch_size=batch_size,
-        #     #validation_split=0.2,
-        #     #subset='training',
-        #     #seed=seed)
-
-        # class_names = raw_train_ds.class_names
-        # train_ds = raw_train_ds.cache().prefetch(buffer_size=AUTOTUNE)
-
-        # val_ds = tf.keras.utils.text_dataset_from_directory(
-        #     df_path,
-        #     batch_size=batch_size,
-        #     validation_split=0.2,
-        #     subset='validation',
-        #     seed=seed)
-
-        # val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
-
-        # test_ds = tf.keras.utils.text_dataset_from_directory(
-        #     df_path,
-        #     batch_size=batch_size)
-
-        # test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
-
-        # return train_ds, test_ds, val_ds
-
-    def create_set_up(self):
-        epochs = 3
-        steps_per_epoch = tf.data.experimental.cardinality(self.train_df).numpy()
-        num_train_steps = steps_per_epoch * epochs
-        num_warmup_steps = int(0.1*num_train_steps)
-
-        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        metrics = tf.metrics.CategoricalAccuracy()
-
-        init_lr = 3e-5
-        optimizer = optimization.create_optimizer(init_lr=init_lr,
-                                                num_train_steps=num_train_steps,
-                                                num_warmup_steps=num_warmup_steps,
-                                                optimizer_type='adamw')
-        return optimizer, loss, metrics, epochs
-
-
     def select_bert_model(self):
         map_name_to_handle = {
             'bert_en_uncased_L-12_H-768_A-12':
-                'https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/3',
+                'https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/4',
             'bert_en_cased_L-12_H-768_A-12':
-                'https://tfhub.dev/tensorflow/bert_en_cased_L-12_H-768_A-12/3',
+                'https://tfhub.dev/tensorflow/bert_en_cased_L-12_H-768_A-12/4',
             'bert_multi_cased_L-12_H-768_A-12':
-                'https://tfhub.dev/tensorflow/bert_multi_cased_L-12_H-768_A-12/3',
+                'https://tfhub.dev/tensorflow/bert_multi_cased_L-12_H-768_A-12/4',
             'small_bert/bert_en_uncased_L-2_H-128_A-2':
                 'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-2_H-128_A-2/1',
             'small_bert/bert_en_uncased_L-2_H-256_A-4':
@@ -303,9 +199,44 @@ class Transformer():
         print(f'Preprocess model auto-selected: {tfhub_handle_preprocess}')
         return tfhub_handle_encoder, tfhub_handle_preprocess
 
+    def load_data(self):
+        # df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\label_testset_en.xlsx")
+        # df = pd.read_excel(df_path, index_col = 0)
+
+        df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\labeled_texts_en.feather")
+        df = pd.read_feather(df_path)
+        data = df.replace(np.nan, "",regex = False)
+        data = data[:1000]
+        data['sentences'] = data[self.text_col]
+        
+        train, validate, test = np.split(data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(data)), int(.8*len(data))])
+        data = pd.concat([train,test])
+
+        features = ['sentences']
+
+        val_ds = (tf.data.Dataset.from_tensor_slices(
+                (
+                    tf.cast(validate[features].values, tf.string),
+                    tf.cast(validate['LABEL'].values, tf.float32)
+                )
+            )
+        ).batch(batch_size=self.batch_size)
+        val_ds = val_ds.cache().prefetch(buffer_size=self.AUTOTUNE)
+
+        val_label = (tf.data.Dataset.from_tensor_slices(
+                (
+                    # tf.cast(validate[features].values, tf.string),
+                    tf.cast(validate['LABEL'].values, tf.float32)
+                )
+            )
+        ).batch(batch_size=self.batch_size)
+        val_label = val_label.cache().prefetch(buffer_size=self.AUTOTUNE)
+    
+        return data, val_ds,val_label
+
     def model_preprocess_test(self):
-        bert_model = hub.KerasLayer(self.tfhub_handle_encoder)
         bert_preprocess_model = hub.KerasLayer(self.tfhub_handle_preprocess)
+        bert_model = hub.KerasLayer(self.tfhub_handle_encoder,trainable=True)
 
         text_test = self.data[self.text_col].tolist()[0]
         text_test = [text_test]
@@ -329,7 +260,140 @@ class Transformer():
 
         classifier_model = self.create_classifier_model()
         bert_raw_result = classifier_model(tf.constant(text_test))
-        print(tf.sigmoid(bert_raw_result))        
+        print(tf.sigmoid(bert_raw_result))
+
+    def split_data(self,k=2):
+        train_test_list =[]
+
+        #target = self.data.pop('LABEL')
+        features = ['sentences']
+         # features = data[['sentences','TOPICS']]
+
+        training_folds = KFold(n_splits = k,shuffle = True, random_state = 12)
+        for i,split in enumerate(training_folds.split(self.data)):
+            train_ds = self.data.iloc[split[0]]
+            test_ds = self.data.iloc[split[1]]
+
+        # # # set aside 20% of train and test data for evaluation
+        # train_ds, test_ds, train_label, test_label = train_test_split(features, target,
+        #     test_size=0.2, shuffle = True, random_state = 8)
+
+        # # # Use the same function above for the validation set
+        # train_ds, val_ds, train_label, val_label = train_test_split(train_ds, train_label, 
+        #     test_size=0.25, random_state= 8) # 0.25 x 0.8 = 0.2
+        
+        # print(train_ds.shape,val_ds.shape,test_ds.shape)
+
+        # train_ds['LABEL'] = train_label.to_frame()['LABEL'].tolist()
+        # val_ds['LABEL'] = val_label.to_frame()['LABEL'].tolist()
+        # test_ds['LABEL'] = test_label.to_frame()['LABEL'].tolist()
+
+            train_label = (tf.data.Dataset.from_tensor_slices(
+                    (
+                        # tf.cast(train_ds[features].values, tf.string),
+                        tf.cast(train_ds['LABEL'].values, tf.float32)
+                    )
+                )
+            ).batch(batch_size=self.batch_size)
+            train_label = train_label.cache().prefetch(buffer_size=self.AUTOTUNE)
+            
+            train_ds = (tf.data.Dataset.from_tensor_slices(
+                    (
+                        tf.cast(train_ds[features].values, tf.string),
+                        tf.cast(train_ds['LABEL'].values, tf.float32)
+                    )
+                )
+            ).batch(batch_size=self.batch_size)
+            train_ds = train_ds.cache().prefetch(buffer_size=self.AUTOTUNE)
+
+            test_label = (tf.data.Dataset.from_tensor_slices(
+                    (
+                        # tf.cast(test_ds[features].values, tf.string),
+                        tf.cast(test_ds['LABEL'].values, tf.float32)
+                    )
+                )
+            ).batch(batch_size=self.batch_size)
+            test_label = test_label.cache().prefetch(buffer_size=self.AUTOTUNE)
+
+            test_ds = (tf.data.Dataset.from_tensor_slices(
+                    (
+                        tf.cast(test_ds[features].values, tf.string),
+                        tf.cast(test_ds['LABEL'].values, tf.float32)
+                    )
+                )
+            ).batch(batch_size=self.batch_size)
+            test_ds = test_ds.cache().prefetch(buffer_size=self.AUTOTUNE)            
+
+            train_test_list.append([train_ds,train_label,test_ds, test_label, k,i])
+        return train_test_list
+    
+    # # A utility method to create a tf.data dataset from a Pandas Dataframe
+    # def df_to_dataset(dataframe, shuffle=True, batch_size=32):
+    #     dataframe = dataframe.copy()
+    #     labels = dataframe.pop('target').astype('float64')
+    #     ds = tf.data.Dataset.from_tensor_slices((dict(dataframe), labels))
+    #     if shuffle:
+    #         ds = ds.shuffle(buffer_size=len(dataframe))
+    #     ds = ds.batch(batch_size)
+    #     return ds
+
+    # def load_data_keras(self):
+        # AUTOTUNE = tf.data.AUTOTUNE
+        # batch_size = 32
+        # seed = 42
+        # df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\Output_texts_labeled.csv")
+
+        # ds = tf.keras.utils.get_file(df_path).shuffle(buffer_size=batch_size)
+        # print(ds)
+
+        # raw_train_ds = tf.keras.utils.get_file(
+        #     df_path)
+        #     #batch_size=batch_size,
+        #     #validation_split=0.2,
+        #     #subset='training',
+        #     #seed=seed)
+
+        # class_names = raw_train_ds.class_names
+        # train_ds = raw_train_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+        # val_ds = tf.keras.utils.text_dataset_from_directory(
+        #     df_path,
+        #     batch_size=batch_size,
+        #     validation_split=0.2,
+        #     subset='validation',
+        #     seed=seed)
+
+        # val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+        # test_ds = tf.keras.utils.text_dataset_from_directory(
+        #     df_path,
+        #     batch_size=batch_size)
+
+        # test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+        # return train_ds, test_ds, val_ds
+
+
+
+
+
+    def create_set_up(self, train_df,lr = 3e-5,epoch = 3,optimizer_t = 'adamw'):
+        init_lr = lr 
+        epochs = epoch
+        steps_per_epoch = tf.data.experimental.cardinality(train_df).numpy()
+
+        num_train_steps = steps_per_epoch * epochs
+        num_warmup_steps = int(0.1*num_train_steps)
+
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        metrics = tf.metrics.CategoricalAccuracy()
+
+        
+        optimizer = optimization.create_optimizer(init_lr=init_lr,
+                                                num_train_steps=num_train_steps,
+                                                num_warmup_steps=num_warmup_steps,
+                                                optimizer_type=optimizer_t)
+        return optimizer, loss, metrics, epochs        
 
     def create_classifier_model(self):
         text_input = tf.keras.layers.Input(shape=(), dtype=tf.string, name='sentences')
@@ -339,35 +403,218 @@ class Transformer():
         outputs = encoder(encoder_inputs)
         net = outputs['pooled_output']
         net = tf.keras.layers.Dropout(0.1)(net)
-        net = tf.keras.layers.Dense(5, activation=None, name='classifier')(net)
+        net = tf.keras.layers.Dense(9, activation=None, name='classifier')(net)
         return tf.keras.Model(text_input, net)  
 
-    def apply_classifier(self):
-        self.classifier_model = self.create_classifier_model()
-        self.classifier_model.compile(optimizer= self.optimizer,
-                            loss=self.loss,
-                            metrics=self.metrics)
+    def apply_classifier(self, train_df, test_df,optimizer, loss, metrics, epochs):
+        classifier_model = self.create_classifier_model()
+        classifier_model.compile(optimizer= optimizer,
+                            loss=loss,
+                            metrics=metrics)
         print(f'Training model with {self.tfhub_handle_encoder}')
 
-        self.history = self.classifier_model.fit(x=self.train_df,
-                                    validation_data=self.val_df,
-                                    epochs=self.epochs, 
-                                    batch_size = 1)
+        classifier_model.fit(train_df, validation_data = test_df,                            
+                            epochs=epochs, 
+                            batch_size = 1,
+                            validation_split=0.2)
+        return classifier_model
+
+    def evaluate_classifier(self):
+        for k in range (2,3):
+            #train_test_set = train_ds,train_label,test_ds, test_label, k,i
+            for i,train_test_set in enumerate(self.split_data(k)):
+                print(f"{k}-fold Split with train-test set {i}")
+                
+                train_df = train_test_set[0]
+                train_label = train_test_set[1]
+                test_df = train_test_set[2]
+                test_label = train_test_set[3]
+                
+                self.apply_bayesian(train_df,test_df)
+                self.apply_random_search(train_df,test_df)
+                self.apply_hyperband(train_df,test_df)
+                break
+
+            # optimizer, loss, metrics, epochs = self.create_set_up(train_df)
+            # classifier_model = self.apply_classifier(train_df,validation_data = test_df,optimizer, loss, metrics, epochs)
+            # loss, accuracy = classifier_model.evaluate(test_df)
+
+    def apply_hyperband(self, train_df, test_df):
+        def model_builder(hp):
+            model = self.create_classifier_model()
+
+            hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
+            optimizer, loss, metrics, epochs = self.create_set_up(train_df,lr = hp_learning_rate,epoch = 3,optimizer_t = 'adamw')
+
+            model.compile(optimizer= optimizer,
+                                loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                                metrics=[tf.metrics.CategoricalAccuracy()])
+            return model
+        
+        print(model_builder(kt.HyperParameters()))
+        
+        stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\model_tuning_hyperband_en_"   
+        dir = path + r"0"
+        while os.path.exists(dir):
+            number = int(dir.split("_")[-1]) + 1
+            dir = path+str(number)
+        
+        tuner_hyperband = kt.Hyperband(model_builder,
+                     objective= kt.Objective("val_categorical_accuracy", direction="max"),
+                     max_epochs=1,
+                     factor=3,
+                     directory=dir,
+                     project_name='hyperband_tuner'+str(number))
+
+        
+        tuner_hyperband.search(x = train_df, validation_data = test_df,                            
+                            epochs=3,
+                            shuffle = True, 
+                            batch_size = 1,
+                            validation_split=0.2, 
+                            callbacks=[stop_early])
+
+        # Get the optimal hyperparameters
+        best_hps=tuner_hyperband.get_best_hyperparameters(num_trials=1)[0]
+
+        model = tuner_hyperband.hypermodel.build(best_hps)
+        history = model.fit(train_df, validation_data = test_df, epochs=1)
+
+        val_acc_per_epoch = history.history['val_accuracy']
+        best_epoch = val_acc_per_epoch.index(max(val_acc_per_epoch)) + 1
+
+        print(f"""
+        Hyperband Tuning completed. 
+        Optimal learning rate:{best_hps.get('learning_rate')}
+        Optimal epoch: {best_epoch}.
+        """)
+        # logger.info(f"[Bayesian Optimization]: Max. accuracy {highest_accuracy} with Parameters: {best_parameters}")
+
+    def apply_random_search(self, train_df, test_df):
+        def model_builder(hp):
+            model = self.create_classifier_model()
+
+            hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
+            optimizer, loss, metrics, epochs = self.create_set_up(train_df,lr = hp_learning_rate,epoch = 3,optimizer_t = 'adamw')
+
+            model.compile(optimizer= optimizer,
+                                loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                                metrics=[tf.metrics.CategoricalAccuracy()])
+            return model
+        
+        print(model_builder(kt.HyperParameters()))
+        
+        stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\model_tuning_randomS_en_"
+        dir = path + r"0"
+        number = 0
+        while os.path.exists(dir):
+            number = int(dir.split("_")[-1]) + 1
+            dir = path+str(number)
+
+        tuner_random_search = kt.RandomSearch(model_builder,
+                     objective= kt.Objective("categorical_accuracy", direction="max"),#val_categorical_accuracy
+                     max_trials=4,
+                     seed=3,
+                     directory=dir,
+                     project_name='randomSearch_tuner'+str(number))
+
+        
+        tuner_random_search.search(x = train_df, validation_data = test_df,                            
+                            epochs=3,
+                            shuffle = True, 
+                            batch_size = 1,
+                            validation_split=0.2, 
+                            callbacks=[stop_early])
+
+        # Get the optimal hyperparameters
+        best_hps=tuner_random_search.get_best_hyperparameters(num_trials=1)[0]
+
+        model = tuner_random_search.hypermodel.build(best_hps)
+        history = model.fit(train_df, validation_data = test_df, epochs=1)
+
+        val_acc_per_epoch = history.history['val_accuracy']
+        best_epoch = val_acc_per_epoch.index(max(val_acc_per_epoch)) + 1
+
+        print(f"""
+        Random Search Tuning completed. 
+        Optimal learning rate:{best_hps.get('learning_rate')}
+        Optimal epoch: {best_epoch}.
+        """)
+        # logger.info(f"[Bayesian Optimization]: Max. accuracy {highest_accuracy} with Parameters: {best_parameters}")
+
+    def apply_bayesian(self, train_df, test_df):
+        def model_builder(hp):
+            model = self.create_classifier_model()
+
+            hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
+            optimizer, loss, metrics, epochs = self.create_set_up(train_df,lr = hp_learning_rate,epoch = 3,optimizer_t = 'adamw')
+
+            model.compile(optimizer= optimizer,
+                                loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                                metrics=[tf.metrics.CategoricalAccuracy()])
+            return model
+        
+        print(model_builder(kt.HyperParameters()))
+        
+        stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\model_tuning_bayesian_en_"   
+        dir = path + r"0"
+        number = 0
+        while os.path.exists(dir):
+            number = int(dir.split("_")[-1]) + 1
+            dir = path+str(number)
+        
+        tuner_bayesian = kt.BayesianOptimization(model_builder,
+                     objective= kt.Objective("val_categorical_accuracy", direction="max"),
+                     max_trials=2,
+                     seed=3,
+                     directory=dir,
+                     project_name='bayesian_tuner'+str(number))
+
+        
+        tuner_bayesian.search(x = train_df, validation_data = test_df,                            
+                            epochs=3,
+                            shuffle = True, 
+                            batch_size = 1,
+                            validation_split=0.2, 
+                            callbacks=[stop_early])
+
+        # Get the optimal hyperparameters
+        best_hps=tuner_bayesian.get_best_hyperparameters(num_trials=1)[0]
+
+        model = tuner_bayesian.hypermodel.build(best_hps)
+        history = model.fit(train_df, validation_data = test_df, epochs=1)
+
+        val_acc_per_epoch = history.history['val_accuracy']
+        best_epoch = val_acc_per_epoch.index(max(val_acc_per_epoch)) + 1
+
+        print(f"""
+        Bayesian Tuning completed. 
+        Optimal learning rate:{best_hps.get('learning_rate')}
+        Optimal epoch: {best_epoch}.
+        """)
+        # logger.info(f"[Bayesian Optimization]: Max. accuracy {highest_accuracy} with Parameters: {best_parameters}")    
+   
 
     def save_model(self):
-        dataset_name = 'imdb'
-        saved_model_path = './{}_bert'.format(dataset_name.replace('/', '_'))
+        saved_model_path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classifier\bert_model_"+str(self.lang)
+        # dataset_name = 'imdb'
+        # saved_model_path = './{}_bert'.format(dataset_name.replace('/', '_'))
+        
 
         self.classifier_model.save(saved_model_path, include_optimizer=False)
 
     def load_model(self):
-        dataset_name = 'imdb'
-        saved_model_path = './{}_bert'.format(dataset_name.replace('/', '_'))
+        saved_model_path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classifier\bert_model_"+str(self.lang)
+        # dataset_name = 'imdb'
+        # saved_model_path = './{}_bert'.format(dataset_name.replace('/', '_'))
         reloaded_model = tf.saved_model.load(saved_model_path)
         return reloaded_model
     
-    def evaluate_model_plot(self):
-        loss, accuracy = self.classifier_model.evaluate(self.test_df)
+    def evaluate_model_plot(self, classifier_model):
+        loss, accuracy = classifier_model.evaluate(self.test_df)
 
         history_dict = self.history.history
         print(history_dict.keys())
@@ -401,18 +648,23 @@ class Transformer():
         plt.show()
 
     def run(self):
-        self.model_preprocess_test()
+        # self.model_preprocess_test()
+        self.evaluate_classifier()
         self.apply_classifier()
 
-# if __name__ == "__main__":
-#     c = Transformer()
-    # for text_batch, label_batch in c.train_df.take(1):
-    #     for i in range(1):
-    #         print(f'Review: {text_batch.numpy()[i]}')
+if __name__ == "__main__":
+    c = Transformer()
+    c.run()
+   
     
-    # c.model_preprocess_test()
-    # c.apply_classifier()
-    # c.evaluate_model()
+    # for text_batch in c.val_df.take(1):
+    #     for i in range(1):
+    #         print(text_batch[i])
+    # for label_batch in c.val_label.take(1):
+    #     for i in range(1):
+    #         print(label_batch[i])
+        
+    
 
     
     
