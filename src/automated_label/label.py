@@ -1,4 +1,4 @@
-# <Automated Labeler which gets trained on extracted topics of cleaned data..>
+# <Automated Labeler which gets trained on extracted topics of cleaned data.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify
@@ -159,13 +159,13 @@ class Labeler:
 
         if lang == 'de':
             self.lfs = [
-                autonomous_cluster_d,
-                electrification_cluster_d,
-                digitalisation_cluster_d,
-                connectivity_cluster_d, 
-                sustainability_cluster_d,
-                individualisation_cluster_d, 
-                shared_cluster_d,
+                # autonomous_cluster_d,
+                # electrification_cluster_d,
+                # digitalisation_cluster_d,
+                # connectivity_cluster_d, 
+                # sustainability_cluster_d,
+                # individualisation_cluster_d, 
+                # shared_cluster_d,
                 autonomous_keywords,
                 electrification_keywords,
                 digitalisation_keywords,
@@ -176,13 +176,13 @@ class Labeler:
                 ]
         if lang == 'en':
             self.lfs = [
-                autonomous_cluster_e,
-                electrification_cluster_e, 
-                digitalisation_cluster_e, 
-                connectivity_cluster_e,
-                sustainability_cluster_e,
-                individualisation_cluster_e,
-                shared_cluster_e,
+                # autonomous_cluster_e,
+                # electrification_cluster_e, 
+                # digitalisation_cluster_e, 
+                # connectivity_cluster_e,
+                # sustainability_cluster_e,
+                # individualisation_cluster_e,
+                # shared_cluster_e,
                 autonomous_keywords,
                 electrification_keywords,
                 digitalisation_keywords,
@@ -194,7 +194,7 @@ class Labeler:
          
         logger = logging.getLogger("Labeler")
         self.lang = lang
-        self.update_data = False
+        self.update_data = True
         self.L_train = None
         self.label_model = None
         self.source_path = s_path
@@ -202,8 +202,7 @@ class Labeler:
         self.text_col = column
         self.data = self.load_data()
         self.train_df, self.validate_df, self.test_df, self.train_test_df = self.generate_trainTestdata(lang)
-        logger.info("Automated Labeling started with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = s_path, tpath = t_path))
-        logger.info(f"Automated Labeling applied on column: {self.text_col}")
+        logger.info("Automated Labeling started with Language {l}, Text-Column: {t_col} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = s_path, tpath = t_path, t_col = self.text_col))
     
     def load_data(self) -> pd.DataFrame:
         """Loads cleaned dataset containing topics as well.
@@ -272,7 +271,7 @@ class Labeler:
 
         #k_fold Cross Validation
         self.L_train_list =[]
-        for j in range(2,7):
+        for j in range(2,8):
             training_folds = KFold(n_splits = j,shuffle = True, random_state = 12)
             i = 1
             for split in training_folds.split(self.train_test_df):
@@ -312,16 +311,16 @@ class Labeler:
 
         for L_train_fold in self.L_train_list:
             logger.info(f"Validate metrics of {L_train_fold[3]}-fold Cross Validation with Trainingset {L_train_fold[4]}")
-            autonomous_cl, electrification_cl,digitalisation_cl,connectivity_cl, sustainability_cl,individualisation_cl, shared_cl,\
+            # autonomous_cl, electrification_cl,digitalisation_cl,connectivity_cl, sustainability_cl,individualisation_cl, shared_cl,\
             autonomous_k,electrification_k,digitalisation_k,connectivity_k,sustainability_k,individualisation_k,shared_k = (L_train_fold[0] != ABSTAIN).mean(axis=0)
 
-            logger.info(f"coverage_cluster_autonomous: {autonomous_cl * 100:.1f}%")
-            logger.info(f"coverage_cluster_electrification: {electrification_cl * 100:.1f}%")
-            logger.info(f"coverage_cluster_digitalisation: {digitalisation_cl * 100:.1f}%")
-            logger.info(f"coverage_cluster_connectivity: {connectivity_cl * 100:.1f}%")
-            logger.info(f"coverage_cluster_sustainability: {sustainability_cl * 100:.1f}%")
-            logger.info(f"coverage_cluster_individualisation: {individualisation_cl * 100:.1f}%")
-            logger.info(f"coverage_cluster_shared: {shared_cl * 100:.1f}%")
+            # logger.info(f"coverage_cluster_autonomous: {autonomous_cl * 100:.1f}%")
+            # logger.info(f"coverage_cluster_electrification: {electrification_cl * 100:.1f}%")
+            # logger.info(f"coverage_cluster_digitalisation: {digitalisation_cl * 100:.1f}%")
+            # logger.info(f"coverage_cluster_connectivity: {connectivity_cl * 100:.1f}%")
+            # logger.info(f"coverage_cluster_sustainability: {sustainability_cl * 100:.1f}%")
+            # logger.info(f"coverage_cluster_individualisation: {individualisation_cl * 100:.1f}%")
+            # logger.info(f"coverage_cluster_shared: {shared_cl * 100:.1f}%")
             
             logger.info(f"coverage_keyword_autonomous: {autonomous_k * 100:.1f}%")
             logger.info(f"coverage_keyword_digitalisation: {digitalisation_k * 100:.1f}%")
@@ -335,9 +334,7 @@ class Labeler:
     def eval_labeling_model(self):
         """Evaluation of the best parameters for Snorkels Labeling Model by (Hyper-)parameter Tuning.
         Selected optimizer are: Grid Search, Random Search and Bayesian Optimization. 
-        """
-        
-                
+        """    
         self.evaluation_data = []
         for trainset in self.L_train_list:
             L_train_fold, L_test_fold,Y_test, k, i = trainset[0],trainset[1],trainset[2],trainset[3],trainset[4]
@@ -480,8 +477,8 @@ class Labeler:
         logger = logging.getLogger("Labeler")
         preds_val_label = self.label_model.predict(L=self.L_val)
         Y_val = self.validate_df['LABEL'].to_numpy()
-        validate_acc = self.label_model.score(L=self.L_val, Y=Y_val, tie_break_policy="random")["accuracy" ]
-        logger.info(f"Accuracy on Validation set: {validate_acc}")
+        self.validate_acc = self.label_model.score(L=self.L_val, Y=Y_val, tie_break_policy="random")["accuracy" ]
+        logger.info(f"Accuracy on Validation set: {self.validate_acc}")
         
         validation_df = self.validate_df
         validation_df['LABEL'] = preds_val_label
@@ -513,7 +510,8 @@ class Labeler:
         if os.path.exists(path):            
             if self.update_data:
                 self.data.to_feather(path)
-        self.data.to_feather(path)  
+        else:
+            self.data.to_feather(path)  
 
     def save_model(self):
         """Saving of trained Label model as pickle file with optimized parameter.
@@ -521,31 +519,37 @@ class Labeler:
         logger = logging.getLogger("Labeler")
         path = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(self.lang)+r".pkl"
 
-        Y_val = self.validate_df['LABEL'].to_numpy() 
-        new_model_acc = self.label_model.score(L=self.L_val, Y=Y_val, tie_break_policy="random")["accuracy" ]
+        Y_test = self.test_df['LABEL'].to_numpy() 
+        # new_model_acc = self.label_model.score(L=self.L_val, Y=Y_val, tie_break_policy="random")["accuracy" ]
+        new_model_acc = self.validate_acc
         
         if os.path.exists(path):            
-            old_label_model = LabelModel(cardinality = 9, verbose=False)
+            # old_label_model = LabelModel(cardinality = 9, verbose=False)
             # L_train_dummy = np.random.randint(-1, 2, size=(10**6, 10), dtype=np.int8)
             
-            old_label_model.load(path)
-            old_model_acc = old_label_model.score(L=self.L_val, Y=Y_val, tie_break_policy="random")["accuracy" ] 
+            # old_label_model.load(path)
+            # old_model_acc = old_label_model.score(L=self.L_test, Y=Y_test, tie_break_policy="random")["accuracy" ] 
+              
+            # if new_model_acc > old_model_acc:
+            #     self.label_model.save(path)
+            #     self.update_data = True
+            # else:
+            #     self.update_data = False
+            self.label_model.save(path)
+            self.update_data = True
 
-            if new_model_acc > old_model_acc:
-                self.label_model.save(path)
-                self.update_data = True
-
-                logger.info(f"New model accuracy: {new_model_acc}. Saved model accuracy: {old_model_acc} (Validation Set)")
-                logger.info("Model with better accuracy saved!")
+            # logger.info(f"New model accuracy: {new_model_acc}. Saved model accuracy: {old_model_acc} (Validation Set)")
+            logger.info("Model overwritten. Model with better accuracy saved!")
         else:
             self.label_model.save(path)
+            self.update_data = True
             logger.info(f"Model accuracy: {new_model_acc}. (Validation Set)")
             logger.info("Model saved!")
   
     def show_samples_per_class(self):
         df1 = self.data.iloc[self.L_train[:, 1] == ELECTRIFICATION].sample(10, random_state=1)[['text','TOPIC']]
         #df2 = self.data.iloc[self.L_train[:, 1] == AUTONOMOUS].sample(10, random_state=1)[['text','TOPIC']]
-        # df3 = self.data.iloc[self.L_train[:, 1] == DIGITALISATION].sample(10, random_state=1)[['text','TOPIC']]
+        # df3 = self.data.iloc[self.L_train[:, 1] == DIGITALISATION].sample(10, random_stat e=1)[['text','TOPIC']]
         #df4 = self.data.iloc[self.L_train[:, 1] == INDIVIDUALISATION].sample(10, random_state=1)[['text','TOPIC']]
 
         
@@ -566,11 +570,11 @@ class Labeler:
         self.save_data()
 
 if __name__ == "__main__":
-    l = Labeler('de',r"files\topiced_texts.feather",r"files\labeled_texts.feather",'URL_TEXT')
-    l.run()
+    e = Labeler('en',r"files\topiced_texts_en.feather",r"files\labeled_texts_en.feather",'TOPIC')
+    e.run()
     l = Labeler('de',r"files\topiced_texts.feather",r"files\labeled_texts.feather",'TOPIC')
     l.run()
     e = Labeler('en',r"files\topiced_texts_en.feather",r"files\labeled_texts_en.feather",'URL_TEXT')
     e.run()
-    e = Labeler('en',r"files\topiced_texts_en.feather",r"files\labeled_texts_en.feather",'TOPIC')
-    e.run()
+    l = Labeler('de',r"files\topiced_texts.feather",r"files\labeled_texts.feather",'URL_TEXT')
+    l.run()
