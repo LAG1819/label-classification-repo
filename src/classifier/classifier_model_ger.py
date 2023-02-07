@@ -14,123 +14,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from transformers import AutoTokenizer, BertForMaskedLM, DataCollatorWithPadding,AutoModelForSequenceClassification, Trainer, TrainingArguments,AutoTokenizer,AutoModel,AutoConfig
+from transformers import AutoTokenizer, BertForMaskedLM, DataCollatorWithPadding,AutoModelForSequenceClassification, Trainer, TrainingArguments,AutoTokenizer,AutoModel,AutoConfig, get_scheduler, create_optimizer
 from transformers.modeling_outputs import TokenClassifierOutput
 import torch
 import torch.nn as nn
 import pandas as pd
 import numpy as np
-from transformers import create_optimizer
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
-from datasets import Dataset
-from evaluate import load
-import os
-from transformers import get_scheduler
+from datasets import Dataset, DatasetDict
+import evaluate
+import os 
 from tqdm.auto import tqdm
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
 
-def load_data():
-    df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\Output_texts_labeled.csv")
-    df = pd.read_csv(df_path, header = 0, delimiter=",")
-    data = df.replace(np.nan, "",regex = False)
-    data['text'] = data['text'].apply(lambda row: row.replace("|","."))
-    return generate_train_test(data)
-
-def generate_train_test(data):
-    target = data.pop('LABEL')
-    features = data[['text']]
-
-    # # set aside 20% of train and test data for evaluation
-    train_ds, test_ds, train_label, test_label = train_test_split(features, target,
-        test_size=0.2, shuffle = True, random_state = 8)
-
-    # # Use the same function above for the validation set
-    train_ds, val_ds, train_label, val_label = train_test_split(train_ds, train_label, 
-        test_size=0.25, random_state= 8) # 0.25 x 0.8 = 0.2
-    
-    print(train_ds.shape,val_ds.shape,test_ds.shape)
-
-    train_ds['LABEL'] = train_label.to_frame()['LABEL'].tolist()
-    val_ds['LABEL'] = val_label.to_frame()['LABEL'].tolist()
-    test_ds['LABEL'] = test_label.to_frame()['LABEL'].tolist()
-
-    dataset = {}
-
-    dataset['train'] = train_ds[['LABEL','text']].to_dict('records')
-    dataset['test'] = test_ds[['LABEL','text']].to_dict('records')
-
-    return dataset, train_ds
-
-def preprocess_data(data):
-    tokenized_data = {'train':[],'test':[]}
-    for set in data:
-        for sample in data[str(set)]:
-            tokenized_sent = tokenizer(sample["text"], truncation=True)
-            tokenized_sent.pop('token_type_ids')
-            tokenized_data[str(set)].append(tokenized_sent)
-
-    return tokenized_data
-
-def preprocess_function(examples):
-    return tokenizer(examples["text"], truncation=True)
-
-def transform_data_asTF(tokenized_data,data_collator):
-    train_ds_encoded = Dataset.from_pandas(pd.DataFrame(tokenized_data['train']))
-    test_ds_encoded = Dataset.from_pandas(pd.DataFrame(tokenized_data['test']))
-
-    # print(train_ds_encoded.columns)
-    # print(test_ds_encoded)
-
-    train_ds_encoded.to_tf_dataset(
-    columns= ['input_ids', 'token_type_ids', 'attention_mask'],
-    shuffle=False,
-    batch_size=8,
-    collate_fn=data_collator
-    )
-
-    test_ds_encoded.to_tf_dataset(
-    columns= ['input_ids', 'token_type_ids', 'attention_mask'],
-    shuffle=False,
-    batch_size=8,
-    collate_fn=data_collator
-    )
-
-    return train_ds_encoded,test_ds_encoded
-
-def transform_data_asTR(tokenized_data, data_collator):
-    
-    train_dataloader = DataLoader(
-    tokenized_data["train"], shuffle=True, batch_size=2, collate_fn=data_collator
-    )
-    eval_dataloader = DataLoader(
-        tokenized_data["test"], batch_size=2, collate_fn=data_collator
-    )
-    return train_dataloader, eval_dataloader
-
-def set_params(len_train_data):
-    optimizer = AdamW(model.parameters(), lr=5e-5)
-    num_epochs = 2
-    num_training_steps = num_epochs * len(len_train_data)
-    lr_scheduler = get_scheduler(
-        "linear",
-        optimizer=optimizer,
-        num_warmup_steps=0,
-        num_training_steps=num_training_steps,
-    )
-    print(num_training_steps)
-    metric = load("f1")
-
-    return num_training_steps,num_epochs, metric, optimizer, lr_scheduler
-
-class CustomModel(nn.Module):
+class GERBertClassifier(nn.Module):
   def __init__(self,checkpoint,num_labels): 
-    super(CustomModel,self).__init__() 
+    super(GERBertClassifier,self).__init__() 
     self.num_labels = num_labels 
 
     #Load Model with given checkpoint and extract its body
-    self.model = model = AutoModel.from_pretrained(checkpoint,config=AutoConfig.from_pretrained(checkpoint, output_attentions=True,output_hidden_states=True))
+    self.model = AutoModel.from_pretrained(checkpoint,config=AutoConfig.from_pretrained(checkpoint, output_attentions=True,output_hidden_states=True))
     self.dropout = nn.Dropout(0.1) 
     self.classifier = nn.Linear(768,num_labels) # load and initialize weights
 
@@ -150,53 +55,149 @@ class CustomModel(nn.Module):
     
     return TokenClassifierOutput(loss=loss, logits=logits, hidden_states=outputs.hidden_states,attentions=outputs.attentions)
 
+class ClassifierBERT:
+    def __init__(self,lang = 'de'):
+        self.lang = lang
+        self.text_col = 'text'
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
+        self.data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
+        self.model = GERBertClassifier(checkpoint="bert-base-german-cased",num_labels=9).to(self.device)
+        self.run()
+
+    def load_data(self):
+            df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\labeled_texts.feather")
+            df = pd.read_feather(df_path)
+            data = df.replace(np.nan, "",regex = False)
+            data = data[:1000]
+            data['text'] = data[self.text_col]
+            
+            train, validate, test = np.split(data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(data)), int(.8*len(data))])
+
+            dataset = {}
+
+            dataset['train'] = train[['LABEL','text']].to_dict('records')#.to_records(index=False)
+            dataset['test'] = test[['LABEL','text']].to_dict('records')
+            dataset['val'] = validate[['LABEL','text']].to_dict('records')
+            
+            return dataset
+
+    def preprocess_data(self,data):
+        tokenized_data = {'train':[],'test':[],'val':[]}
+        for set in data:
+            for sample in data[str(set)]:
+                tokenized_sent = self.tokenizer(sample["text"], truncation=True, max_length = 512)
+                tokenized_sent.pop('token_type_ids')
+                tokenized_sent['label'] = [sample["LABEL"]]
+                tokenized_data[str(set)].append(tokenized_sent)
+        return tokenized_data
+
+    def transform_data(self,tokenized_data):
+        data = DatasetDict({
+        'train': Dataset.from_list(tokenized_data['train']),
+        'test': Dataset.from_list(tokenized_data['test']),
+        'val': Dataset.from_list(tokenized_data['val'])
+        })
+        data.set_format('torch', columns = ['input_ids', 'attention_mask', 'label'])
+        
+        train_dataloader = DataLoader(
+            data["train"], shuffle=True, batch_size=2, collate_fn=self.data_collator
+        )
+        test_dataloader = DataLoader(
+            data["test"], batch_size=2, collate_fn=self.data_collator
+        )
+        eval_dataloader = DataLoader(
+            data["val"], batch_size=2, collate_fn=self.data_collator
+        )
+        return train_dataloader, test_dataloader, eval_dataloader
+
+    def set_params(self,len_train_data):
+        optimizer = AdamW(self.model.parameters(), lr=5e-5)
+        num_epochs = 1
+        num_training_steps = num_epochs * len_train_data
+        lr_scheduler = get_scheduler(
+            "linear",
+            optimizer=optimizer,
+            num_warmup_steps=0,
+            num_training_steps=num_training_steps,
+        )
+
+        metric = evaluate.load("accuracy")
+
+        return num_training_steps,num_epochs, metric, optimizer, lr_scheduler
+
+    def train_model(self,num_training_steps,num_epochs, metric, optimizer, lr_scheduler,train_dl,test_dl):
+        for epoch in range(num_epochs):
+            self.model.train()
+            for batch in train_dl:
+                batch = {k: v.to(self.device) for k, v in batch.items()}
+                outputs = self.model(**batch)
+                loss = outputs.loss
+                loss.backward()
+
+                optimizer.step()
+                lr_scheduler.step()
+                optimizer.zero_grad()
+
+            self.model.eval()
+            for batch in test_dl:
+                batch = {k: v.to(self.device) for k, v in batch.items()}
+                with torch.no_grad():
+                    outputs = self.model(**batch)
+
+                logits = outputs.logits
+                predictions = torch.argmax(logits, dim=-1)
+                metric.add_batch(predictions=predictions, references=batch["labels"])  
+            print(metric.compute())
+
+    def validate_model(self,metric, eval_dl):
+        self.model.eval()
+        for batch in eval_dl:
+            batch = {k: v.to(self.device) for k, v in batch.items()}
+            with torch.no_grad():
+                outputs = self.model(**batch)
+
+            logits = outputs.logits
+            predictions = torch.argmax(logits, dim=-1)
+            metric.add_batch(predictions=predictions, references=batch["labels"])
+        print(metric.compute())
+        
+
+    def predict(self, sentence):
+        ag_labels = {2:"AUTONOMOUS",3:"CONNECTIVITY",4:"DIGITALISATION",5:"ELECTRIFICATION",6:"INDIVIDUALISATION",7:"SHARED",8:"SUSTAINABILITY"}
+        tokenized_sent = self.tokenizer(sentence, truncation=True, max_length = 512)
+        tokenized_sent.pop('token_type_ids')
+        tokenized_sent['label'] = 0
+        tokenized_data = {'train':[tokenized_sent],'test':[tokenized_sent],'val':[tokenized_sent]}
+        train_dl, test_dl, val_dl = self.transform_data(tokenized_data)
+        for batch in train_dl:
+            batch = {k: v.to(self.device) for k, v in batch.items()}
+            with torch.no_grad():
+                outputs = self.model(**batch)
+
+            logits = outputs.logits
+            prediction = torch.argmax(logits, dim=-1)[0].item()
+            label = ag_labels[prediction]
+            print(prediction)
+            print(label)
+
+    def run(self):
+        train_test_val_set = self.load_data()
+        len_train_data = len(train_test_val_set['train'])
+
+        tokenized_train_test_set = self.preprocess_data(train_test_val_set)
+        train_dl,test_dl,val_dl = self.transform_data(tokenized_train_test_set)
+
+       
+        num_training_steps,num_epochs, metric, optimizer, lr_scheduler = self.set_params(len_train_data)
+
+        self.train_model(num_training_steps,num_epochs, metric, optimizer, lr_scheduler,train_dl, test_dl)
+        self.validate_model(metric,val_dl)
+
+        self.predict("Connectivität ist digitale Vernetzung")
+        print("FIN")
 
 
-# tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
-
-# data, train_data = load_data()
-# len_train_data = train_data['LABEL'].tolist()
-# tokenized_data = preprocess_data(data)
-# print(tokenized_data.keys)
-# #add label column to tokenized!!! 
-# data_collator = DataCollatorWithPadding(tokenizer=tokenizer)#return_tensors="tf"
-# train_dataloader,eval_dataloader = transform_data_asTR(tokenized_data, data_collator)
-
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# model=CustomModel(checkpoint="bert-base-german-cased",num_labels=2).to(device)
-# num_training_steps,num_epochs, metric, optimizer, lr_scheduler = set_params(len_train_data)
-# progress_bar_train = range(num_training_steps)
-# progress_bar_eval = range(num_epochs * len(eval_dataloader))
-
-
-# ###training of model###
-# for epoch in range(num_epochs):
-#   model.train()
-#   for batch in train_dataloader:
-#       batch = {k: v.to(device) for k, v in batch.items()}
-      
-#       outputs = model(**batch)
+gerbert = ClassifierBERT()
     
-#       loss = outputs.loss
-#       loss.backward()
-
-#       optimizer.step()
-#       lr_scheduler.step()
-#       optimizer.zero_grad()
-#       progress_bar_train.update(1)
-
-### eval of model ###
-#   model.eval()
-#   for batch in eval_dataloader:
-#     batch = {k: v.to(device) for k, v in batch.items()}
-#     with torch.no_grad():
-#         outputs = model(**batch)
-
-#     logits = outputs.logits
-#     predictions = torch.argmax(logits, dim=-1)
-#     metric.add_batch(predictions=predictions, references=batch["labels"])
-#     progress_bar_eval.update(1)
-    
-#   print(metric.compute())
-
 
