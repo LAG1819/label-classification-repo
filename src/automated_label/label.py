@@ -507,6 +507,7 @@ class Labeler:
         """
         path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
         self.data.reset_index(inplace=True)
+        self.data = self.data.rename(columns = {'text':self.text_col})
         if os.path.exists(path):            
             if self.update_data:
                 self.data.to_feather(path)
