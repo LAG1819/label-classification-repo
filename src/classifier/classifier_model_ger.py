@@ -14,13 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from transformers import AutoTokenizer, BertForMaskedLM, DataCollatorWithPadding,AutoModelForSequenceClassification, Trainer, TrainingArguments,AutoTokenizer,AutoModel,AutoConfig, get_scheduler, create_optimizer
+from transformers import AutoTokenizer, DataCollatorWithPadding,AutoTokenizer,AutoModel,AutoConfig, get_scheduler, create_optimizer
 from transformers.modeling_outputs import TokenClassifierOutput
 import torch
 import torch.nn as nn
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from datasets import Dataset, DatasetDict
 import evaluate
@@ -29,8 +28,7 @@ from tqdm.auto import tqdm
 from torch.utils.data import DataLoader
 from torch.optim import AdamW 
 from ray import tune 
-from ray.tune.search.bayesopt import BayesOptSearch
-from ray.tune.search.basic_variant import BasicVariantGenerator
+from ray.tune.search.bohb import TuneBOHB
 from ray.tune.schedulers import HyperBandScheduler,HyperBandForBOHB
 from ray.air.checkpoint import Checkpoint
 from ray.air import session
@@ -134,9 +132,10 @@ def set_params(model, config_lr, len_train_data):
 
 def train_model(config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
-    data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
-    model = GERBertClassifier(checkpoint="bert-base-german-cased",num_labels=9).to(device)
+    if config['lang'] == 'de':
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
+        data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+        model = GERBertClassifier(checkpoint="bert-base-german-cased",num_labels=9).to(device)
 
     train_test_val_set = load_data(config["col"])
     len_train_dl = len(train_test_val_set['train'])
@@ -170,11 +169,101 @@ def train_model(config):
             metric.add_batch(predictions=predictions, references=batch["labels"])  
             acc = metric.compute()
         
-        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_de\models_checkpoint\gerbert.pt"
         os.makedirs("gerbert", exist_ok=True)
-        torch.save((model.state_dict(), optimizer.state_dict()), path)
+        torch.save((model.state_dict(), optimizer.state_dict()), "gerbert/checkpoint.pt")
         checkpoint = Checkpoint.from_directory("gerbert")
         session.report({"accuracy": acc['accuracy']}, checkpoint=checkpoint)#"loss": (val_loss / val_steps), 
+
+def random_search(lang, col, path):
+    config_rand = {
+        "lr":tune.loguniform(1e-4,1e-1),
+        "batch_size":tune.choice([2,4,6,8,16]),
+        "lang":lang,
+        "col":col
+    } 
+    tuner_random = tune.Tuner(
+        tune.with_resources(
+            tune.with_parameters(train_model),
+            resources={"cpu": 1}
+        ),
+        tune_config=tune.TuneConfig(
+            metric="accuracy",
+            mode="max",
+            num_samples = 5,
+        ),
+        param_space=config_rand,
+        run_config=air.RunConfig(local_dir=path, name="random_search_de")
+    )
+    result_rand = tuner_random.fit()
+    best_results_rand = result_rand.get_best_result("accuracy", "max")
+    return best_results_rand
+
+def bohb(lang,col,path):
+    config = {
+        "lr":tune.loguniform(1e-4,1e-1),
+        "batch_size":tune.choice([2,4,6,8,16]),
+        "lang":lang,
+        "col":col
+    }
+    bohb = HyperBandForBOHB(
+        time_attr="training_iteration",
+        max_t=1,
+        reduction_factor=4,
+        stop_last_trials=False,)
+    bohb_search = TuneBOHB()
+    bohb_search = tune.search.ConcurrencyLimiter(bohb_search, max_concurrent=2)
+    tuner_bayes = tune.Tuner(
+        tune.with_resources(
+            tune.with_parameters(train_model),
+            resources={"cpu": 1}
+        ),
+        tune_config=tune.TuneConfig(
+            metric="accuracy",
+            mode="max",
+            scheduler=bohb,
+            search_alg=bohb_search,
+            num_samples=5,
+        ),
+        run_config=air.RunConfig(stop={"training_iteration": 1},local_dir=path, name="bohb_search_de"),
+        param_space=config,
+    )
+    result_bayes = tuner_bayes.fit()
+    best_results_bayes = result_bayes.get_best_result("accuracy", "max")
+
+    print("Best trial config: {}".format(best_results_bayes.config))
+    print("Best trial final validation loss: {}".format(best_results_bayes.metrics["loss"]))
+    print("Best trial final validation accuracy: {}".format(best_results_bayes.metrics["accuracy"]))
+    return best_results_bayes
+
+def hyperband(lang, col, path):
+    config = {
+        "lr":tune.loguniform(1e-4,1e-1),
+        "batch_size":tune.choice([2,4,6,8,16]),
+        "lang":lang,
+        "col":col
+    }
+    hyperband = HyperBandScheduler(metric = "accuracy", mode = "max")
+    tuner_hyper = tune.Tuner(
+        tune.with_resources(
+            tune.with_parameters(train_model),
+            resources={"cpu": 2}
+        ),
+        tune_config = tune.TuneConfig(
+            num_samples = 5,
+            scheduler = hyperband
+        ),
+        param_space = config,
+        run_config=air.RunConfig(local_dir=path, name="hyperband_de")
+    )
+    
+    result = tuner_hyper.fit()
+    best_results = result.get_best_result("accuracy", "max")
+
+    print("Best trial config: {}".format(best_results.config))
+    print("Best trial final validation loss: {}".format(best_results.metrics["loss"]))
+    print("Best trial final validation accuracy: {}".format(best_results.metrics["accuracy"]))
+    return best_results
+    
     
 
 def validate_model(text_col, best_results):
@@ -219,83 +308,27 @@ def predict(sentence, tokenizer, model, data_collator,batch_size,device):
         print(label)
 
 def run(lang ='de', col = 'text'):
-    config_rand = {
-        "lr":tune.loguniform(1e-4,1e-1),
-        "batch_size":tune.choice([2,4,6,8,16]),
-        "lang":lang,
-        "col":col
-    } 
-    ###Random Search###
     path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_de"
-    tuner_random = tune.Tuner(
-        tune.with_resources(
-            tune.with_parameters(train_model),
-            resources={"cpu": 3}
-        ),
-        tune_config=tune.TuneConfig(
-            metric="accuracy",
-            mode="max",
-            num_samples = 5,
-        ),
-        param_space=config_rand,
-        run_config=air.RunConfig(local_dir=path, name="random_search_de")
-    )
-    result_rand = tuner_random.fit()
-    best_results_rand = result_rand.get_best_result("accuracy", "max")
     
-    config = {
-        "lr":tune.loguniform(1e-4,1e-1),
-        "batch_size":tune.choice([2,4,6,8,16]),
-        "lang":lang,
-        "col":col
-    }
-    ###Bayesian Optimization Search###
-    bayes = BayesOptSearch(random_search_steps=4)
-    tuner_bayes = tune.Tuner(
-        train_model,
-        tune_config=tune.TuneConfig(
-            metric="accuracy",
-            mode="max",
-            search_alg=bayes,
-        ),
-        run_config=air.RunConfig(stop={"training_iteration": 1},local_dir=path, name="bayes_search_de"),
-        param_space=config,
-    )
-    result_bayes = tuner_bayes.fit()
-    best_results_bayes = result_bayes.get_best_result("accuracy", "max")
-
-    print("Best trial config: {}".format(best_results_bayes.config))
-    print("Best trial final validation loss: {}".format(best_results_bayes.metrics["loss"]))
-    print("Best trial final validation accuracy: {}".format(best_results_bayes.metrics["accuracy"]))
-
+    ###Random Search###
+    rand_best_results = random_search(lang,col,path)
+    
     ###Hyberpban Bayesian Optimization###
-    bohb = HyperBandForBOHB(metric = "accuracy", mode = "max")
+    bohb_best_results = bohb(lang,col,path)
 
     ###Hyperband Optimization###
-    hyperband = HyperBandScheduler(metric = "accuracy", mode = "max")
-    tuner_hyper = tune.Tuner(
-        train_model,
-        tune_config = tune.TuneConfig(
-            num_samples = 10,
-            scheduler = hyperband
-        ),
-        param_space = config,
-        run_config=air.RunConfig(local_dir=path, name="hyperband_de")
-    )
+    hyperband_best_results = hyperband(lang, col, path)
     
-    result = tuner_hyper.fit()
-    best_results = result.get_best_result("accuracy", "max")
+    best_results = [rand_best_results,bohb_best_results,hyperband_best_results]
+    ###Test Model###
+    validate_model(col, best_results)
 
-    print("Best trial config: {}".format(best_results.config))
-    print("Best trial final validation loss: {}".format(best_results.metrics["loss"]))
-    print("Best trial final validation accuracy: {}".format(best_results.metrics["accuracy"]))
+    ###Test new sample sentence###
+    predict("Connectivität ist digitale Vernetzung")
     
-    # validate_model(col, best_results)
-
-    # self.predict("Connectivität ist digitale Vernetzung")
-    print("FIN")
 
 
-run()
+run(lang ='de', col = 'text')
+# run(lang ='en', col = 'text')
     
 
