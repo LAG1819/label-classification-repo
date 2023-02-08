@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from transformers import AutoTokenizer, DataCollatorWithPadding,AutoTokenizer,AutoModel,AutoConfig, get_scheduler, create_optimizer
+from transformers import AutoTokenizer, BertTokenizer, DataCollatorWithPadding,AutoTokenizer,AutoModel,AutoConfig, get_scheduler, create_optimizer
 from transformers.modeling_outputs import TokenClassifierOutput
 import torch
 import torch.nn as nn
@@ -35,9 +35,9 @@ from ray.air import session
 from ray import air
 
 
-class GERBertClassifier(nn.Module):
+class BertClassifier(nn.Module):
   def __init__(self,checkpoint,num_labels): 
-    super(GERBertClassifier,self).__init__() 
+    super(BertClassifier,self).__init__() 
     self.num_labels = num_labels 
 
     #Load Model with given checkpoint and extract its body
@@ -62,22 +62,26 @@ class GERBertClassifier(nn.Module):
     return TokenClassifierOutput(loss=loss, logits=logits, hidden_states=outputs.hidden_states,attentions=outputs.attentions)
         
 
-def load_data(text_col):
-        df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],"files\labeled_texts.feather")
-        df = pd.read_feather(df_path)
-        data = df.replace(np.nan, "",regex = False)
-        data = data[:1000]
-        data['text'] = data[text_col]
-        
-        train, validate, test = np.split(data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(data)), int(.8*len(data))])
+def load_data(text_col,lang):
+    if lang == 'de':
+        dir = "files\labeled_texts.feather"
+    elif lang == 'en':
+        dir = "files\labeled_texts_en.feather"
+    df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],dir)
+    df = pd.read_feather(df_path)
+    data = df.replace(np.nan, "",regex = False)
+    data = data[:1000]
+    data['text'] = data[text_col]
+    
+    train, validate, test = np.split(data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(data)), int(.8*len(data))])
 
-        dataset = {}
+    dataset = {}
 
-        dataset['train'] = train[['LABEL','text']].to_dict('records')#.to_records(index=False)
-        dataset['test'] = test[['LABEL','text']].to_dict('records')
-        dataset['val'] = validate[['LABEL','text']].to_dict('records')
-        
-        return dataset
+    dataset['train'] = train[['LABEL','text']].to_dict('records')#.to_records(index=False)
+    dataset['test'] = test[['LABEL','text']].to_dict('records')
+    dataset['val'] = validate[['LABEL','text']].to_dict('records')
+    
+    return dataset
 
 def preprocess_data(data, tokenizer):
     tokenized_data = {'train':[],'test':[],'val':[]}
@@ -134,10 +138,13 @@ def train_model(config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if config['lang'] == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
-        data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
-        model = GERBertClassifier(checkpoint="bert-base-german-cased",num_labels=9).to(device)
+        model = BertClassifier(checkpoint="bert-base-german-cased",num_labels=9).to(device)
+    elif config['lang'] == 'en':
+        tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+        model = BertClassifier(checkpoint='bert-base-cased',num_labels=9).to(device)
+    data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
-    train_test_val_set = load_data(config["col"])
+    train_test_val_set = load_data(config["col"],config['lang'])
     len_train_dl = len(train_test_val_set['train'])
 
     tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
@@ -169,12 +176,12 @@ def train_model(config):
             metric.add_batch(predictions=predictions, references=batch["labels"])  
             acc = metric.compute()
         
-        os.makedirs("gerbert", exist_ok=True)
-        torch.save((model.state_dict(), optimizer.state_dict()), "gerbert/checkpoint.pt")
-        checkpoint = Checkpoint.from_directory("gerbert")
+        os.makedirs("bert", exist_ok=True)
+        torch.save((model.state_dict(), optimizer.state_dict()), "bert/checkpoint.pt")
+        checkpoint = Checkpoint.from_directory("bert")
         session.report({"accuracy": acc['accuracy']}, checkpoint=checkpoint)#"loss": (val_loss / val_steps), 
 
-def random_search(lang, col, path):
+def random_search(lang, col, path,num_samples = 1):
     config_rand = {
         "lr":tune.loguniform(1e-4,1e-1),
         "batch_size":tune.choice([2,4,6,8,16]),
@@ -189,16 +196,16 @@ def random_search(lang, col, path):
         tune_config=tune.TuneConfig(
             metric="accuracy",
             mode="max",
-            num_samples = 5,
+            num_samples = num_samples,
         ),
         param_space=config_rand,
-        run_config=air.RunConfig(local_dir=path, name="random_search_de")
+        run_config=air.RunConfig(local_dir=path, name="random_search_"+lang)
     )
     result_rand = tuner_random.fit()
     best_results_rand = result_rand.get_best_result("accuracy", "max")
     return best_results_rand
 
-def bohb(lang,col,path):
+def bohb(lang,col,path,num_samples=1):
     config = {
         "lr":tune.loguniform(1e-4,1e-1),
         "batch_size":tune.choice([2,4,6,8,16]),
@@ -222,20 +229,19 @@ def bohb(lang,col,path):
             mode="max",
             scheduler=bohb,
             search_alg=bohb_search,
-            num_samples=5,
+            num_samples=num_samples,
         ),
-        run_config=air.RunConfig(stop={"training_iteration": 1},local_dir=path, name="bohb_search_de"),
+        run_config=air.RunConfig(stop={"training_iteration": 1},local_dir=path, name="bohb_search_"+lang),
         param_space=config,
     )
     result_bayes = tuner_bayes.fit()
     best_results_bayes = result_bayes.get_best_result("accuracy", "max")
 
     print("Best trial config: {}".format(best_results_bayes.config))
-    print("Best trial final validation loss: {}".format(best_results_bayes.metrics["loss"]))
     print("Best trial final validation accuracy: {}".format(best_results_bayes.metrics["accuracy"]))
     return best_results_bayes
 
-def hyperband(lang, col, path):
+def hyperband(lang, col, path, num_samples=1):
     config = {
         "lr":tune.loguniform(1e-4,1e-1),
         "batch_size":tune.choice([2,4,6,8,16]),
@@ -246,31 +252,29 @@ def hyperband(lang, col, path):
     tuner_hyper = tune.Tuner(
         tune.with_resources(
             tune.with_parameters(train_model),
-            resources={"cpu": 2}
+            resources={"cpu": 1}
         ),
         tune_config = tune.TuneConfig(
-            num_samples = 5,
+            num_samples = num_samples,
             scheduler = hyperband
         ),
         param_space = config,
-        run_config=air.RunConfig(local_dir=path, name="hyperband_de")
+        run_config=air.RunConfig(local_dir=path, name="hyperband_"+lang)
     )
     
     result = tuner_hyper.fit()
     best_results = result.get_best_result("accuracy", "max")
 
     print("Best trial config: {}".format(best_results.config))
-    print("Best trial final validation loss: {}".format(best_results.metrics["loss"]))
     print("Best trial final validation accuracy: {}".format(best_results.metrics["accuracy"]))
     return best_results
     
     
-
 def validate_model(text_col, best_results):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
-    model = GERBertClassifier(checkpoint="bert-base-german-cased",num_labels=9).to(device)
+    model = BertClassifier(checkpoint="bert-base-german-cased",num_labels=9).to(device)
     
     train_test_val_set = load_data(text_col)
     tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
@@ -308,27 +312,29 @@ def predict(sentence, tokenizer, model, data_collator,batch_size,device):
         print(label)
 
 def run(lang ='de', col = 'text'):
-    path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_de"
-    
+    path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_"+lang
+    num_samples_per_tune = 1
     ###Random Search###
-    rand_best_results = random_search(lang,col,path)
+    rand_best_results = random_search(lang,col,path,num_samples_per_tune)
     
     ###Hyberpban Bayesian Optimization###
     bohb_best_results = bohb(lang,col,path)
 
-    ###Hyperband Optimization###
+    # ###Hyperband Optimization###
     hyperband_best_results = hyperband(lang, col, path)
     
     best_results = [rand_best_results,bohb_best_results,hyperband_best_results]
-    ###Test Model###
-    validate_model(col, best_results)
+    # ###Test Model###
+    # validate_model(col, best_results)
 
-    ###Test new sample sentence###
-    predict("Connectivität ist digitale Vernetzung")
+    # ###Test new sample sentence###
+    # predict("Connectivität ist digitale Vernetzung")
+
     
+    print("Done")
 
 
-run(lang ='de', col = 'text')
-# run(lang ='en', col = 'text')
+#run(lang ='de', col = 'text')
+run(lang ='en', col = 'text')
     
 
