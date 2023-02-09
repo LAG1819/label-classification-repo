@@ -119,9 +119,9 @@ def transform_eval_data(tokenized_data,data_collator,batch_size):
     )
     return eval_dataloader
 
-def set_params(model, config_lr, len_train_data):   
+def set_params(model, config_lr, config_epoch,len_train_data):   
     optimizer = AdamW(model.parameters(), lr=config_lr)
-    num_epochs = 1
+    num_epochs = config_epoch
     num_training_steps = num_epochs * len_train_data
     lr_scheduler = get_scheduler(
         "linear",
@@ -131,17 +131,18 @@ def set_params(model, config_lr, len_train_data):
     )
 
     metric = evaluate.load("accuracy")
+    metric2 = evaluate.load("roc_auc","multilabel")
 
-    return num_training_steps,num_epochs, metric, optimizer, lr_scheduler
+    return num_training_steps,num_epochs, metric, optimizer, lr_scheduler,metric2
 
 def train_model(config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if config['lang'] == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
-        model = BertClassifier(checkpoint="bert-base-german-cased",num_labels=9).to(device)
+        model = BertClassifier(checkpoint="bert-base-german-cased",num_labels=7).to(device)
     elif config['lang'] == 'en':
         tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
-        model = BertClassifier(checkpoint='bert-base-cased',num_labels=9).to(device)
+        model = BertClassifier(checkpoint='bert-base-cased',num_labels=7).to(device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     train_test_val_set = load_data(config["col"],config['lang'])
@@ -151,7 +152,7 @@ def train_model(config):
 
     train_dl,test_dl = transform_train_data(tokenized_train_test_set, data_collator,config["batch_size"])
     
-    num_training_steps,num_epochs, metric, optimizer, lr_scheduler = set_params(model, config['lr'], len_train_dl)
+    num_training_steps,num_epochs, metric, optimizer, lr_scheduler,metric2 = set_params(model, config['lr'],config['epoch'], len_train_dl)
 
     for epoch in range(num_epochs):
         model.train()
@@ -173,18 +174,21 @@ def train_model(config):
 
             logits = outputs.logits
             predictions = torch.argmax(logits, dim=-1)
-            metric.add_batch(predictions=predictions, references=batch["labels"])  
+            metric.add_batch(predictions=predictions, references=batch["labels"])
+            #metric2.add_batch(predictions=predictions, references=batch["labels"])
             acc = metric.compute()
+            #rocauc = metric2.compute()
         
         os.makedirs("bert", exist_ok=True)
         torch.save((model.state_dict(), optimizer.state_dict()), "bert/checkpoint.pt")
         checkpoint = Checkpoint.from_directory("bert")
-        session.report({"accuracy": acc['accuracy']}, checkpoint=checkpoint)#"loss": (val_loss / val_steps), 
+        session.report({"accuracy": acc['accuracy']}, checkpoint=checkpoint)#, "roc_auc":rocauc["roc_auc"]
 
 def random_search(lang, col, path,num_samples = 1):
     config_rand = {
         "lr":tune.loguniform(1e-4,1e-1),
         "batch_size":tune.choice([2,4,6,8,16]),
+        "epoch":tune.choice([1,3,5,7,10]),
         "lang":lang,
         "col":col
     } 
@@ -203,11 +207,14 @@ def random_search(lang, col, path,num_samples = 1):
     )
     result_rand = tuner_random.fit()
     best_results_rand = result_rand.get_best_result("accuracy", "max")
+    print("[RAND]Best trial config: {}".format(best_results_rand.config))
+    print("[RAND]Best trial final validation accuracy: {}".format(best_results_rand.metrics["accuracy"]))
     return best_results_rand
 
 def bohb(lang,col,path,num_samples=1):
     config = {
         "lr":tune.loguniform(1e-4,1e-1),
+        "epoch":tune.choice([1,3,5,7,10]),
         "batch_size":tune.choice([2,4,6,8,16]),
         "lang":lang,
         "col":col
@@ -237,14 +244,15 @@ def bohb(lang,col,path,num_samples=1):
     result_bayes = tuner_bayes.fit()
     best_results_bayes = result_bayes.get_best_result("accuracy", "max")
 
-    print("Best trial config: {}".format(best_results_bayes.config))
-    print("Best trial final validation accuracy: {}".format(best_results_bayes.metrics["accuracy"]))
+    print("[BOHB]Best trial config: {}".format(best_results_bayes.config))
+    print("[BOHB]Best trial final validation accuracy: {}".format(best_results_bayes.metrics["accuracy"]))
     return best_results_bayes
 
 def hyperband(lang, col, path, num_samples=1):
     config = {
         "lr":tune.loguniform(1e-4,1e-1),
         "batch_size":tune.choice([2,4,6,8,16]),
+        "epoch":tune.choice([1,3,5,7,10]),
         "lang":lang,
         "col":col
     }
@@ -265,16 +273,20 @@ def hyperband(lang, col, path, num_samples=1):
     result = tuner_hyper.fit()
     best_results = result.get_best_result("accuracy", "max")
 
-    print("Best trial config: {}".format(best_results.config))
-    print("Best trial final validation accuracy: {}".format(best_results.metrics["accuracy"]))
+    print("[HYPER]Best trial config: {}".format(best_results.config))
+    print("[HYPER]Best trial final validation accuracy: {}".format(best_results.metrics["accuracy"]))
     return best_results
     
     
-def validate_model(text_col, best_results):
+def validate_model(text_col,lang, best_results):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
+    if lang == 'de':
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
+        model = BertClassifier(checkpoint="bert-base-german-cased",num_labels=7).to(device)
+    elif lang == 'en':
+        tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+        model = BertClassifier(checkpoint='bert-base-cased',num_labels=7).to(device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
-    model = BertClassifier(checkpoint="bert-base-german-cased",num_labels=9).to(device)
     
     train_test_val_set = load_data(text_col)
     tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
@@ -293,13 +305,22 @@ def validate_model(text_col, best_results):
     print(metric.compute())
     
 
-def predict(sentence, tokenizer, model, data_collator,batch_size,device):
-    ag_labels = {2:"AUTONOMOUS",3:"CONNECTIVITY",4:"DIGITALISATION",5:"ELECTRIFICATION",6:"INDIVIDUALISATION",7:"SHARED",8:"SUSTAINABILITY"}
+def predict(sentence, lang,best_results):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if lang == 'de':
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
+        model = BertClassifier(checkpoint="bert-base-german-cased",num_labels=7).to(device)
+    elif lang == 'en':
+        tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+        model = BertClassifier(checkpoint='bert-base-cased',num_labels=7).to(device)
+    data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+
+    ag_labels = {0:"AUTONOMOUS",1:"CONNECTIVITY",2:"DIGITALISATION",3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"}
     tokenized_sent = tokenizer(sentence, truncation=True, max_length = 512)
     tokenized_sent.pop('token_type_ids')
     tokenized_sent['label'] = 0
     tokenized_data = {'val':[tokenized_sent]}
-    train_dl, test_dl, val_dl = transform_eval_data(tokenized_data,data_collator,batch_size)
+    train_dl, test_dl, val_dl = transform_eval_data(tokenized_data,data_collator,best_results.config["batch_size"])
     for batch in train_dl:
         batch = {k: v.to(device) for k, v in batch.items()}
         with torch.no_grad():
@@ -311,21 +332,21 @@ def predict(sentence, tokenizer, model, data_collator,batch_size,device):
         print(prediction)
         print(label)
 
-def run(lang ='de', col = 'text'):
+def run(lang, col):
     path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_"+lang
     num_samples_per_tune = 1
     ###Random Search###
     rand_best_results = random_search(lang,col,path,num_samples_per_tune)
     
     ###Hyberpban Bayesian Optimization###
-    bohb_best_results = bohb(lang,col,path)
+    bohb_best_results = bohb(lang,col,path,num_samples_per_tune)
 
     # ###Hyperband Optimization###
-    hyperband_best_results = hyperband(lang, col, path)
+    hyperband_best_results = hyperband(lang, col, path,num_samples_per_tune)
     
     best_results = [rand_best_results,bohb_best_results,hyperband_best_results]
     # ###Test Model###
-    # validate_model(col, best_results)
+    # validate_model(col,lang, best_results)
 
     # ###Test new sample sentence###
     # predict("Connectivität ist digitale Vernetzung")
