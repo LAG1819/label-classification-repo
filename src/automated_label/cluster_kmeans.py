@@ -109,7 +109,7 @@ class TOPIC_KMeans:
         cluster_centers = kmeans.cluster_centers_
         # print(cluster_centers)
 
-        #self.save_model(kmeans,vectorizer)
+        self.save_model(kmeans,vectorizer)
         
 
     def save_model(self,model:KMeans, vectorizer:TfidfVectorizer):
@@ -118,8 +118,8 @@ class TOPIC_KMeans:
         Args:
             model (KMeans): Fitted KMeans model.
         """
-        path_m = str(os.path.dirname(__file__)).split("src")[0] + "models\label\kmeans_"+str(self.lang)+".pkl"
-        path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\label\kmeans_vectorizer_"+str(self.lang)+".pkl"
+        path_m = str(os.path.dirname(__file__)).split("src")[0] + "models\label\k_Means\kmeans_"+str(self.lang)+".pkl"
+        path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\label\k_Means\kmeans_vectorizer_"+str(self.lang)+".pkl"
 
         if os.path.exists(path_m):
             os.remove(path_m)
@@ -135,13 +135,13 @@ class TOPIC_KMeans:
     def save_clusterNames(self):
         dic = {}
         for i, t in enumerate (self.topics['CLASS'].tolist()): 
-            print(i+2,t)
-            dic[str(i+2)] = [t]
+            print(i,t)
+            dic[str(i)] = [t]
         #save cluster dictionary
         cluster_names =  pd.DataFrame.from_dict(dic)
         #print(dic)
 
-        path = str(os.path.dirname(__file__)).split("src")[0] +r"files\kMeans_cluster_"+str(self.lang)+".feather"
+        path = str(os.path.dirname(__file__)).split("src")[0] +r"files\03_label\k_Means\kMeans_cluster_"+str(self.lang)+".feather"
         if os.path.exists(path):
             os.remove(path)
         cluster_names.to_feather(path)
@@ -162,10 +162,10 @@ class TOPIC_KMeans:
         self.save_clusterNames()
 
 
-# kmeans = TOPIC_KMeans('de',r"files\topiced_classes.feather",r"files\topiced_texts.feather")
-# kmeans.run()
-# kmeans = TOPIC_KMeans('en',r"files\topiced_classes_en.feather",r"files\topiced_texts_en.feather")
-# kmeans.run()
+lang = 'en'
+kmeans = TOPIC_KMeans(lang,r"files\02_clean\topiced_classes_"+lang+r".feather",r"files\02_clean\topiced_texts_"+lang+r".feather")
+kmeans.run()
+
 
         
     #kmeans test
