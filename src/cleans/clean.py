@@ -355,15 +355,11 @@ class textFilter:
         
 
 # if __name__ == "__main__":
-    # d_class = textFilter('de',r"files\raw_classes.feather",r"files\cleaned_classes.feather")
-    # d_class.run()
-    # e_class = textFilter('en'sr"files\raw_classes_en.feather",r"files\cleaned_classes_en.feather")
-    # e_class.run()
-    # d = textFilter('de',r"files\raw_texts.feather",r"files\cleaned_texts.feather")
-    # d.run()
-    # e = textFilter('en',r"files\raw_texts_en.feather",r"files\cleaned_texts_en.feather")
-    # e.run()
-    # data_sample = f.data.sample(frac = 0.007,replace = False,random_state = 1, axis = 0)
-    # print(data_sample.shape)
-    # print(set(data_sample['CLASS'].tolist()))
+#     lang = 'de'
+#     class_filter = textFilter(lang,r"files\01_crawl\raw_classes_"+lang+r".feather",r"files\02_clean\cleaned_classes_"+lang+r".feather")
+#     class_filter.run()
+#     text_filter = textFilter(lang,r"files\01_crawl\raw_texts_"+lang+r".feather",r"files\02_clean\cleaned_texts_"+lang+r".feather")
+#     text_filter.run()
+   
+
     

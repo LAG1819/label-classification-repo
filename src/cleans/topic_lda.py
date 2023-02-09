@@ -235,11 +235,9 @@ class TopicExtractor:
         logging.info("[{log}]Topic extraction of dataframe {df} is finished.".format(log = datetime.now(), df = self.data.shape))
 
 # if __name__ == "__main__":
-#     texts_d = TopicExtractor(2,r"files\cleaned_texts.feather",r"files\topiced_texts.feather", "de")
-#     texts_d.run() 
-    # topics_d = TopicExtractor(2,r"files\cleaned_classes.feather",r"files\topiced_classes.feather","de",True)
-    # topics_d.run()
-    # texts_e = TopicExtractor(2,r"files\cleaned_texts_en.feather",r"files\topiced_texts_en.feather", "en")
-    # texts_e.run() 
-    # topics_e = TopicExtractor(2,r"files\cleaned_classes_en.feather",r"files\topiced_classes_en.feather","en",True)
-    # topics_e.run()
+#     lang = 'de'
+#     texts_topics = TopicExtractor(2,r"files\02_clean\cleaned_texts_"+lang+r".feather",r"files\02_clean\topiced_texts_"+lang+r".feather", lang)
+#     texts_topics.run() 
+#     class_topics = TopicExtractor(2,r"files\02_clean\cleaned_classes_"+lang+r".feather",r"files\02_clean\topiced_classes_"+lang+r".feather",lang,True)
+#     class_topics.run()
+    
