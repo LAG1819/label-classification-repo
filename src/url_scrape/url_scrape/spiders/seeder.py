@@ -356,15 +356,9 @@ def run_crawler(lang:str):
     """
     process1 = CrawlerProcess({
         'USER_AGENT': 'Mozilla/5.0',
-        # 'FEED_EXPORTERS': {
-        #     'pickle': 'scrapy.exporters.PickleItemExporter'
-        # },
         'FEED_EXPORT_ENCODING': 'utf-8',
         'FEEDS': {'files/raw_texts_new.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD","DOMAIN",'URL', 'URL_TEXT']}}
         })
-        #{'files/raw_texts.csv': {'format': 'csv'}}
-        #{'files/raw_texts.pkl': {'format': 'pickle'}}
-        #{'files/raw_texts.json': {'format': 'json'}}
 
     process2 =  CrawlerProcess({
     'USER_AGENT': 'Mozilla/5.0',
@@ -372,18 +366,12 @@ def run_crawler(lang:str):
     'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD",'DOMAIN','URL', 'URL_TEXT']}}
     })
 
-    if lang == 'de':
-        process2.crawl(TopicSpider, r'files/raw_classes.json','de')   
-        process2.start()   
-        process1.crawl(SeederSpider, r'files\Seed.feather', 'internal', 'de')
-        process1.start()
-    elif lang == 'en':
-        process2.crawl(TopicSpider, r'files/raw_classes.json','en')   
-        process2.start()
-        process1.crawl(SeederSpider, r'files\Seed_en.feather', 'internal', 'en')
-        process1.start()    
-    else:
-        return
+    
+    process2.crawl(TopicSpider, r'files/raw_classes.json',lang)   
+    process2.start()   
+    process1.crawl(SeederSpider, r'files\Seed_'+lang+r'.feather', 'internal',lang)
+    process1.start()
+    
 
 def union_and_save_texts(lang:str):
     """Function gets called when crawling is finished or manualy interrupted. The crawled data saved in "raw_texts_internal.json" are concatenated with whole dataset 
@@ -394,12 +382,8 @@ def union_and_save_texts(lang:str):
     """
     path = str(os.path.dirname(__file__)).split("src")[0]
     s_path = r'files/raw_texts_new.json'
-    if lang == 'en':
-        t_path = r'files/raw_texts_en.feather'
-        t_path2 = r'files/raw_texts_en.parquet'
-    else:
-        t_path = r'files/raw_texts.feather'
-        t_path2 = r'files/raw_texts.parquet'
+    t_path = r'files/01_crawl/raw_texts_'+lang+r'.feather'
+    # t_path2 = r'files/raw_texts_'+lang+'.parquet'
     
     ##load new crawled data
     df_new = pd.read_json(path+s_path)
@@ -415,7 +399,7 @@ def union_and_save_texts(lang:str):
     ##save and overwrite total dataset to target paths as feather and parquet
     os.remove(path+s_path)
     df_all_new.to_feather(path+t_path)
-    df_all_new.to_parquet(path+t_path2)
+    # df_all_new.to_parquet(path+t_path2)
 
     ## check if duplicates exist
     dfi = pd.read_feather(path + t_path)
@@ -435,10 +419,7 @@ def union_and_save_class(lang:str):
     """
     path = str(os.path.dirname(__file__)).split("src")[0]
     s_path = r'files/raw_classes.json'
-    if lang == 'en':
-        t_path = r'files/raw_classes_en.feather'
-    else:
-        t_path = r'files/raw_classes.feather'
+    t_path = r'files/01_crawl/raw_classes_'+lang+'.feather'
 
     df_new = pd.read_json(path+s_path)
     os.remove(path+s_path)  

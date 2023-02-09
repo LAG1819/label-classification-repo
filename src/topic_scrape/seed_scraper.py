@@ -191,14 +191,9 @@ class TopicScraper:
         print(all_seed_df.shape)
         # print(all_seed_df)
         
-        if self.lang == 'de':
-            if os.path.exists(os.path.join(self.package_dir,r'files\Seed.feather')):
-                os.remove(os.path.join(self.package_dir,r'files\Seed.feather'))
-            all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed.feather'))
-        else:
-            if os.path.exists(os.path.join(self.package_dir,r'files\Seed_en.feather')):
-                os.remove(os.path.join(self.package_dir,r'files\Seed_en.feather'))
-            all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed_en.feather'))
+        if os.path.exists(os.path.join(self.package_dir,r'files\Seed_'+self.lang+r'.feather')):
+            os.remove(os.path.join(self.package_dir,r'files\Seed_'+self.lang+r'.feather'))
+        all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed_'+self.lang+r'.feather'))
 
     def run(self):
         """Run method of class. Applies rowwise google search on given keywords and saves top 10 result website links in new column "URL". 
