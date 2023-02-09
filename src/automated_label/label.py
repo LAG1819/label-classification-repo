@@ -18,7 +18,13 @@ import pandas as pd
 import os
 import numpy as np
 import pickle
-import re
+import string
+from sys import exit
+from itertools import product
+import random
+import numpy as np
+import logging 
+from datetime import date
 import operator
 from snorkel.labeling import labeling_function
 from snorkel.preprocess import preprocessor
@@ -27,15 +33,22 @@ from snorkel.labeling import LFAnalysis
 from snorkel.labeling.model.label_model import LabelModel
 from snorkel.labeling.model import MajorityLabelVoter
 from snorkel.labeling import LabelingFunction
-from sys import exit
-from itertools import product
-import random
-import numpy as np
-import logging 
 import bayes_opt
 import matplotlib.pyplot as plt
 from sklearn.model_selection import KFold
 
+ABSTAIN = -1
+AUTONOMOUS = 0
+CONNECTIVITY = 1
+DIGITALISATION = 2
+ELECTRIFICATION = 3
+INDIVIDUALISATION = 4
+SHARED = 5
+SUSTAINABILITY = 6
+
+#DEFINE CLUSTERING MODEL (SIMPLE) K-Means###
+#SELECT ALL KEYWORDS BASED ON SUFFICENT SOURCES INCLUDING LEVENSTHEIN DISTANCE###
+#######################################################################################################################################################
 def loggingdecorator(name):
             logger = logging.getLogger(name)
             def _decor(fn):
@@ -49,22 +62,9 @@ def loggingdecorator(name):
                 return _fn
             return _decor
 
-
-ABSTAIN = -1
-AUTONOMOUS = 2
-CONNECTIVITY = 3
-DIGITALISATION = 4
-ELECTRIFICATION = 5
-INDIVIDUALISATION = 6
-SHARED = 7
-SUSTAINABILITY = 8
-
-#DEFINE CLUSTERING MODEL (SIMPLE) K-Means###
-#SELECT ALL KEYWORDS BASED ON SUFFICENT SOURCES INCLUDING LEVENSTHEIN DISTANCE###
-#######################################################################################################################################################
 def kMeans_cluster(x, label, kmeans, kmeans_vectorizer):    
     text = kmeans_vectorizer.transform([str(x)]).toarray()
-    cluster = kmeans.predict(text)[0]+2
+    cluster = kmeans.predict(text)[0]
 
     if int(cluster) == int(label):
         return label
@@ -103,8 +103,8 @@ individualisation_keywords = make_keyword_lf(keywords = df['INDIVIDUALISATION'].
 shared_keywords = make_keyword_lf(keywords = df['SHARED'].dropna().tolist(), label = SHARED)
 
 #load trained kMeans, fitted vectorizer for german kMeans
-kmeans_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/kmeans_de.pkl", 'rb')) 
-kmeans_vectorizer_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/kmeans_vectorizer_de.pkl", 'rb')) 
+kmeans_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_de.pkl", 'rb')) 
+kmeans_vectorizer_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_vectorizer_de.pkl", 'rb')) 
 autonomous_cluster_d =  make_cluster_lf(label = AUTONOMOUS, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
 electrification_cluster_d =  make_cluster_lf(label = ELECTRIFICATION, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
 digitalisation_cluster_d =  make_cluster_lf(label = DIGITALISATION, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
@@ -114,8 +114,8 @@ individualisation_cluster_d = make_cluster_lf(label = INDIVIDUALISATION, kmeans=
 shared_cluster_d = make_cluster_lf(label = SHARED, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
 
 #load trained kMeans, fitted vectorizer for english kMeans
-kmeans_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/kmeans_en.pkl", 'rb')) 
-kmeans_vectorizer_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/kmeans_vectorizer_en.pkl", 'rb')) 
+kmeans_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_en.pkl", 'rb')) 
+kmeans_vectorizer_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_vectorizer_en.pkl", 'rb')) 
 autonomous_cluster_e =  make_cluster_lf(label = AUTONOMOUS, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
 electrification_cluster_e =  make_cluster_lf(label = ELECTRIFICATION, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
 digitalisation_cluster_e =  make_cluster_lf(label = DIGITALISATION, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
@@ -215,50 +215,42 @@ class Labeler:
         return df.replace(np.nan, "",regex = False)
 
     def generate_trainTestdata(self, lang:str) -> pd.DataFrame:
-        if lang == 'de':
-            test_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\label_testset.xlsx"
-            train_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\label_trainset.feather"
-            val_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\label_valset.xlsx"
-        elif lang == 'en':
-            test_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\label_testset_en.xlsx"
-            train_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\label_trainset_en.feather"
-            val_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\label_valset_en.xlsx"
+        test_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\03_label\label_testset_"+lang+r".xlsx"
+        train_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\03_label\label_trainset_"+lang+r".feather"
+        val_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\03_label\label_valset_"+lang+r".xlsx"
 
         if os.path.exists(test_path):
             test = pd.read_excel(test_path, index_col = 0)
-            test = test[test['LABEL']!= 0]
-
-            train = pd.read_feather(train_path)
-            train = train.rename(columns = {'text':'TOPIC'})
+            test = test[test['LABEL']!= -2]
 
             validate = pd.read_excel(val_path, index_col = 0)
-            validate = validate[validate['LABEL']!= 0]
-            
-            test = test.replace(1,-1)
-            validate = validate.replace(1,-1)
+            validate = validate[validate['LABEL']!= -2]
+
+            train = pd.read_feather(train_path)     
         else:
-            self.data['LABEL'] = 0
+            self.data['LABEL'] = -2
             train, validate, test = np.split(self.data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(self.data)), int(.8*len(self.data))])
-            train.reset_index(drop = True, inplace = True)
-            test.reset_index(drop = True, inplace = True)
-            validate.reset_index(drop = True, inplace = True)
+            
+            dfs = [train, test, validate]
+            dfs = [df.reset_index(drop = True, inplace = True) for df in dfs]
+            
             train.to_feather(train_path)
             test.to_excel(test_path)
             validate.to_excel(val_path)
+            
             logger = logging.getLogger("Labeler")
             logger.info("Train, Test and Validate Dataset were generated. Please label train and validate data before further proceeding!")
             exit("No labeled Test and Validate data exist!")
-        print(train.shape,test.shape,validate.shape)
-        tr = train
-        tr['LABEL'] = 0
-        train_test = pd.concat([tr,test])
+        
+        train_copy = train.copy()
+        train_copy['LABEL'] = -2
+        train_test = pd.concat([train_copy,test])
         train_test.reset_index(inplace = True)
+        
+        dfs = [train, test, validate, train_test]
+        dfs = [df.rename(columns = {self.text_col : 'text'},inplace=True) for df in dfs]
 
-        train = train.rename(columns = {self.text_col : 'text'})
-        validate = validate.rename(columns = {self.text_col : 'text'})
-        test = test.rename(columns = {self.text_col : 'text'})
-        train_test = train_test.rename(columns = {self.text_col : 'text'})
-        self.data = self.data.rename(columns = {self.text_col : 'text'})
+        print(train.shape,test.shape,validate.shape)
 
         return train, validate, test, train_test
 
@@ -271,14 +263,14 @@ class Labeler:
 
         #k_fold Cross Validation
         self.L_train_list =[]
-        for j in range(2,8):
+        for j in range(2,3):
             training_folds = KFold(n_splits = j,shuffle = True, random_state = 12)
             i = 1
             for split in training_folds.split(self.train_test_df):
                 fold_train_df = self.train_test_df.iloc[split[0]]
                 
                 fold_test_df = self.train_test_df.iloc[split[1]]
-                fold_test_df = fold_test_df[fold_test_df['LABEL']!= 0]
+                fold_test_df = fold_test_df[fold_test_df['LABEL']!= -2]
                 y_test = fold_test_df['LABEL'].to_numpy()
 
                 l_train = self.applier.apply(df=fold_train_df)
@@ -297,9 +289,6 @@ class Labeler:
 
                 i+=1
         
-            # self.L_train = applier.apply(df=self.train_df)
-        
-        self.L_val = self.applier.apply(df=self.validate_df)
         self.L_test = self.applier.apply(df=self.test_df)
 
 
@@ -331,7 +320,7 @@ class Labeler:
             logger.info(f"coverage_keyword_shared: {shared_k * 100:.1f}%")
 
 
-    def eval_labeling_model(self):
+    def train_model(self):
         """Evaluation of the best parameters for Snorkels Labeling Model by (Hyper-)parameter Tuning.
         Selected optimizer are: Grid Search, Random Search and Bayesian Optimization. 
         """    
@@ -367,21 +356,24 @@ class Labeler:
         final_result_df = pd.DataFrame(self.evaluation_data).sort_values(by=['accuracy'], ascending=[False])
         final_param = final_result_df.to_dict('records')
         final_param = final_param[0]
-        logger.info('\t'+ final_result_df.to_string().replace('\n', '\n\t'))
+        top_30_df = final_result_df.head(30)
+        logger.info('\t'+ top_30_df.to_string().replace('\n', '\n\t'))
         
-        logger.info(f"Best Model with {final_param['k-fold']}-fold Cross Validation identified: HPO: {final_param['Type']} Maximum reached accuracy: {final_param['accuracy']} with Parameters: {final_param}")
+        logger.info(f"Best Model with {final_param['k-fold']}-fold Cross Validation identified. \n Maximum reached accuracy: {final_param['accuracy']}. \n Path: {final_param['model_path']}")
 
-        
-        test_set = [item[0] for item in self.L_train_list if (item[3] == final_param['k-fold'] and item[4] == final_param['trainingset'])]
-        self.label_model = LabelModel(cardinality = 9, verbose=False)
-        self.label_model.fit(L_train=test_set[0], n_epochs=int(final_param['n_epochs']), seed=123, log_freq=int(final_param['log_freq']), l2=final_param['l2'], lr=final_param['lr'], optimizer = final_param['optimizer'])
+        self.label_model = LabelModel(cardinality = 7, verbose=False)
+        self.label_model.load(final_param['model_path'])
+
 
     @loggingdecorator("label.function")
-    def apply_randomSearch(self,train,test,y_test,k,i, max_evals = 10):       
-        logger = logging.getLogger("Labeler.randomSearch")
-        #random.seed(123)
+    def apply_randomSearch(self,train,test,y_test,k,i, max_evals = 1):
+        
+        # Set up random search checkpoint folder
+        eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\random_search"
+        
+        #  random.seed(123)
         #  Choose random hyperparameters until reach max evaluations
-        results ={}
+        eval_data_intern = []
         for i in range(max_evals):
             p = {'n_epochs':np.random.randint(low = 10,high = 800),
             'log_freq':np.random.randint(low = 10,high = 200),
@@ -389,60 +381,75 @@ class Labeler:
             'lr':round(np.random.uniform(low = 0.001,high = 0.02, size = 1)[0],3),
             'optimizer':np.random.choice(["sgd", "adam", "adamax"],1)[0]
             }
-            #logger.info(f"Random choosen hyperparameters {p}")
-
-            label_model = LabelModel(cardinality = 9, verbose=False)
+            label_model = LabelModel(cardinality = 7, verbose=False)
             label_model.fit(L_train=train, n_epochs=p['n_epochs'], seed=123, log_freq=p['log_freq'], l2=p['l2'], lr=p['lr'], optimizer = p['optimizer'])
             label_model_acc = label_model.score(L=test, Y=y_test, tie_break_policy="random")["accuracy" ]
-            results[(p['n_epochs'],p['log_freq'],p['l2'],p['lr'],p['optimizer'])]=label_model_acc
-            self.evaluation_data.append({'Type':'RandomSearch','n_epochs':p['n_epochs'],'log_freq':p['log_freq'],'l2':p['l2'],'lr':p['lr'],'optimizer':p['optimizer'],'accuracy':label_model_acc,'k-fold':k,'trainingset':i})
+            rand_name = str(random.randint(10000,20000))
+            
+            # Set up model checkpoint folder and save model including log
+            model_folder = eval_folder+r"\model_"+rand_name+'_n_epochs_'+str(p['n_epochs'])+'_log_freq_'+str(p['log_freq'])+'_l2_'+str(p['l2'])+'_lr_'+str(p['lr'])+'_optimizer_'+p['optimizer']+"_"+str(date.today())
+            os.makedirs(model_folder)
+            label_model.save(model_folder+r"\label_model.pkl")
+            
+            eval_data_intern.append({'Type':'RandomSearch','n_epochs':p['n_epochs'],'log_freq':p['log_freq'],'l2':p['l2'],'lr':p['lr'],'optimizer':p['optimizer'],'accuracy':label_model_acc,'k-fold':k,'trainingset':i, 'model_path':model_folder+r"\label_model.pkl"})
         
-        best_parameters = max(results.items(), key=operator.itemgetter(1))[0]
-        highest_accuracy = results[best_parameters]
+        # add best result to overall evaluation results
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False])
+        best_model = df.to_dict('records')[0]
+        self.evaluation_data.append({'Type':'RandomSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],'optimizer':best_model['optimizer'],'accuracy':best_model['accuracy'],'k-fold':k,'trainingset':i, 'model':best_model['model_path']})
 
-        logger.info(f"[Random Search]: Max. accuracy {highest_accuracy} with Parameters (n_epochs,log_freq,l2,lr): {best_parameters}")
 
     @loggingdecorator("label.function")
     def apply_gridSearch(self,train,test,y_test,k,i):
-        logger = logging.getLogger("Labeler.gridSearch")
+
+        # Set up grid search checkpoint folder
+        eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\grid_search"
         
         hyperparameter_space ={
-            'n_epochs':np.arange(50, 650, 100).tolist(),
-            'log_freq':np.arange(10, 220, 50).tolist(),
-            'l2':np.arange(0.1, 0.6, 0.1).tolist(),
-            'lr':np.arange(0.002, 0.012, 0.002).tolist(), 
+            'n_epochs':[10,30,50,70,100],#np.arange(10, 100, 20).tolist(),
+            'log_freq':[30,90,130,170,210],#np.arange(10, 220, 50).tolist(),
+            'l2':[0.1,0.2,0.3],#np.arange(0.1, 0.6, 0.1).tolist(),
+            'lr':[0.00001,0.0001, 0.001],#np.arange(0.0001, 0.01, 0.002).tolist(), 
             'optimizer':["sgd", "adam", "adamax"]
         }
         permutations = list(product(hyperparameter_space['n_epochs'],hyperparameter_space['log_freq'],hyperparameter_space['l2'],hyperparameter_space['lr'],hyperparameter_space['optimizer']))
-        # permutations = {k: v for k, v in hyperparameter_space.items()}
-        results = {}
-        
+        eval_data_intern = []
         for p in permutations:
             #logger.info(f"Selected parameter {p}")
-            label_model = LabelModel(cardinality = 9, verbose=False)
+            label_model = LabelModel(cardinality = 7, verbose=False)
             label_model.fit(L_train=train, n_epochs=p[0], seed=123, log_freq=p[1], l2=p[2], lr=p[3], optimizer = p[4])
             label_model_acc = label_model.score(L=test, Y=y_test, tie_break_policy="random")["accuracy" ]
-            results[(p[0],p[1],p[2],p[3], p[4])]=label_model_acc
-            self.evaluation_data.append({'Type':'GridSearch','n_epochs':p[0],'log_freq':p[1],'l2':p[2],'lr':p[3],'optimizer':p[4],'accuracy':label_model_acc,'k-fold':k,'trainingset':i})
+            rand_name = str(random.randint(10000,20000))
 
-        best_parameters = max(results.items(), key=operator.itemgetter(1))[0]
-        highest_accuracy = results[best_parameters]
-
-        logger.info(f"[Grid Search]: Max. accuracy {highest_accuracy} with Parameters (n_epochs,log_freq,l2,lr): {best_parameters}")
+            # Set up model checkpoint folder and save model including log
+            model_folder = eval_folder+r"\model_"+rand_name+'_n_epochs_'+str(p[0])+'_log_freq_'+str(p[1])+'_l2_'+str(p[2])+'_lr_'+str(p[3])+'_optimizer_'+p[4]+"_"+str(date.today())
+            os.makedirs(model_folder)
+            label_model.save(model_folder+r"\label_model.pkl")
+            
+            eval_data_intern.append({'Type':'GridSearch','n_epochs':p[0],'log_freq':p[1],'l2':p[2],'lr':p[3],'optimizer':p[4],'accuracy':label_model_acc,'k-fold':k,'trainingset':i, 'model_path':model_folder+r"\label_model.pkl"})
+            
+        
+        # add best result to overall evaluation results
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False])
+        best_model = df.to_dict('records')[0]
+        self.evaluation_data.append({'Type':'GridSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],'optimizer':best_model['optimizer'],'accuracy':best_model['accuracy'],'k-fold':k,'trainingset':i, 'model':best_model['model_path']})
 
     @loggingdecorator("label.function")
-    def apply_bayesianOptimization(self,train,test,y_test,k,i):
-        logger = logging.getLogger("Labeler.bayesianOptim")
-        label_model = LabelModel(cardinality = 9, verbose=False)
+    def apply_bayesianOptimization(self,train,test,y_test,k,i, max_evals = 1):
+
+        # Set up beysian optimization search checkpoint folder
+        eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\bayes_search"
+
         hyperparameter_space ={
-            'n_epochs':[10,800],
+            'n_epochs':[10,150],
             'log_freq':[10,200],
             'l2':[0.1,2.0],
-            'lr':[0.001,0.2],
+            'lr':[0.0001,0.01],
             'optimizer':[0,2]
         }
-
+        eval_data_intern = []
         def model_train(n_epochs,log_freq,l2,lr, optimizer):
+            label_model = LabelModel(cardinality = 7, verbose=False)
             if round(optimizer) == 0:
                 optim = "sgd"
             elif round(optimizer) == 1:
@@ -453,31 +460,36 @@ class Labeler:
                 optim = "adam"
             label_model.fit(L_train=train, n_epochs=round(n_epochs), seed=123, log_freq=round(log_freq), l2=l2, lr=lr, optimizer = optim)
             label_model_acc = label_model.score(L=test, Y=y_test, tie_break_policy="random")["accuracy" ]
-            self.evaluation_data.append({'Type':'BayesianOptim','n_epochs':round(n_epochs),'log_freq':round(log_freq),'l2':l2,'lr':lr,'optimizer':optim,'accuracy':label_model_acc,'k-fold':k,'trainingset':i})
+            rand_name = str(random.randint(10000,20000))
+
+            # Set up model checkpoint folder and save model including log
+            model_folder = eval_folder+r"\model_"+rand_name+'_n_epochs_'+str(round(n_epochs))+'_log_freq_'+str(round(log_freq))+'_l2_'+str(l2)+'_lr_'+str(lr)+'_optimizer_'+optim+"_"+str(date.today())
+            os.makedirs(model_folder)
+            label_model.save(model_folder+r"\label_model.pkl")
+            
+            # Save evaluation results temporarily
+            eval_data_intern.append({'Type':'BayesSearch','n_epochs':round(n_epochs),'log_freq':round(log_freq),'l2':l2,'lr':lr,'optimizer':optim,'accuracy':label_model_acc,'k-fold':k,'trainingset':i, 'model_path':model_folder+r"\label_model.pkl"})
             return label_model_acc
 
         optimizer = bayes_opt.BayesianOptimization(f=model_train,pbounds =hyperparameter_space ,verbose = 1, random_state = 4)
-        optimizer.maximize(init_points = 5, n_iter = 50)        
+        optimizer.maximize(init_points = 5, n_iter = max_evals)        
 
-        best_parameters = optimizer.max["params"]
-        highest_accuracy = optimizer.max["target"]
+        # best_parameters = optimizer.max["params"]
+        # highest_accuracy = optimizer.max["target"]
 
-        logger.info(f"[Bayesian Optimization]: Max. accuracy {highest_accuracy} with Parameters: {best_parameters}")
-
-    def test_model(self,model):
-        preds_test_label = model.predict(L=self.L_test)
-        test_df = self.test_df
-        test_df['LABEL'] = preds_test_label
-        # before_test_shape = test_df.shape
-        test_df = test_df[test_df['LABEL'] != -1]
-        after_test_shape = test_df.shape
-        return after_test_shape
+        # add best result to overall evaluation results
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False])
+        best_model = df.to_dict('records')[0]
+        self.evaluation_data.append({'Type':'BayesSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],'optimizer':best_model['optimizer'],'accuracy':best_model['accuracy'],'k-fold':k,'trainingset':i, 'model':best_model['model_path']})
         
-    def validate_model(self):
+    def test_model(self):
         logger = logging.getLogger("Labeler")
-        preds_val_label = self.label_model.predict(L=self.L_val)
+        
         Y_val = self.validate_df['LABEL'].to_numpy()
-        self.validate_acc = self.label_model.score(L=self.L_val, Y=Y_val, tie_break_policy="random")["accuracy" ]
+        L_val = self.applier.apply(df=self.validate_df)
+        preds_val_label = self.label_model.predict(L=L_val)
+        
+        self.validate_acc = self.label_model.score(L=L_val, Y=Y_val, tie_break_policy="random")["accuracy"]
         logger.info(f"Accuracy on Validation set: {self.validate_acc}")
         
         validation_df = self.validate_df
@@ -488,26 +500,28 @@ class Labeler:
         print(f"Shape of Validationset before: {before_val_shape} and after: {after_val_shape}")
        
 
-    def apply_trained_model(self):
+    def apply_model(self):
         logger = logging.getLogger("Labeler")
-        # logger.info(f"Langauge:{self.lang}. Applying trained model with best parameters and trainset on test set.")
-        self.validate_model()
+        logger.info(f"Language:{self.lang}. Applying trained model with best parameters and trainset on whole data set.")
 
         self.L_data = self.applier.apply(df= self.data)
-        logger.info(f"Langauge:{self.lang}. Applying trained model with best parameters and trainset on whole data set.")
         label = self.label_model.predict(L=self.L_data)
+
         self.data['LABEL'] = label
         before_data_shape = self.data.shape
         self.data = self.data[self.data['LABEL'] != -1]
         after_data_shape = self.data.shape
+        
         logger.info(f"Shape of Dataset before: {before_data_shape} and after: {after_data_shape}")
 
     def save_data(self):
         """Saves labeled data as feather into files folder.
         """
         path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        
         self.data.reset_index(inplace=True)
-        self.data = self.data.rename(columns = {'text':self.text_col})
+        self.data.rename(columns = {'text':self.text_col},inplace=True)
+
         if os.path.exists(path):            
             if self.update_data:
                 self.data.to_feather(path)
@@ -520,25 +534,23 @@ class Labeler:
         logger = logging.getLogger("Labeler")
         path = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(self.lang)+r".pkl"
 
-        Y_test = self.test_df['LABEL'].to_numpy() 
         # new_model_acc = self.label_model.score(L=self.L_val, Y=Y_val, tie_break_policy="random")["accuracy" ]
-        new_model_acc = self.validate_acc
         
-        if os.path.exists(path):            
-            # old_label_model = LabelModel(cardinality = 9, verbose=False)
-            # L_train_dummy = np.random.randint(-1, 2, size=(10**6, 10), dtype=np.int8)
-            
-            # old_label_model.load(path)
-            # old_model_acc = old_label_model.score(L=self.L_test, Y=Y_test, tie_break_policy="random")["accuracy" ] 
-              
-            # if new_model_acc > old_model_acc:
-            #     self.label_model.save(path)
-            #     self.update_data = True
-            # else:
-            #     self.update_data = False
-            self.label_model.save(path)
-            self.update_data = True
+        if os.path.exists(path):
+            Y_val = self.validate_df['LABEL'].to_numpy()
+            L_val = self.applier.apply(df=self.validate_df)            
 
+            old_label_model = LabelModel(cardinality = 7, verbose=False)            
+            old_label_model.load(path)
+
+            old_model_acc = old_label_model.score(L=self.L_val, Y=Y_val, tie_break_policy="random")["accuracy"] 
+            new_model_acc = self.label_model.score(L=self.L_val, Y=Y_val, tie_break_policy="random")["accuracy"] 
+              
+            if new_model_acc > old_model_acc:
+                self.label_model.save(path)
+                self.update_data = True
+            else:
+                self.update_data = False
             # logger.info(f"New model accuracy: {new_model_acc}. Saved model accuracy: {old_model_acc} (Validation Set)")
             logger.info("Model overwritten. Model with better accuracy saved!")
         else:
@@ -546,36 +558,45 @@ class Labeler:
             self.update_data = True
             logger.info(f"Model accuracy: {new_model_acc}. (Validation Set)")
             logger.info("Model saved!")
-  
-    def show_samples_per_class(self):
-        df1 = self.data.iloc[self.L_train[:, 1] == ELECTRIFICATION].sample(10, random_state=1)[['text','TOPIC']]
-        #df2 = self.data.iloc[self.L_train[:, 1] == AUTONOMOUS].sample(10, random_state=1)[['text','TOPIC']]
-        # df3 = self.data.iloc[self.L_train[:, 1] == DIGITALISATION].sample(10, random_stat e=1)[['text','TOPIC']]
-        #df4 = self.data.iloc[self.L_train[:, 1] == INDIVIDUALISATION].sample(10, random_state=1)[['text','TOPIC']]
-
-        
-    def assign_labels_final(self):
-        list_of_values = {"ABSTAIN":ABSTAIN,"AUTONOMOUS":AUTONOMOUS,"ELECTRIFICATION":ELECTRIFICATION,"CONNECTIVITY":CONNECTIVITY,"SHARED":SHARED,\
-            "SUSTAINABILITY":SUSTAINABILITY,"DIGITALISATION":DIGITALISATION,"INDIVIDUALISATION":INDIVIDUALISATION}
-        for v in list_of_values.keys:
-            self.data.loc[(self.data['LABEL']==list_of_values[v]), 'LABEL'] = v
     
     def run(self):
         self.apply_labeling_functions()
         self.analysis_training_result()
-        self.eval_labeling_model()
-        self.apply_trained_model()
-        #self.assign_labels_final()
-        #self.show_samples_per_class()
+        self.train_model()
+        self.test_model()
+        self.apply_model()
         self.save_model()
         self.save_data()
 
 if __name__ == "__main__":
-    e = Labeler('en',r"files\topiced_texts_en.feather",r"files\labeled_texts_en.feather",'TOPIC')
-    e.run()
-    l = Labeler('de',r"files\topiced_texts.feather",r"files\labeled_texts.feather",'TOPIC')
-    l.run()
-    e = Labeler('en',r"files\topiced_texts_en.feather",r"files\labeled_texts_en.feather",'URL_TEXT')
-    e.run()
-    l = Labeler('de',r"files\topiced_texts.feather",r"files\labeled_texts.feather",'URL_TEXT')
-    l.run()
+    lang = 'de'
+    topic_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\03_label\labeled_texts_"+lang+".feather",'TOPIC')
+    topic_labeling.run()
+    # text_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\03_label\labeled_texts_"+lang+".feather",'URL_TEXT')
+    # text_labeling.run()
+
+
+    ####test of model loading###
+    # path =r'D:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_de\grid_search\model_10857_n_epochs_50_log_freq_10_l2_0.1_lr_0.002_optimizer_adam_2023-02-09\label_model.pkl'
+    # path2 = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(lang)+r".pkl"
+    # model = LabelModel(cardinality = 7, verbose=False)
+    # model2 = LabelModel(cardinality = 7,verbose = False)
+    # model.load(path)
+    # model2.load(path2)
+    # lfs = [
+    #             autonomous_keywords,
+    #             electrification_keywords,
+    #             digitalisation_keywords,
+    #             connectivity_keywords,
+    #             sustainability_keywords,
+    #             individualisation_keywords,
+    #             shared_keywords,
+    #             ]
+    # applier = PandasLFApplier(lfs=lfs)
+    # Y_test = topic_labeling.validate_df['LABEL'].to_numpy()
+    # L_test = applier.apply(df=topic_labeling.validate_df)
+    # acc = model.score(L=L_test, Y=Y_test, tie_break_policy="random")["accuracy" ] 
+    # acc2 = model2.score(L=L_test, Y=Y_test, tie_break_policy="random")["accuracy" ] 
+    # print(acc,acc2)
+    # print("FIN")
+
