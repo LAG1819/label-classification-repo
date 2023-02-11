@@ -136,6 +136,8 @@ class Labeler:
         """
         # Create logger and assign handler
         logger = logging.getLogger("Labeler")
+        if (logger.hasHandlers()):
+            logger.handlers.clear()
 
         handler  = logging.StreamHandler()
         handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
@@ -263,10 +265,10 @@ class Labeler:
 
         #k_fold Cross Validation
         self.L_train_list =[]
-        for j in range(2,9):
-            training_folds = KFold(n_splits = j,shuffle = True, random_state = 12)
+        for j in range(2,10):
+            k_fold = KFold(n_splits = j,shuffle = True, random_state = 12)
             i = 1
-            for split in training_folds.split(self.train_test_df):
+            for split in k_fold.split(self.train_test_df):
                 logger.info(f"Training of {j}-Fold Cross-Validation with Trainingsplit {i} started.")
                 fold_train_df = self.train_test_df.iloc[split[0]]
                 
@@ -369,7 +371,7 @@ class Labeler:
             loggerb.warning("Error occurred: ", e)
 
     @loggingdecorator("label.function")
-    def apply_randomSearch(self,train,test,y_test,k,i, max_evals = 1):
+    def apply_randomSearch(self,train,test,y_test,k,i, max_evals = 20):
         
         # Set up random search checkpoint folder
         eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\random_search_"+self.text_col
@@ -412,7 +414,7 @@ class Labeler:
         eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\grid_search_"+self.text_col
         
         hyperparameter_space ={
-            'n_epochs':[10,30,50],#np.arange(10, 100, 20).tolist(),
+            'n_epochs':[10,30,50,100],#np.arange(10, 100, 20).tolist(),
             'log_freq':[30,90,170],#np.arange(10, 220, 50).tolist(),
             'l2':[0.1,0.2,0.3],#np.arange(0.1, 0.6, 0.1).tolist(),
             'lr':[0.00001,0.0001, 0.001],#np.arange(0.0001, 0.01, 0.002).tolist(), 
@@ -444,7 +446,7 @@ class Labeler:
         self.evaluation_data.append({'Type':'GridSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],'optimizer':best_model['optimizer'],'accuracy':best_model['accuracy'],'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl"})
 
     @loggingdecorator("label.function")
-    def apply_bayesianOptimization(self,train,test,y_test,k,i, max_evals = 1):
+    def apply_bayesianOptimization(self,train,test,y_test,k,i, max_evals = 40):
 
         # Set up beysian optimization search checkpoint folder
         eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\bayes_search_"+self.text_col
@@ -521,7 +523,7 @@ class Labeler:
         else:
             self.update_model = True
             self.update_data = True            
-        logger.info(f"New model accuracy: {validate_acc}.Model will be saved.")
+            logger.info(f"Model accuracy: {validate_acc}. No existing Model. Model will be saved.")
         
         validation_df = self.validate_df
         validation_df['LABEL'] = preds_val_label
@@ -587,7 +589,7 @@ class Labeler:
         self.save_data()
 
 if __name__ == "__main__":
-    for lang in ['en']:#,'de''
+    for lang in ['en','de']:
         topic_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\03_label\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC')
         topic_labeling.run()
         text_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\03_label\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
