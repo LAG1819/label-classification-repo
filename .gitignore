@@ -10,6 +10,8 @@ src/archive/*
 *.exe
 *.zip
 *.feather
+!files/03_label/*trainset*
+!files/03_label/k_Means/*
 models/classification/pytorch_tuning_de/*
 models/classification/pytorch_tuning_en/*
 models/label/model_tuning_de/*
