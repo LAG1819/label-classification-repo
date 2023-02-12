@@ -62,7 +62,7 @@ class TopicExtractor:
         else:
             self.stopwords = stopwords.words('german')
 
-        filenames =  str(os.path.dirname(__file__)).split("src")[0] +r'doc\topic_extraction_'+lang+'.log'
+        filenames =  str(os.path.dirname(__file__)).split("src")[0] +r'files\02_clean\topic_extraction_'+lang+'.log'
         logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
         logging.info("Topic Extraction with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = self.lang, path = self.source_path, tpath = self.target_path))
        

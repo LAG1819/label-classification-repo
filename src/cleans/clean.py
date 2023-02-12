@@ -46,7 +46,7 @@ class textFilter:
         logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
 
-        filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\data_cleaning.log'
+        filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'files\02_clean\data_cleaning_'+lang+r'.log'
         fh = logging.FileHandler(filename=filenames)
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
