@@ -499,7 +499,7 @@ class Labeler:
         
     def test_model(self):
         logger = logging.getLogger("Labeler")
-        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(self.lang)+r".pkl"
+        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(self.lang)+"_"+self.text_col+r".pkl"
         
         Y_val = self.validate_df['LABEL'].to_numpy()
         L_val = self.applier.apply(df=self.validate_df)
