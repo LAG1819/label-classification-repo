@@ -5284,3 +5284,6 @@ keyword_5  13      [5]  0.698441  0.698441   0.698441
 [2023-02-11 23:34:42,176]INFO|Labeler|Shape of Dataset before: (34556, 8) and after: (33894, 8)
 [2023-02-11 23:34:44,674]INFO|Labeler|Data with applied labels saved!
 [2023-02-11 23:34:44,674]INFO|Labeler|Data with applied labels saved!
+[2023-02-12 23:20:37,155]INFO|Labeler|Automated Labeling started with Language de, Text-Column: TOPIC and data file files\02_clean\topiced_texts_de.feather (source) created. Target file is files\03_label\labeled_texts_de_TOPIC.feather
+[2023-02-12 23:20:37,227]INFO|Labeler|Application of Labeling Functions: [LabelingFunction cluster_0, Preprocessors: [], LabelingFunction cluster_3, Preprocessors: [], LabelingFunction cluster_2, Preprocessors: [], LabelingFunction cluster_1, Preprocessors: [], LabelingFunction cluster_6, Preprocessors: [], LabelingFunction cluster_4, Preprocessors: [], LabelingFunction cluster_5, Preprocessors: [], LabelingFunction keyword_0, Preprocessors: [], LabelingFunction keyword_3, Preprocessors: [], LabelingFunction keyword_2, Preprocessors: [], LabelingFunction keyword_1, Preprocessors: [], LabelingFunction keyword_6, Preprocessors: [], LabelingFunction keyword_4, Preprocessors: [], LabelingFunction keyword_5, Preprocessors: []]
+[2023-02-12 23:20:37,231]INFO|Labeler|Training of 2-Fold Cross-Validation with Trainingsplit 1 started.

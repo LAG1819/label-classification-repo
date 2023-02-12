@@ -6169,3 +6169,1375 @@ keyword_5  13      [5]  0.794035  0.794035   0.793954
 [2023-02-12 17:37:09,145]INFO|Labeler|4-Fold Cross-Validation with Trainingsplit 2 were trained.
 [2023-02-12 17:37:09,149]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.32224532224532226, 'k-fold': 2, 'trainingset': 2, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_55516_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
 [2023-02-12 17:37:09,150]INFO|Labeler|Training of 4-Fold Cross-Validation with Trainingsplit 3 started.
+[2023-02-12 17:44:48,561]INFO|Labeler|Training set coverage of 4-Fold Cross Validation with Trainingset 3:  100.0%
+[2023-02-12 17:44:48,601]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.174773  0.174451   0.174371
+cluster_3   1      [3]  0.108932  0.108771   0.108610
+cluster_2   2      [2]  0.244071  0.240132   0.235228
+cluster_1   3      [1]  0.101696  0.101616   0.101616
+cluster_6   4      [6]  0.152022  0.152022   0.152022
+cluster_4   5      [4]  0.091647  0.091245   0.091165
+cluster_5   6      [5]  0.126859  0.126538   0.126538
+keyword_0   7      [0]  0.925316  0.925316   0.925235
+keyword_3   8      [3]  0.867915  0.867915   0.867755
+keyword_2   9      [2]  0.992604  0.992604   0.987700
+keyword_1  10      [1]  0.914061  0.914061   0.914061
+keyword_6  11      [6]  0.769194  0.769194   0.769194
+keyword_4  12      [4]  0.727309  0.727309   0.727229
+keyword_5  13      [5]  0.793070  0.793070   0.793070
+[2023-02-12 17:44:48,660]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 17:44:48,660]INFO|Labeler|Validate metrics of 4-fold Cross Validation with Trainingset 3
+[2023-02-12 17:44:48,661]INFO|Labeler|coverage_cluster_autonomous: 17.5%
+[2023-02-12 17:44:48,662]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 17:44:48,662]INFO|Labeler|coverage_cluster_digitalisation: 24.4%
+[2023-02-12 17:44:48,662]INFO|Labeler|coverage_cluster_connectivity: 10.2%
+[2023-02-12 17:44:48,663]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 17:44:48,663]INFO|Labeler|coverage_cluster_individualisation: 9.2%
+[2023-02-12 17:44:48,664]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 17:44:48,664]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 17:44:48,665]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 17:44:48,665]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 17:44:48,665]INFO|Labeler|coverage_keyword_sustainability: 76.9%
+[2023-02-12 17:44:48,665]INFO|Labeler|coverage_keyword_connectivity: 91.4%
+[2023-02-12 17:44:48,665]INFO|Labeler|coverage_keyword_individualisation: 72.7%
+[2023-02-12 17:44:48,666]INFO|Labeler|coverage_keyword_shared: 79.3%
+[2023-02-12 17:44:48,666]INFO|Labeler|Training and Evaluation of best Model with 4-fold Cross Validation with Trainingset 3
+[2023-02-12 17:45:44,820]INFO|Labeler|4-Fold Cross-Validation with Trainingsplit 3 were trained.
+[2023-02-12 17:45:44,823]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.3702127659574468, 'k-fold': 4, 'trainingset': 3, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_80457_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 17:45:44,824]INFO|Labeler|Training of 4-Fold Cross-Validation with Trainingsplit 4 started.
+[2023-02-12 17:53:28,662]INFO|Labeler|Training set coverage of 4-Fold Cross Validation with Trainingset 4:  100.0%
+[2023-02-12 17:53:28,684]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.173085  0.172843   0.172763
+cluster_3   1      [3]  0.110941  0.110781   0.110620
+cluster_2   2      [2]  0.237157  0.234263   0.230002
+cluster_1   3      [1]  0.106520  0.106439   0.106439
+cluster_6   4      [6]  0.155157  0.154996   0.154996
+cluster_4   5      [4]  0.089316  0.089075   0.088994
+cluster_5   6      [5]  0.127824  0.127502   0.127422
+keyword_0   7      [0]  0.924994  0.924994   0.924914
+keyword_3   8      [3]  0.865986  0.865986   0.865825
+keyword_2   9      [2]  0.993408  0.993408   0.989147
+keyword_1  10      [1]  0.911568  0.911568   0.911568
+keyword_6  11      [6]  0.774660  0.774660   0.774660
+keyword_4  12      [4]  0.729078  0.729078   0.728998
+keyword_5  13      [5]  0.795643  0.795643   0.795562
+[2023-02-12 17:53:28,711]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 17:53:28,711]INFO|Labeler|Validate metrics of 4-fold Cross Validation with Trainingset 4
+[2023-02-12 17:53:28,713]INFO|Labeler|coverage_cluster_autonomous: 17.3%
+[2023-02-12 17:53:28,714]INFO|Labeler|coverage_cluster_electrification: 11.1%
+[2023-02-12 17:53:28,715]INFO|Labeler|coverage_cluster_digitalisation: 23.7%
+[2023-02-12 17:53:28,716]INFO|Labeler|coverage_cluster_connectivity: 10.7%
+[2023-02-12 17:53:28,716]INFO|Labeler|coverage_cluster_sustainability: 15.5%
+[2023-02-12 17:53:28,716]INFO|Labeler|coverage_cluster_individualisation: 8.9%
+[2023-02-12 17:53:28,717]INFO|Labeler|coverage_cluster_shared: 12.8%
+[2023-02-12 17:53:28,717]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 17:53:28,718]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 17:53:28,718]INFO|Labeler|coverage_keyword_electrification: 86.6%
+[2023-02-12 17:53:28,719]INFO|Labeler|coverage_keyword_sustainability: 77.5%
+[2023-02-12 17:53:28,719]INFO|Labeler|coverage_keyword_connectivity: 91.2%
+[2023-02-12 17:53:28,720]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 17:53:28,721]INFO|Labeler|coverage_keyword_shared: 79.6%
+[2023-02-12 17:53:28,723]INFO|Labeler|Training and Evaluation of best Model with 4-fold Cross Validation with Trainingset 4
+[2023-02-12 17:54:26,537]INFO|Labeler|4-Fold Cross-Validation with Trainingsplit 4 were trained.
+[2023-02-12 17:54:26,540]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.3702127659574468, 'k-fold': 4, 'trainingset': 3, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_80457_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 17:54:26,542]INFO|Labeler|Training of 5-Fold Cross-Validation with Trainingsplit 1 started.
+[2023-02-12 18:02:52,567]INFO|Labeler|Training set coverage of 5-Fold Cross Validation with Trainingset 1:  100.0%
+[2023-02-12 18:02:52,592]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.176967  0.176590   0.176590
+cluster_3   1      [3]  0.108306  0.108155   0.108080
+cluster_2   2      [2]  0.241559  0.238242   0.233494
+cluster_1   3      [1]  0.104085  0.104010   0.104010
+cluster_6   4      [6]  0.152924  0.152774   0.152774
+cluster_4   5      [4]  0.089916  0.089539   0.089463
+cluster_5   6      [5]  0.126244  0.125942   0.125867
+keyword_0   7      [0]  0.923877  0.923877   0.923877
+keyword_3   8      [3]  0.867651  0.867651   0.867576
+keyword_2   9      [2]  0.993292  0.993292   0.988544
+keyword_1  10      [1]  0.912044  0.912044   0.912044
+keyword_6  11      [6]  0.770500  0.770500   0.770500
+keyword_4  12      [4]  0.727992  0.727992   0.727917
+keyword_5  13      [5]  0.793639  0.793639   0.793563
+[2023-02-12 18:02:52,618]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 18:02:52,619]INFO|Labeler|Validate metrics of 5-fold Cross Validation with Trainingset 1
+[2023-02-12 18:02:52,620]INFO|Labeler|coverage_cluster_autonomous: 17.7%
+[2023-02-12 18:02:52,620]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 18:02:52,621]INFO|Labeler|coverage_cluster_digitalisation: 24.2%
+[2023-02-12 18:02:52,621]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 18:02:52,621]INFO|Labeler|coverage_cluster_sustainability: 15.3%
+[2023-02-12 18:02:52,621]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 18:02:52,622]INFO|Labeler|coverage_cluster_shared: 12.6%
+[2023-02-12 18:02:52,622]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 18:02:52,622]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 18:02:52,622]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 18:02:52,623]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 18:02:52,623]INFO|Labeler|coverage_keyword_connectivity: 91.2%
+[2023-02-12 18:02:52,623]INFO|Labeler|coverage_keyword_individualisation: 72.8%
+[2023-02-12 18:02:52,624]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 18:02:52,624]INFO|Labeler|Training and Evaluation of best Model with 5-fold Cross Validation with Trainingset 1
+[2023-02-12 18:03:48,873]INFO|Labeler|5-Fold Cross-Validation with Trainingsplit 1 were trained.
+[2023-02-12 18:03:48,875]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.3702127659574468, 'k-fold': 4, 'trainingset': 3, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_80457_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 18:03:48,876]INFO|Labeler|Training of 5-Fold Cross-Validation with Trainingsplit 2 started.
+[2023-02-12 18:11:44,724]INFO|Labeler|Training set coverage of 5-Fold Cross Validation with Trainingset 2:  100.0%
+[2023-02-12 18:11:44,754]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.177344  0.176892   0.176816
+cluster_3   1      [3]  0.110039  0.109813   0.109738
+cluster_2   2      [2]  0.242011  0.238619   0.234625
+cluster_1   3      [1]  0.102879  0.102879   0.102879
+cluster_6   4      [6]  0.149080  0.148930   0.148930
+cluster_4   5      [4]  0.089765  0.089388   0.089388
+cluster_5   6      [5]  0.128882  0.128655   0.128580
+keyword_0   7      [0]  0.923726  0.923726   0.923651
+keyword_3   8      [3]  0.869837  0.869837   0.869762
+keyword_2   9      [2]  0.992991  0.992991   0.988996
+keyword_1  10      [1]  0.913853  0.913853   0.913853
+keyword_6  11      [6]  0.772309  0.772309   0.772309
+keyword_4  12      [4]  0.732213  0.732213   0.732213
+keyword_5  13      [5]  0.794317  0.794317   0.794242
+[2023-02-12 18:11:44,849]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 18:11:44,861]INFO|Labeler|Validate metrics of 5-fold Cross Validation with Trainingset 2
+[2023-02-12 18:11:44,862]INFO|Labeler|coverage_cluster_autonomous: 17.7%
+[2023-02-12 18:11:44,863]INFO|Labeler|coverage_cluster_electrification: 11.0%
+[2023-02-12 18:11:44,863]INFO|Labeler|coverage_cluster_digitalisation: 24.2%
+[2023-02-12 18:11:44,863]INFO|Labeler|coverage_cluster_connectivity: 10.3%
+[2023-02-12 18:11:44,864]INFO|Labeler|coverage_cluster_sustainability: 14.9%
+[2023-02-12 18:11:44,864]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 18:11:44,865]INFO|Labeler|coverage_cluster_shared: 12.9%
+[2023-02-12 18:11:44,865]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 18:11:44,865]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 18:11:44,866]INFO|Labeler|coverage_keyword_electrification: 87.0%
+[2023-02-12 18:11:44,869]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 18:11:44,869]INFO|Labeler|coverage_keyword_connectivity: 91.4%
+[2023-02-12 18:11:44,869]INFO|Labeler|coverage_keyword_individualisation: 73.2%
+[2023-02-12 18:11:44,870]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 18:11:44,871]INFO|Labeler|Training and Evaluation of best Model with 5-fold Cross Validation with Trainingset 2
+[2023-02-12 18:12:44,455]INFO|Labeler|5-Fold Cross-Validation with Trainingsplit 2 were trained.
+[2023-02-12 18:12:44,458]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.3702127659574468, 'k-fold': 4, 'trainingset': 3, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_80457_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 18:12:44,459]INFO|Labeler|Training of 5-Fold Cross-Validation with Trainingsplit 3 started.
+[2023-02-12 18:20:02,405]INFO|Labeler|Training set coverage of 5-Fold Cross Validation with Trainingset 3:  100.0%
+[2023-02-12 18:20:02,430]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.177796  0.177344   0.177269
+cluster_3   1      [3]  0.107929  0.107778   0.107627
+cluster_2   2      [2]  0.242840  0.239222   0.234625
+cluster_1   3      [1]  0.101673  0.101598   0.101598
+cluster_6   4      [6]  0.151643  0.151568   0.151568
+cluster_4   5      [4]  0.090895  0.090443   0.090368
+cluster_5   6      [5]  0.127223  0.126847   0.126847
+keyword_0   7      [0]  0.925234  0.925234   0.925158
+keyword_3   8      [3]  0.869159  0.869159   0.869008
+keyword_2   9      [2]  0.992840  0.992840   0.988242
+keyword_1  10      [1]  0.913702  0.913702   0.913702
+keyword_6  11      [6]  0.771405  0.771405   0.771405
+keyword_4  12      [4]  0.730027  0.730027   0.729952
+keyword_5  13      [5]  0.793714  0.793714   0.793714
+[2023-02-12 18:20:02,453]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 18:20:02,453]INFO|Labeler|Validate metrics of 5-fold Cross Validation with Trainingset 3
+[2023-02-12 18:20:02,454]INFO|Labeler|coverage_cluster_autonomous: 17.8%
+[2023-02-12 18:20:02,455]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 18:20:02,455]INFO|Labeler|coverage_cluster_digitalisation: 24.3%
+[2023-02-12 18:20:02,456]INFO|Labeler|coverage_cluster_connectivity: 10.2%
+[2023-02-12 18:20:02,456]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 18:20:02,456]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 18:20:02,457]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 18:20:02,457]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 18:20:02,457]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 18:20:02,458]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 18:20:02,458]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 18:20:02,460]INFO|Labeler|coverage_keyword_connectivity: 91.4%
+[2023-02-12 18:20:02,460]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 18:20:02,461]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 18:20:02,461]INFO|Labeler|Training and Evaluation of best Model with 5-fold Cross Validation with Trainingset 3
+[2023-02-12 18:20:52,983]INFO|Labeler|5-Fold Cross-Validation with Trainingsplit 3 were trained.
+[2023-02-12 18:20:52,986]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.3702127659574468, 'k-fold': 4, 'trainingset': 3, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_80457_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 18:20:52,987]INFO|Labeler|Training of 5-Fold Cross-Validation with Trainingsplit 4 started.
+[2023-02-12 18:28:26,197]INFO|Labeler|Training set coverage of 5-Fold Cross Validation with Trainingset 4:  100.0%
+[2023-02-12 18:28:26,224]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.173123  0.172822   0.172746
+cluster_3   1      [3]  0.109210  0.108984   0.108833
+cluster_2   2      [2]  0.241031  0.237413   0.232816
+cluster_1   3      [1]  0.104085  0.104010   0.104010
+cluster_6   4      [6]  0.153000  0.152924   0.152924
+cluster_4   5      [4]  0.090971  0.090594   0.090519
+cluster_5   6      [5]  0.128580  0.128279   0.128203
+keyword_0   7      [0]  0.924028  0.924028   0.923952
+keyword_3   8      [3]  0.866219  0.866219   0.866069
+keyword_2   9      [2]  0.992463  0.992463   0.987866
+keyword_1  10      [1]  0.912119  0.912119   0.912119
+keyword_6  11      [6]  0.770500  0.770500   0.770500
+keyword_4  12      [4]  0.725580  0.725580   0.725505
+keyword_5  13      [5]  0.792885  0.792885   0.792810
+[2023-02-12 18:28:26,249]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 18:28:26,249]INFO|Labeler|Validate metrics of 5-fold Cross Validation with Trainingset 4
+[2023-02-12 18:28:26,250]INFO|Labeler|coverage_cluster_autonomous: 17.3%
+[2023-02-12 18:28:26,251]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 18:28:26,251]INFO|Labeler|coverage_cluster_digitalisation: 24.1%
+[2023-02-12 18:28:26,252]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 18:28:26,252]INFO|Labeler|coverage_cluster_sustainability: 15.3%
+[2023-02-12 18:28:26,252]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 18:28:26,253]INFO|Labeler|coverage_cluster_shared: 12.9%
+[2023-02-12 18:28:26,253]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 18:28:26,254]INFO|Labeler|coverage_keyword_digitalisation: 99.2%
+[2023-02-12 18:28:26,254]INFO|Labeler|coverage_keyword_electrification: 86.6%
+[2023-02-12 18:28:26,254]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 18:28:26,256]INFO|Labeler|coverage_keyword_connectivity: 91.2%
+[2023-02-12 18:28:26,257]INFO|Labeler|coverage_keyword_individualisation: 72.6%
+[2023-02-12 18:28:26,257]INFO|Labeler|coverage_keyword_shared: 79.3%
+[2023-02-12 18:28:26,258]INFO|Labeler|Training and Evaluation of best Model with 5-fold Cross Validation with Trainingset 4
+[2023-02-12 18:29:22,124]INFO|Labeler|5-Fold Cross-Validation with Trainingsplit 4 were trained.
+[2023-02-12 18:29:22,126]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 18:29:22,127]INFO|Labeler|Training of 5-Fold Cross-Validation with Trainingsplit 5 started.
+[2023-02-12 18:36:31,836]INFO|Labeler|Training set coverage of 5-Fold Cross Validation with Trainingset 5:  100.0%
+[2023-02-12 18:36:31,861]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.173877  0.173651   0.173576
+cluster_3   1      [3]  0.110491  0.110341   0.110190
+cluster_2   2      [2]  0.238468  0.235529   0.231158
+cluster_1   3      [1]  0.106120  0.106045   0.106045
+cluster_6   4      [6]  0.154281  0.154130   0.154130
+cluster_4   5      [4]  0.089463  0.089237   0.089162
+cluster_5   6      [5]  0.127299  0.126997   0.126922
+keyword_0   7      [0]  0.925384  0.925384   0.925309
+keyword_3   8      [3]  0.867199  0.867199   0.867049
+keyword_2   9      [2]  0.993443  0.993443   0.989071
+keyword_1  10      [1]  0.912647  0.912647   0.912647
+keyword_6  11      [6]  0.775098  0.775098   0.775098
+keyword_4  12      [4]  0.729952  0.729952   0.729876
+keyword_5  13      [5]  0.795900  0.795900   0.795825
+[2023-02-12 18:36:31,885]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 18:36:31,885]INFO|Labeler|Validate metrics of 5-fold Cross Validation with Trainingset 5
+[2023-02-12 18:36:31,888]INFO|Labeler|coverage_cluster_autonomous: 17.4%
+[2023-02-12 18:36:31,889]INFO|Labeler|coverage_cluster_electrification: 11.0%
+[2023-02-12 18:36:31,889]INFO|Labeler|coverage_cluster_digitalisation: 23.8%
+[2023-02-12 18:36:31,890]INFO|Labeler|coverage_cluster_connectivity: 10.6%
+[2023-02-12 18:36:31,890]INFO|Labeler|coverage_cluster_sustainability: 15.4%
+[2023-02-12 18:36:31,891]INFO|Labeler|coverage_cluster_individualisation: 8.9%
+[2023-02-12 18:36:31,891]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 18:36:31,892]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 18:36:31,892]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 18:36:31,892]INFO|Labeler|coverage_keyword_electrification: 86.7%
+[2023-02-12 18:36:31,893]INFO|Labeler|coverage_keyword_sustainability: 77.5%
+[2023-02-12 18:36:31,893]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 18:36:31,894]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 18:36:31,894]INFO|Labeler|coverage_keyword_shared: 79.6%
+[2023-02-12 18:36:31,894]INFO|Labeler|Training and Evaluation of best Model with 5-fold Cross Validation with Trainingset 5
+[2023-02-12 18:37:22,458]INFO|Labeler|5-Fold Cross-Validation with Trainingsplit 5 were trained.
+[2023-02-12 18:37:22,460]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 18:37:22,485]INFO|Labeler|Training of 6-Fold Cross-Validation with Trainingsplit 1 started.
+[2023-02-12 18:44:36,756]INFO|Labeler|Training set coverage of 6-Fold Cross Validation with Trainingset 1:  100.0%
+[2023-02-12 18:44:36,780]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.177424  0.177062   0.176990
+cluster_3   1      [3]  0.107887  0.107742   0.107670
+cluster_2   2      [2]  0.241462  0.238133   0.233502
+cluster_1   3      [1]  0.103690  0.103618   0.103618
+cluster_6   4      [6]  0.152894  0.152750   0.152750
+cluster_4   5      [4]  0.089870  0.089508   0.089436
+cluster_5   6      [5]  0.126773  0.126483   0.126411
+keyword_0   7      [0]  0.924313  0.924313   0.924240
+keyword_3   8      [3]  0.867945  0.867945   0.867873
+keyword_2   9      [2]  0.993271  0.993271   0.988640
+keyword_1  10      [1]  0.911867  0.911867   0.911867
+keyword_6  11      [6]  0.770839  0.770839   0.770839
+keyword_4  12      [4]  0.729233  0.729233   0.729161
+keyword_5  13      [5]  0.793705  0.793705   0.793632
+[2023-02-12 18:44:36,805]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 18:44:36,805]INFO|Labeler|Validate metrics of 6-fold Cross Validation with Trainingset 1
+[2023-02-12 18:44:36,807]INFO|Labeler|coverage_cluster_autonomous: 17.7%
+[2023-02-12 18:44:36,807]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 18:44:36,808]INFO|Labeler|coverage_cluster_digitalisation: 24.1%
+[2023-02-12 18:44:36,808]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 18:44:36,808]INFO|Labeler|coverage_cluster_sustainability: 15.3%
+[2023-02-12 18:44:36,809]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 18:44:36,809]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 18:44:36,810]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 18:44:36,810]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 18:44:36,811]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 18:44:36,811]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 18:44:36,811]INFO|Labeler|coverage_keyword_connectivity: 91.2%
+[2023-02-12 18:44:36,812]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 18:44:36,812]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 18:44:36,813]INFO|Labeler|Training and Evaluation of best Model with 6-fold Cross Validation with Trainingset 1
+[2023-02-12 18:45:27,866]INFO|Labeler|6-Fold Cross-Validation with Trainingsplit 1 were trained.
+[2023-02-12 18:45:27,869]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 18:45:27,870]INFO|Labeler|Training of 6-Fold Cross-Validation with Trainingsplit 2 started.
+[2023-02-12 18:52:43,262]INFO|Labeler|Training set coverage of 6-Fold Cross Validation with Trainingset 2:  100.0%
+[2023-02-12 18:52:43,288]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.177918  0.177484   0.177484
+cluster_3   1      [3]  0.109761  0.109543   0.109471
+cluster_2   2      [2]  0.242095  0.238622   0.234498
+cluster_1   3      [1]  0.104479  0.104406   0.104406
+cluster_6   4      [6]  0.149410  0.149266   0.149266
+cluster_4   5      [4]  0.089140  0.088706   0.088633
+cluster_5   6      [5]  0.127198  0.126908   0.126836
+keyword_0   7      [0]  0.924390  0.924390   0.924390
+keyword_3   8      [3]  0.869040  0.869040   0.868968
+keyword_2   9      [2]  0.992837  0.992837   0.988713
+keyword_1  10      [1]  0.913754  0.913754   0.913754
+keyword_6  11      [6]  0.772448  0.772448   0.772448
+keyword_4  12      [4]  0.730338  0.730338   0.730266
+keyword_5  13      [5]  0.794516  0.794516   0.794443
+[2023-02-12 18:52:43,312]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 18:52:43,313]INFO|Labeler|Validate metrics of 6-fold Cross Validation with Trainingset 2
+[2023-02-12 18:52:43,315]INFO|Labeler|coverage_cluster_autonomous: 17.8%
+[2023-02-12 18:52:43,315]INFO|Labeler|coverage_cluster_electrification: 11.0%
+[2023-02-12 18:52:43,317]INFO|Labeler|coverage_cluster_digitalisation: 24.2%
+[2023-02-12 18:52:43,317]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 18:52:43,318]INFO|Labeler|coverage_cluster_sustainability: 14.9%
+[2023-02-12 18:52:43,318]INFO|Labeler|coverage_cluster_individualisation: 8.9%
+[2023-02-12 18:52:43,319]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 18:52:43,319]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 18:52:43,319]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 18:52:43,320]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 18:52:43,320]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 18:52:43,321]INFO|Labeler|coverage_keyword_connectivity: 91.4%
+[2023-02-12 18:52:43,321]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 18:52:43,322]INFO|Labeler|coverage_keyword_shared: 79.5%
+[2023-02-12 18:52:43,322]INFO|Labeler|Training and Evaluation of best Model with 6-fold Cross Validation with Trainingset 2
+[2023-02-12 18:53:34,817]INFO|Labeler|6-Fold Cross-Validation with Trainingsplit 2 were trained.
+[2023-02-12 18:53:34,819]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 18:53:34,820]INFO|Labeler|Training of 6-Fold Cross-Validation with Trainingsplit 3 started.
+[2023-02-12 19:00:48,303]INFO|Labeler|Training set coverage of 6-Fold Cross Validation with Trainingset 3:  100.0%
+[2023-02-12 19:00:48,326]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.175530  0.175096   0.175024
+cluster_3   1      [3]  0.108603  0.108386   0.108241
+cluster_2   2      [2]  0.241010  0.237754   0.233341
+cluster_1   3      [1]  0.102525  0.102525   0.102525
+cluster_6   4      [6]  0.151726  0.151581   0.151581
+cluster_4   5      [4]  0.091093  0.090731   0.090731
+cluster_5   6      [5]  0.129513  0.129224   0.129151
+keyword_0   7      [0]  0.923377  0.923377   0.923305
+keyword_3   8      [3]  0.868968  0.868968   0.868823
+keyword_2   9      [2]  0.992909  0.992909   0.988496
+keyword_1  10      [1]  0.913103  0.913103   0.913103
+keyword_6  11      [6]  0.772665  0.772665   0.772665
+keyword_4  12      [4]  0.729614  0.729614   0.729614
+keyword_5  13      [5]  0.793575  0.793575   0.793503
+[2023-02-12 19:00:48,351]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 19:00:48,352]INFO|Labeler|Validate metrics of 6-fold Cross Validation with Trainingset 3
+[2023-02-12 19:00:48,353]INFO|Labeler|coverage_cluster_autonomous: 17.6%
+[2023-02-12 19:00:48,354]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 19:00:48,354]INFO|Labeler|coverage_cluster_digitalisation: 24.1%
+[2023-02-12 19:00:48,355]INFO|Labeler|coverage_cluster_connectivity: 10.3%
+[2023-02-12 19:00:48,355]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 19:00:48,356]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 19:00:48,356]INFO|Labeler|coverage_cluster_shared: 13.0%
+[2023-02-12 19:00:48,357]INFO|Labeler|coverage_keyword_autonomous: 92.3%
+[2023-02-12 19:00:48,357]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 19:00:48,357]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 19:00:48,358]INFO|Labeler|coverage_keyword_sustainability: 77.3%
+[2023-02-12 19:00:48,358]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 19:00:48,359]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 19:00:48,359]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 19:00:48,359]INFO|Labeler|Training and Evaluation of best Model with 6-fold Cross Validation with Trainingset 3
+[2023-02-12 19:01:39,196]INFO|Labeler|6-Fold Cross-Validation with Trainingsplit 3 were trained.
+[2023-02-12 19:01:39,198]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 19:01:39,199]INFO|Labeler|Training of 6-Fold Cross-Validation with Trainingsplit 4 started.
+[2023-02-12 19:09:14,584]INFO|Labeler|Training set coverage of 6-Fold Cross Validation with Trainingset 4:  100.0%
+[2023-02-12 19:09:14,611]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.175747  0.175458   0.175385
+cluster_3   1      [3]  0.109471  0.109326   0.109182
+cluster_2   2      [2]  0.241589  0.237899   0.233268
+cluster_1   3      [1]  0.102380  0.102308   0.102308
+cluster_6   4      [6]  0.152377  0.152304   0.152304
+cluster_4   5      [4]  0.091310  0.090876   0.090804
+cluster_5   6      [5]  0.127125  0.126764   0.126764
+keyword_0   7      [0]  0.925693  0.925693   0.925620
+keyword_3   8      [3]  0.868533  0.868533   0.868389
+keyword_2   9      [2]  0.992909  0.992909   0.988279
+keyword_1  10      [1]  0.914044  0.914044   0.914044
+keyword_6  11      [6]  0.770639  0.770639   0.770639
+keyword_4  12      [4]  0.728746  0.728746   0.728674
+keyword_5  13      [5]  0.794371  0.794371   0.794371
+[2023-02-12 19:09:14,639]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 19:09:14,639]INFO|Labeler|Validate metrics of 6-fold Cross Validation with Trainingset 4
+[2023-02-12 19:09:14,640]INFO|Labeler|coverage_cluster_autonomous: 17.6%
+[2023-02-12 19:09:14,640]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 19:09:14,641]INFO|Labeler|coverage_cluster_digitalisation: 24.2%
+[2023-02-12 19:09:14,641]INFO|Labeler|coverage_cluster_connectivity: 10.2%
+[2023-02-12 19:09:14,642]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 19:09:14,642]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 19:09:14,642]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 19:09:14,643]INFO|Labeler|coverage_keyword_autonomous: 92.6%
+[2023-02-12 19:09:14,643]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 19:09:14,643]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 19:09:14,644]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 19:09:14,644]INFO|Labeler|coverage_keyword_connectivity: 91.4%
+[2023-02-12 19:09:14,646]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 19:09:14,647]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 19:09:14,647]INFO|Labeler|Training and Evaluation of best Model with 6-fold Cross Validation with Trainingset 4
+[2023-02-12 19:10:10,214]INFO|Labeler|6-Fold Cross-Validation with Trainingsplit 4 were trained.
+[2023-02-12 19:10:10,217]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 19:10:10,218]INFO|Labeler|Training of 6-Fold Cross-Validation with Trainingsplit 5 started.
+[2023-02-12 19:18:12,847]INFO|Labeler|Training set coverage of 6-Fold Cross Validation with Trainingset 5:  100.0%
+[2023-02-12 19:18:12,873]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.173649  0.173287   0.173215
+cluster_3   1      [3]  0.108313  0.108169   0.108024
+cluster_2   2      [2]  0.241734  0.238261   0.233702
+cluster_1   3      [1]  0.103972  0.103900   0.103900
+cluster_6   4      [6]  0.153245  0.153173   0.153173
+cluster_4   5      [4]  0.090876  0.090514   0.090442
+cluster_5   6      [5]  0.128211  0.127994   0.127921
+keyword_0   7      [0]  0.924101  0.924101   0.924029
+keyword_3   8      [3]  0.865856  0.865856   0.865712
+keyword_2   9      [2]  0.992982  0.992982   0.988423
+keyword_1  10      [1]  0.911656  0.911656   0.911656
+keyword_6  11      [6]  0.771290  0.771290   0.771290
+keyword_4  12      [4]  0.727878  0.727878   0.727806
+keyword_5  13      [5]  0.793503  0.793503   0.793430
+[2023-02-12 19:18:12,898]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 19:18:12,899]INFO|Labeler|Validate metrics of 6-fold Cross Validation with Trainingset 5
+[2023-02-12 19:18:12,900]INFO|Labeler|coverage_cluster_autonomous: 17.4%
+[2023-02-12 19:18:12,900]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 19:18:12,901]INFO|Labeler|coverage_cluster_digitalisation: 24.2%
+[2023-02-12 19:18:12,901]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 19:18:12,902]INFO|Labeler|coverage_cluster_sustainability: 15.3%
+[2023-02-12 19:18:12,902]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 19:18:12,902]INFO|Labeler|coverage_cluster_shared: 12.8%
+[2023-02-12 19:18:12,903]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 19:18:12,903]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 19:18:12,903]INFO|Labeler|coverage_keyword_electrification: 86.6%
+[2023-02-12 19:18:12,904]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 19:18:12,905]INFO|Labeler|coverage_keyword_connectivity: 91.2%
+[2023-02-12 19:18:12,905]INFO|Labeler|coverage_keyword_individualisation: 72.8%
+[2023-02-12 19:18:12,906]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 19:18:12,906]INFO|Labeler|Training and Evaluation of best Model with 6-fold Cross Validation with Trainingset 5
+[2023-02-12 19:19:06,820]INFO|Labeler|6-Fold Cross-Validation with Trainingsplit 5 were trained.
+[2023-02-12 19:19:06,823]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 19:19:06,842]INFO|Labeler|Training of 6-Fold Cross-Validation with Trainingsplit 6 started.
+[2023-02-12 19:26:52,415]INFO|Labeler|Training set coverage of 6-Fold Cross Validation with Trainingset 6:  100.0%
+[2023-02-12 19:26:52,442]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.174662  0.174372   0.174300
+cluster_3   1      [3]  0.111135  0.110918   0.110773
+cluster_2   2      [2]  0.239201  0.236162   0.231749
+cluster_1   3      [1]  0.105564  0.105492   0.105492
+cluster_6   4      [6]  0.153462  0.153317   0.153317
+cluster_4   5      [4]  0.088923  0.088706   0.088633
+cluster_5   6      [5]  0.127053  0.126691   0.126619
+keyword_0   7      [0]  0.924825  0.924825   0.924752
+keyword_3   8      [3]  0.867738  0.867738   0.867593
+keyword_2   9      [2]  0.993126  0.993126   0.988713
+keyword_1  10      [1]  0.912814  0.912814   0.912814
+keyword_6  11      [6]  0.773895  0.773895   0.773895
+keyword_4  12      [4]  0.729108  0.729108   0.729036
+keyword_5  13      [5]  0.794877  0.794877   0.794805
+[2023-02-12 19:26:52,470]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 19:26:52,470]INFO|Labeler|Validate metrics of 6-fold Cross Validation with Trainingset 6
+[2023-02-12 19:26:52,471]INFO|Labeler|coverage_cluster_autonomous: 17.5%
+[2023-02-12 19:26:52,472]INFO|Labeler|coverage_cluster_electrification: 11.1%
+[2023-02-12 19:26:52,472]INFO|Labeler|coverage_cluster_digitalisation: 23.9%
+[2023-02-12 19:26:52,473]INFO|Labeler|coverage_cluster_connectivity: 10.6%
+[2023-02-12 19:26:52,473]INFO|Labeler|coverage_cluster_sustainability: 15.3%
+[2023-02-12 19:26:52,474]INFO|Labeler|coverage_cluster_individualisation: 8.9%
+[2023-02-12 19:26:52,474]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 19:26:52,475]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 19:26:52,475]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 19:26:52,475]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 19:26:52,476]INFO|Labeler|coverage_keyword_sustainability: 77.4%
+[2023-02-12 19:26:52,476]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 19:26:52,477]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 19:26:52,477]INFO|Labeler|coverage_keyword_shared: 79.5%
+[2023-02-12 19:26:52,478]INFO|Labeler|Training and Evaluation of best Model with 6-fold Cross Validation with Trainingset 6
+[2023-02-12 19:27:47,754]INFO|Labeler|6-Fold Cross-Validation with Trainingsplit 6 were trained.
+[2023-02-12 19:27:47,758]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 19:27:47,760]INFO|Labeler|Training of 7-Fold Cross-Validation with Trainingsplit 1 started.
+[2023-02-12 19:36:37,193]INFO|Labeler|Training set coverage of 7-Fold Cross Validation with Trainingset 1:  100.0%
+[2023-02-12 19:36:37,221]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.176785  0.176433   0.176363
+cluster_3   1      [3]  0.107703  0.107562   0.107422
+cluster_2   2      [2]  0.241716  0.238480   0.233837
+cluster_1   3      [1]  0.103482  0.103412   0.103412
+cluster_6   4      [6]  0.152867  0.152726   0.152726
+cluster_4   5      [4]  0.090327  0.089975   0.089905
+cluster_5   6      [5]  0.127119  0.126838   0.126767
+keyword_0   7      [0]  0.924727  0.924727   0.924657
+keyword_3   8      [3]  0.868449  0.868449   0.868308
+keyword_2   9      [2]  0.993317  0.993317   0.988674
+keyword_1  10      [1]  0.912416  0.912416   0.912416
+keyword_6  11      [6]  0.771017  0.771017   0.771017
+keyword_4  12      [4]  0.729370  0.729370   0.729300
+keyword_5  13      [5]  0.793669  0.793669   0.793598
+[2023-02-12 19:36:37,246]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 19:36:37,248]INFO|Labeler|Validate metrics of 7-fold Cross Validation with Trainingset 1
+[2023-02-12 19:36:37,250]INFO|Labeler|coverage_cluster_autonomous: 17.7%
+[2023-02-12 19:36:37,250]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 19:36:37,251]INFO|Labeler|coverage_cluster_digitalisation: 24.2%
+[2023-02-12 19:36:37,252]INFO|Labeler|coverage_cluster_connectivity: 10.3%
+[2023-02-12 19:36:37,253]INFO|Labeler|coverage_cluster_sustainability: 15.3%
+[2023-02-12 19:36:37,253]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 19:36:37,253]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 19:36:37,254]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 19:36:37,254]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 19:36:37,254]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 19:36:37,255]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 19:36:37,255]INFO|Labeler|coverage_keyword_connectivity: 91.2%
+[2023-02-12 19:36:37,256]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 19:36:37,256]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 19:36:37,257]INFO|Labeler|Training and Evaluation of best Model with 7-fold Cross Validation with Trainingset 1
+[2023-02-12 19:37:35,623]INFO|Labeler|7-Fold Cross-Validation with Trainingsplit 1 were trained.
+[2023-02-12 19:37:35,625]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 19:37:35,626]INFO|Labeler|Training of 7-Fold Cross-Validation with Trainingsplit 2 started.
+[2023-02-12 19:45:44,721]INFO|Labeler|Training set coverage of 7-Fold Cross Validation with Trainingset 2:  100.0%
+[2023-02-12 19:45:44,745]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.178333  0.177911   0.177911
+cluster_3   1      [3]  0.109391  0.109180   0.109110
+cluster_2   2      [2]  0.241857  0.238269   0.233908
+cluster_1   3      [1]  0.103693  0.103623   0.103623
+cluster_6   4      [6]  0.150545  0.150405   0.150405
+cluster_4   5      [4]  0.089202  0.088779   0.088709
+cluster_5   6      [5]  0.126979  0.126697   0.126627
+keyword_0   7      [0]  0.923109  0.923109   0.923109
+keyword_3   8      [3]  0.868660  0.868660   0.868590
+keyword_2   9      [2]  0.992824  0.992824   0.988463
+keyword_1  10      [1]  0.912628  0.912628   0.912628
+keyword_6  11      [6]  0.772564  0.772564   0.772564
+keyword_4  12      [4]  0.728808  0.728808   0.728737
+keyword_5  13      [5]  0.794091  0.794091   0.794020
+[2023-02-12 19:45:44,770]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 19:45:44,770]INFO|Labeler|Validate metrics of 7-fold Cross Validation with Trainingset 2
+[2023-02-12 19:45:44,772]INFO|Labeler|coverage_cluster_autonomous: 17.8%
+[2023-02-12 19:45:44,772]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 19:45:44,772]INFO|Labeler|coverage_cluster_digitalisation: 24.2%
+[2023-02-12 19:45:44,773]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 19:45:44,773]INFO|Labeler|coverage_cluster_sustainability: 15.1%
+[2023-02-12 19:45:44,773]INFO|Labeler|coverage_cluster_individualisation: 8.9%
+[2023-02-12 19:45:44,774]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 19:45:44,774]INFO|Labeler|coverage_keyword_autonomous: 92.3%
+[2023-02-12 19:45:44,774]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 19:45:44,775]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 19:45:44,775]INFO|Labeler|coverage_keyword_sustainability: 77.3%
+[2023-02-12 19:45:44,775]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 19:45:44,776]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 19:45:44,776]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 19:45:44,776]INFO|Labeler|Training and Evaluation of best Model with 7-fold Cross Validation with Trainingset 2
+[2023-02-12 19:46:35,415]INFO|Labeler|7-Fold Cross-Validation with Trainingsplit 2 were trained.
+[2023-02-12 19:46:35,418]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 19:46:35,419]INFO|Labeler|Training of 7-Fold Cross-Validation with Trainingsplit 3 started.
+[2023-02-12 19:53:58,891]INFO|Labeler|Training set coverage of 7-Fold Cross Validation with Trainingset 3:  100.0%
+[2023-02-12 19:53:58,917]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.174100  0.173678   0.173607
+cluster_3   1      [3]  0.110580  0.110369   0.110298
+cluster_2   2      [2]  0.241488  0.238182   0.233962
+cluster_1   3      [1]  0.103827  0.103827   0.103827
+cluster_6   4      [6]  0.150605  0.150464   0.150464
+cluster_4   5      [4]  0.090461  0.090110   0.090110
+cluster_5   6      [5]  0.128939  0.128658   0.128588
+keyword_0   7      [0]  0.924381  0.924381   0.924311
+keyword_3   8      [3]  0.868880  0.868880   0.868810
+keyword_2   9      [2]  0.993036  0.993036   0.988815
+keyword_1  10      [1]  0.913548  0.913548   0.913548
+keyword_6  11      [6]  0.771455  0.771455   0.771455
+keyword_4  12      [4]  0.731007  0.731007   0.731007
+keyword_5  13      [5]  0.794809  0.794809   0.794738
+[2023-02-12 19:53:58,941]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 19:53:58,941]INFO|Labeler|Validate metrics of 7-fold Cross Validation with Trainingset 3
+[2023-02-12 19:53:58,942]INFO|Labeler|coverage_cluster_autonomous: 17.4%
+[2023-02-12 19:53:58,943]INFO|Labeler|coverage_cluster_electrification: 11.1%
+[2023-02-12 19:53:58,943]INFO|Labeler|coverage_cluster_digitalisation: 24.1%
+[2023-02-12 19:53:58,944]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 19:53:58,944]INFO|Labeler|coverage_cluster_sustainability: 15.1%
+[2023-02-12 19:53:58,945]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 19:53:58,945]INFO|Labeler|coverage_cluster_shared: 12.9%
+[2023-02-12 19:53:58,945]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 19:53:58,946]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 19:53:58,946]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 19:53:58,946]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 19:53:58,947]INFO|Labeler|coverage_keyword_connectivity: 91.4%
+[2023-02-12 19:53:58,947]INFO|Labeler|coverage_keyword_individualisation: 73.1%
+[2023-02-12 19:53:58,948]INFO|Labeler|coverage_keyword_shared: 79.5%
+[2023-02-12 19:53:58,948]INFO|Labeler|Training and Evaluation of best Model with 7-fold Cross Validation with Trainingset 3
+[2023-02-12 19:54:49,460]INFO|Labeler|7-Fold Cross-Validation with Trainingsplit 3 were trained.
+[2023-02-12 19:54:49,463]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 19:54:49,464]INFO|Labeler|Training of 7-Fold Cross-Validation with Trainingsplit 4 started.
+[2023-02-12 20:02:15,640]INFO|Labeler|Training set coverage of 7-Fold Cross Validation with Trainingset 4:  100.0%
+[2023-02-12 20:02:15,665]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.177687  0.177265   0.177195
+cluster_3   1      [3]  0.107907  0.107766   0.107625
+cluster_2   2      [2]  0.243106  0.239660   0.235158
+cluster_1   3      [1]  0.101716  0.101646   0.101646
+cluster_6   4      [6]  0.152082  0.152012   0.152012
+cluster_4   5      [4]  0.090321  0.089899   0.089828
+cluster_5   6      [5]  0.127181  0.126829   0.126829
+keyword_0   7      [0]  0.924803  0.924803   0.924733
+keyword_3   8      [3]  0.868388  0.868388   0.868247
+keyword_2   9      [2]  0.992895  0.992895   0.988393
+keyword_1  10      [1]  0.913548  0.913548   0.913548
+keyword_6  11      [6]  0.771595  0.771595   0.771595
+keyword_4  12      [4]  0.729038  0.729038   0.728967
+keyword_5  13      [5]  0.793683  0.793683   0.793683
+[2023-02-12 20:02:15,689]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 20:02:15,689]INFO|Labeler|Validate metrics of 7-fold Cross Validation with Trainingset 4
+[2023-02-12 20:02:15,691]INFO|Labeler|coverage_cluster_autonomous: 17.8%
+[2023-02-12 20:02:15,691]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 20:02:15,692]INFO|Labeler|coverage_cluster_digitalisation: 24.3%
+[2023-02-12 20:02:15,692]INFO|Labeler|coverage_cluster_connectivity: 10.2%
+[2023-02-12 20:02:15,692]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 20:02:15,693]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 20:02:15,693]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 20:02:15,695]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 20:02:15,696]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 20:02:15,696]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 20:02:15,696]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 20:02:15,697]INFO|Labeler|coverage_keyword_connectivity: 91.4%
+[2023-02-12 20:02:15,697]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 20:02:15,698]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 20:02:15,698]INFO|Labeler|Training and Evaluation of best Model with 7-fold Cross Validation with Trainingset 4
+[2023-02-12 20:03:06,300]INFO|Labeler|7-Fold Cross-Validation with Trainingsplit 4 were trained.
+[2023-02-12 20:03:06,302]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 20:03:06,304]INFO|Labeler|Training of 7-Fold Cross-Validation with Trainingsplit 5 started.
+[2023-02-12 20:10:40,883]INFO|Labeler|Training set coverage of 7-Fold Cross Validation with Trainingset 5:  100.0%
+[2023-02-12 20:10:40,910]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.174803  0.174522   0.174451
+cluster_3   1      [3]  0.109173  0.108962   0.108821
+cluster_2   2      [2]  0.240152  0.236494   0.231781
+cluster_1   3      [1]  0.103475  0.103405   0.103405
+cluster_6   4      [6]  0.152153  0.152082   0.152082
+cluster_4   5      [4]  0.092009  0.091587   0.091517
+cluster_5   6      [5]  0.128236  0.127954   0.127884
+keyword_0   7      [0]  0.925225  0.925225   0.925155
+keyword_3   8      [3]  0.868106  0.868106   0.867966
+keyword_2   9      [2]  0.992684  0.992684   0.987971
+keyword_1  10      [1]  0.913548  0.913548   0.913548
+keyword_6  11      [6]  0.771384  0.771384   0.771384
+keyword_4  12      [4]  0.728334  0.728334   0.728264
+keyword_5  13      [5]  0.793191  0.793191   0.793120
+[2023-02-12 20:10:40,938]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 20:10:40,938]INFO|Labeler|Validate metrics of 7-fold Cross Validation with Trainingset 5
+[2023-02-12 20:10:40,939]INFO|Labeler|coverage_cluster_autonomous: 17.5%
+[2023-02-12 20:10:40,940]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 20:10:40,940]INFO|Labeler|coverage_cluster_digitalisation: 24.0%
+[2023-02-12 20:10:40,941]INFO|Labeler|coverage_cluster_connectivity: 10.3%
+[2023-02-12 20:10:40,941]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 20:10:40,942]INFO|Labeler|coverage_cluster_individualisation: 9.2%
+[2023-02-12 20:10:40,942]INFO|Labeler|coverage_cluster_shared: 12.8%
+[2023-02-12 20:10:40,943]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 20:10:40,943]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 20:10:40,943]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 20:10:40,944]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 20:10:40,944]INFO|Labeler|coverage_keyword_connectivity: 91.4%
+[2023-02-12 20:10:40,945]INFO|Labeler|coverage_keyword_individualisation: 72.8%
+[2023-02-12 20:10:40,945]INFO|Labeler|coverage_keyword_shared: 79.3%
+[2023-02-12 20:10:40,946]INFO|Labeler|Training and Evaluation of best Model with 7-fold Cross Validation with Trainingset 5
+[2023-02-12 20:11:34,471]INFO|Labeler|7-Fold Cross-Validation with Trainingsplit 5 were trained.
+[2023-02-12 20:11:34,474]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 32, 'log_freq': 14, 'l2': 0.3105351238562443, 'lr': 0.008249678833279326, 'optimizer': 'adam', 'accuracy': 0.372972972972973, 'k-fold': 5, 'trainingset': 4, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 20:11:34,475]INFO|Labeler|Training of 7-Fold Cross-Validation with Trainingsplit 6 started.
+[2023-02-12 20:19:47,751]INFO|Labeler|Training set coverage of 7-Fold Cross Validation with Trainingset 6:  100.0%
+[2023-02-12 20:19:47,778]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.173607  0.173255   0.173185
+cluster_3   1      [3]  0.108258  0.108118   0.107977
+cluster_2   2      [2]  0.240715  0.237479   0.232977
+cluster_1   3      [1]  0.104952  0.104882   0.104882
+cluster_6   4      [6]  0.153419  0.153278   0.153278
+cluster_4   5      [4]  0.089969  0.089617   0.089547
+cluster_5   6      [5]  0.129080  0.128799   0.128728
+keyword_0   7      [0]  0.923678  0.923678   0.923607
+keyword_3   8      [3]  0.865011  0.865011   0.864871
+keyword_2   9      [2]  0.993247  0.993247   0.988745
+keyword_1  10      [1]  0.911156  0.911156   0.911156
+keyword_6  11      [6]  0.771173  0.771173   0.771173
+keyword_4  12      [4]  0.729249  0.729249   0.729178
+keyword_5  13      [5]  0.794035  0.794035   0.793965
+[2023-02-12 20:19:47,806]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 20:19:47,806]INFO|Labeler|Validate metrics of 7-fold Cross Validation with Trainingset 6
+[2023-02-12 20:19:47,807]INFO|Labeler|coverage_cluster_autonomous: 17.4%
+[2023-02-12 20:19:47,808]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 20:19:47,808]INFO|Labeler|coverage_cluster_digitalisation: 24.1%
+[2023-02-12 20:19:47,809]INFO|Labeler|coverage_cluster_connectivity: 10.5%
+[2023-02-12 20:19:47,809]INFO|Labeler|coverage_cluster_sustainability: 15.3%
+[2023-02-12 20:19:47,810]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 20:19:47,810]INFO|Labeler|coverage_cluster_shared: 12.9%
+[2023-02-12 20:19:47,810]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 20:19:47,811]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 20:19:47,811]INFO|Labeler|coverage_keyword_electrification: 86.5%
+[2023-02-12 20:19:47,811]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 20:19:47,812]INFO|Labeler|coverage_keyword_connectivity: 91.1%
+[2023-02-12 20:19:47,812]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 20:19:47,812]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 20:19:47,813]INFO|Labeler|Training and Evaluation of best Model with 7-fold Cross Validation with Trainingset 6
+[2023-02-12 20:20:43,283]INFO|Labeler|7-Fold Cross-Validation with Trainingsplit 6 were trained.
+[2023-02-12 20:20:43,286]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 45, 'log_freq': 195, 'l2': 0.5105700416027151, 'lr': 0.00016167952652543964, 'optimizer': 'adam', 'accuracy': 0.38686131386861317, 'k-fold': 7, 'trainingset': 6, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_84045_n_epochs_45_log_freq_195_l2_0.5105700416027151_lr_0.00016167952652543964_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 20:20:43,287]INFO|Labeler|Training of 7-Fold Cross-Validation with Trainingsplit 7 started.
+[2023-02-12 20:28:13,759]INFO|Labeler|Training set coverage of 7-Fold Cross Validation with Trainingset 7:  100.0%
+[2023-02-12 20:28:13,785]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.175436  0.175155   0.175084
+cluster_3   1      [3]  0.111353  0.111142   0.111002
+cluster_2   2      [2]  0.239237  0.236072   0.231781
+cluster_1   3      [1]  0.105234  0.105163   0.105163
+cluster_6   4      [6]  0.153630  0.153489   0.153489
+cluster_4   5      [4]  0.089125  0.088914   0.088844
+cluster_5   6      [5]  0.125985  0.125633   0.125563
+keyword_0   7      [0]  0.925225  0.925225   0.925155
+keyword_3   8      [3]  0.868599  0.868599   0.868458
+keyword_2   9      [2]  0.993036  0.993036   0.988745
+keyword_1  10      [1]  0.913267  0.913267   0.913267
+keyword_6  11      [6]  0.774550  0.774550   0.774550
+keyword_4  12      [4]  0.728264  0.728264   0.728194
+keyword_5  13      [5]  0.795160  0.795160   0.795090
+[2023-02-12 20:28:13,809]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 20:28:13,810]INFO|Labeler|Validate metrics of 7-fold Cross Validation with Trainingset 7
+[2023-02-12 20:28:13,811]INFO|Labeler|coverage_cluster_autonomous: 17.5%
+[2023-02-12 20:28:13,811]INFO|Labeler|coverage_cluster_electrification: 11.1%
+[2023-02-12 20:28:13,812]INFO|Labeler|coverage_cluster_digitalisation: 23.9%
+[2023-02-12 20:28:13,812]INFO|Labeler|coverage_cluster_connectivity: 10.5%
+[2023-02-12 20:28:13,813]INFO|Labeler|coverage_cluster_sustainability: 15.4%
+[2023-02-12 20:28:13,813]INFO|Labeler|coverage_cluster_individualisation: 8.9%
+[2023-02-12 20:28:13,814]INFO|Labeler|coverage_cluster_shared: 12.6%
+[2023-02-12 20:28:13,814]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 20:28:13,815]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 20:28:13,816]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 20:28:13,816]INFO|Labeler|coverage_keyword_sustainability: 77.5%
+[2023-02-12 20:28:13,817]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 20:28:13,817]INFO|Labeler|coverage_keyword_individualisation: 72.8%
+[2023-02-12 20:28:13,817]INFO|Labeler|coverage_keyword_shared: 79.5%
+[2023-02-12 20:28:13,818]INFO|Labeler|Training and Evaluation of best Model with 7-fold Cross Validation with Trainingset 7
+[2023-02-12 20:29:04,279]INFO|Labeler|7-Fold Cross-Validation with Trainingsplit 7 were trained.
+[2023-02-12 20:29:04,281]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 45, 'log_freq': 195, 'l2': 0.5105700416027151, 'lr': 0.00016167952652543964, 'optimizer': 'adam', 'accuracy': 0.38686131386861317, 'k-fold': 7, 'trainingset': 6, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_84045_n_epochs_45_log_freq_195_l2_0.5105700416027151_lr_0.00016167952652543964_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 20:29:04,283]INFO|Labeler|Training of 8-Fold Cross-Validation with Trainingsplit 1 started.
+[2023-02-12 20:36:37,456]INFO|Labeler|Training set coverage of 8-Fold Cross Validation with Trainingset 1:  100.0%
+[2023-02-12 20:36:37,482]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.176487  0.176142   0.176073
+cluster_3   1      [3]  0.108125  0.107918   0.107780
+cluster_2   2      [2]  0.241541  0.238233   0.233685
+cluster_1   3      [1]  0.104335  0.104266   0.104266
+cluster_6   4      [6]  0.152229  0.152092   0.152092
+cluster_4   5      [4]  0.089863  0.089518   0.089449
+cluster_5   6      [5]  0.127421  0.127145   0.127076
+keyword_0   7      [0]  0.924609  0.924609   0.924540
+keyword_3   8      [3]  0.868238  0.868238   0.868100
+keyword_2   9      [2]  0.993247  0.993247   0.988698
+keyword_1  10      [1]  0.912205  0.912205   0.912205
+keyword_6  11      [6]  0.771553  0.771553   0.771553
+keyword_4  12      [4]  0.729860  0.729860   0.729791
+keyword_5  13      [5]  0.793949  0.793949   0.793881
+[2023-02-12 20:36:37,505]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 20:36:37,505]INFO|Labeler|Validate metrics of 8-fold Cross Validation with Trainingset 1
+[2023-02-12 20:36:37,507]INFO|Labeler|coverage_cluster_autonomous: 17.6%
+[2023-02-12 20:36:37,507]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 20:36:37,508]INFO|Labeler|coverage_cluster_digitalisation: 24.2%
+[2023-02-12 20:36:37,508]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 20:36:37,508]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 20:36:37,509]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 20:36:37,509]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 20:36:37,510]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 20:36:37,510]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 20:36:37,510]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 20:36:37,511]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 20:36:37,512]INFO|Labeler|coverage_keyword_connectivity: 91.2%
+[2023-02-12 20:36:37,513]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 20:36:37,513]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 20:36:37,514]INFO|Labeler|Training and Evaluation of best Model with 8-fold Cross Validation with Trainingset 1
+[2023-02-12 20:37:28,133]INFO|Labeler|8-Fold Cross-Validation with Trainingsplit 1 were trained.
+[2023-02-12 20:37:28,136]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 45, 'log_freq': 195, 'l2': 0.5105700416027151, 'lr': 0.00016167952652543964, 'optimizer': 'adam', 'accuracy': 0.38686131386861317, 'k-fold': 7, 'trainingset': 6, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_84045_n_epochs_45_log_freq_195_l2_0.5105700416027151_lr_0.00016167952652543964_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 20:37:28,136]INFO|Labeler|Training of 8-Fold Cross-Validation with Trainingsplit 2 started.
+[2023-02-12 20:45:01,334]INFO|Labeler|Training set coverage of 8-Fold Cross Validation with Trainingset 2:  100.0%
+[2023-02-12 20:45:01,360]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.177302  0.176888   0.176888
+cluster_3   1      [3]  0.109840  0.109702   0.109633
+cluster_2   2      [2]  0.240973  0.237528   0.233255
+cluster_1   3      [1]  0.103018  0.102949   0.102949
+cluster_6   4      [6]  0.151943  0.151805   0.151805
+cluster_4   5      [4]  0.090408  0.089994   0.089926
+cluster_5   6      [5]  0.126516  0.126240   0.126171
+keyword_0   7      [0]  0.923787  0.923787   0.923787
+keyword_3   8      [3]  0.868798  0.868798   0.868729
+keyword_2   9      [2]  0.993040  0.993040   0.988768
+keyword_1  10      [1]  0.913520  0.913520   0.913520
+keyword_6  11      [6]  0.771913  0.771913   0.771913
+keyword_4  12      [4]  0.728569  0.728569   0.728501
+keyword_5  13      [5]  0.793826  0.793826   0.793757
+[2023-02-12 20:45:01,385]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 20:45:01,385]INFO|Labeler|Validate metrics of 8-fold Cross Validation with Trainingset 2
+[2023-02-12 20:45:01,386]INFO|Labeler|coverage_cluster_autonomous: 17.7%
+[2023-02-12 20:45:01,387]INFO|Labeler|coverage_cluster_electrification: 11.0%
+[2023-02-12 20:45:01,387]INFO|Labeler|coverage_cluster_digitalisation: 24.1%
+[2023-02-12 20:45:01,387]INFO|Labeler|coverage_cluster_connectivity: 10.3%
+[2023-02-12 20:45:01,388]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 20:45:01,388]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 20:45:01,388]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 20:45:01,389]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 20:45:01,389]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 20:45:01,389]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 20:45:01,390]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 20:45:01,390]INFO|Labeler|coverage_keyword_connectivity: 91.4%
+[2023-02-12 20:45:01,390]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 20:45:01,392]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 20:45:01,392]INFO|Labeler|Training and Evaluation of best Model with 8-fold Cross Validation with Trainingset 2
+[2023-02-12 20:45:50,962]INFO|Labeler|8-Fold Cross-Validation with Trainingsplit 2 were trained.
+[2023-02-12 20:45:50,965]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 45, 'log_freq': 195, 'l2': 0.5105700416027151, 'lr': 0.00016167952652543964, 'optimizer': 'adam', 'accuracy': 0.38686131386861317, 'k-fold': 7, 'trainingset': 6, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_84045_n_epochs_45_log_freq_195_l2_0.5105700416027151_lr_0.00016167952652543964_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 20:45:50,966]INFO|Labeler|Training of 8-Fold Cross-Validation with Trainingsplit 3 started.
+[2023-02-12 20:53:22,874]INFO|Labeler|Training set coverage of 8-Fold Cross Validation with Trainingset 3:  100.0%
+[2023-02-12 20:53:22,900]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.176888  0.176475   0.176406
+cluster_3   1      [3]  0.109702  0.109496   0.109427
+cluster_2   2      [2]  0.241869  0.238423   0.234082
+cluster_1   3      [1]  0.103432  0.103432   0.103432
+cluster_6   4      [6]  0.150083  0.149945   0.149945
+cluster_4   5      [4]  0.089443  0.089030   0.089030
+cluster_5   6      [5]  0.128583  0.128239   0.128170
+keyword_0   7      [0]  0.924201  0.924201   0.924132
+keyword_3   8      [3]  0.868660  0.868660   0.868592
+keyword_2   9      [2]  0.992834  0.992834   0.988492
+keyword_1  10      [1]  0.913175  0.913175   0.913175
+keyword_6  11      [6]  0.771706  0.771706   0.771706
+keyword_4  12      [4]  0.730154  0.730154   0.730154
+keyword_5  13      [5]  0.795411  0.795411   0.795342
+[2023-02-12 20:53:22,925]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 20:53:22,925]INFO|Labeler|Validate metrics of 8-fold Cross Validation with Trainingset 3
+[2023-02-12 20:53:22,926]INFO|Labeler|coverage_cluster_autonomous: 17.7%
+[2023-02-12 20:53:22,926]INFO|Labeler|coverage_cluster_electrification: 11.0%
+[2023-02-12 20:53:22,927]INFO|Labeler|coverage_cluster_digitalisation: 24.2%
+[2023-02-12 20:53:22,927]INFO|Labeler|coverage_cluster_connectivity: 10.3%
+[2023-02-12 20:53:22,928]INFO|Labeler|coverage_cluster_sustainability: 15.0%
+[2023-02-12 20:53:22,928]INFO|Labeler|coverage_cluster_individualisation: 8.9%
+[2023-02-12 20:53:22,928]INFO|Labeler|coverage_cluster_shared: 12.9%
+[2023-02-12 20:53:22,929]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 20:53:22,929]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 20:53:22,930]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 20:53:22,930]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 20:53:22,930]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 20:53:22,931]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 20:53:22,931]INFO|Labeler|coverage_keyword_shared: 79.5%
+[2023-02-12 20:53:22,931]INFO|Labeler|Training and Evaluation of best Model with 8-fold Cross Validation with Trainingset 3
+[2023-02-12 20:54:12,389]INFO|Labeler|8-Fold Cross-Validation with Trainingsplit 3 were trained.
+[2023-02-12 20:54:12,392]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 45, 'log_freq': 195, 'l2': 0.5105700416027151, 'lr': 0.00016167952652543964, 'optimizer': 'adam', 'accuracy': 0.38686131386861317, 'k-fold': 7, 'trainingset': 6, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_84045_n_epochs_45_log_freq_195_l2_0.5105700416027151_lr_0.00016167952652543964_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 20:54:12,393]INFO|Labeler|Training of 8-Fold Cross-Validation with Trainingsplit 4 started.
+[2023-02-12 21:02:20,998]INFO|Labeler|Training set coverage of 8-Fold Cross Validation with Trainingset 4:  100.0%
+[2023-02-12 21:02:21,066]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.175854  0.175441   0.175372
+cluster_3   1      [3]  0.107842  0.107635   0.107497
+cluster_2   2      [2]  0.241318  0.238079   0.233600
+cluster_1   3      [1]  0.103707  0.103638   0.103638
+cluster_6   4      [6]  0.152081  0.151943   0.151943
+cluster_4   5      [4]  0.090615  0.090270   0.090201
+cluster_5   6      [5]  0.128583  0.128308   0.128239
+keyword_0   7      [0]  0.923994  0.923994   0.923925
+keyword_3   8      [3]  0.868178  0.868178   0.868040
+keyword_2   9      [2]  0.992902  0.992902   0.988423
+keyword_1  10      [1]  0.912693  0.912693   0.912693
+keyword_6  11      [6]  0.772740  0.772740   0.772740
+keyword_4  12      [4]  0.729672  0.729672   0.729603
+keyword_5  13      [5]  0.792723  0.792723   0.792654
+[2023-02-12 21:02:21,131]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 21:02:21,132]INFO|Labeler|Validate metrics of 8-fold Cross Validation with Trainingset 4
+[2023-02-12 21:02:21,134]INFO|Labeler|coverage_cluster_autonomous: 17.6%
+[2023-02-12 21:02:21,135]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 21:02:21,136]INFO|Labeler|coverage_cluster_digitalisation: 24.1%
+[2023-02-12 21:02:21,136]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 21:02:21,137]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 21:02:21,137]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 21:02:21,138]INFO|Labeler|coverage_cluster_shared: 12.9%
+[2023-02-12 21:02:21,138]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 21:02:21,138]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 21:02:21,139]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 21:02:21,139]INFO|Labeler|coverage_keyword_sustainability: 77.3%
+[2023-02-12 21:02:21,139]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 21:02:21,140]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 21:02:21,140]INFO|Labeler|coverage_keyword_shared: 79.3%
+[2023-02-12 21:02:21,141]INFO|Labeler|Training and Evaluation of best Model with 8-fold Cross Validation with Trainingset 4
+[2023-02-12 21:03:14,865]INFO|Labeler|8-Fold Cross-Validation with Trainingsplit 4 were trained.
+[2023-02-12 21:03:14,868]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 45, 'log_freq': 195, 'l2': 0.5105700416027151, 'lr': 0.00016167952652543964, 'optimizer': 'adam', 'accuracy': 0.38686131386861317, 'k-fold': 7, 'trainingset': 6, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_84045_n_epochs_45_log_freq_195_l2_0.5105700416027151_lr_0.00016167952652543964_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 21:03:14,869]INFO|Labeler|Training of 8-Fold Cross-Validation with Trainingsplit 5 started.
+[2023-02-12 21:11:24,931]INFO|Labeler|Training set coverage of 8-Fold Cross Validation with Trainingset 5:  100.0%
+[2023-02-12 21:11:24,957]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.176681  0.176337   0.176268
+cluster_3   1      [3]  0.109496  0.109358   0.109220
+cluster_2   2      [2]  0.240973  0.237459   0.232842
+cluster_1   3      [1]  0.102260  0.102191   0.102191
+cluster_6   4      [6]  0.151943  0.151874   0.151874
+cluster_4   5      [4]  0.091028  0.090615   0.090546
+cluster_5   6      [5]  0.127619  0.127274   0.127274
+keyword_0   7      [0]  0.925303  0.925303   0.925234
+keyword_3   8      [3]  0.868592  0.868592   0.868454
+keyword_2   9      [2]  0.993178  0.993178   0.988561
+keyword_1  10      [1]  0.914347  0.914347   0.914347
+keyword_6  11      [6]  0.771362  0.771362   0.771362
+keyword_4  12      [4]  0.729534  0.729534   0.729465
+keyword_5  13      [5]  0.794791  0.794791   0.794791
+[2023-02-12 21:11:24,984]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 21:11:24,984]INFO|Labeler|Validate metrics of 8-fold Cross Validation with Trainingset 5
+[2023-02-12 21:11:24,985]INFO|Labeler|coverage_cluster_autonomous: 17.7%
+[2023-02-12 21:11:24,986]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 21:11:24,986]INFO|Labeler|coverage_cluster_digitalisation: 24.1%
+[2023-02-12 21:11:24,986]INFO|Labeler|coverage_cluster_connectivity: 10.2%
+[2023-02-12 21:11:24,987]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 21:11:24,987]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 21:11:24,988]INFO|Labeler|coverage_cluster_shared: 12.8%
+[2023-02-12 21:11:24,988]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 21:11:24,988]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 21:11:24,989]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 21:11:24,989]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 21:11:24,989]INFO|Labeler|coverage_keyword_connectivity: 91.4%
+[2023-02-12 21:11:24,990]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 21:11:24,990]INFO|Labeler|coverage_keyword_shared: 79.5%
+[2023-02-12 21:11:24,990]INFO|Labeler|Training and Evaluation of best Model with 8-fold Cross Validation with Trainingset 5
+[2023-02-12 21:12:19,594]INFO|Labeler|8-Fold Cross-Validation with Trainingsplit 5 were trained.
+[2023-02-12 21:12:19,597]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 21:12:19,598]INFO|Labeler|Training of 8-Fold Cross-Validation with Trainingsplit 6 started.
+[2023-02-12 21:20:26,688]INFO|Labeler|Training set coverage of 8-Fold Cross Validation with Trainingset 6:  100.0%
+[2023-02-12 21:20:26,715]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.174063  0.173718   0.173649
+cluster_3   1      [3]  0.108669  0.108462   0.108324
+cluster_2   2      [2]  0.243867  0.240146   0.235460
+cluster_1   3      [1]  0.103501  0.103432   0.103432
+cluster_6   4      [6]  0.152288  0.152219   0.152219
+cluster_4   5      [4]  0.090615  0.090270   0.090201
+cluster_5   6      [5]  0.126998  0.126723   0.126654
+keyword_0   7      [0]  0.924338  0.924338   0.924270
+keyword_3   8      [3]  0.867351  0.867351   0.867213
+keyword_2   9      [2]  0.992489  0.992489   0.987803
+keyword_1  10      [1]  0.912417  0.912417   0.912417
+keyword_6  11      [6]  0.770190  0.770190   0.770190
+keyword_4  12      [4]  0.727191  0.727191   0.727122
+keyword_5  13      [5]  0.792517  0.792517   0.792448
+[2023-02-12 21:20:26,741]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 21:20:26,742]INFO|Labeler|Validate metrics of 8-fold Cross Validation with Trainingset 6
+[2023-02-12 21:20:26,743]INFO|Labeler|coverage_cluster_autonomous: 17.4%
+[2023-02-12 21:20:26,744]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 21:20:26,744]INFO|Labeler|coverage_cluster_digitalisation: 24.4%
+[2023-02-12 21:20:26,744]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 21:20:26,745]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 21:20:26,745]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 21:20:26,746]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 21:20:26,746]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 21:20:26,746]INFO|Labeler|coverage_keyword_digitalisation: 99.2%
+[2023-02-12 21:20:26,747]INFO|Labeler|coverage_keyword_electrification: 86.7%
+[2023-02-12 21:20:26,747]INFO|Labeler|coverage_keyword_sustainability: 77.0%
+[2023-02-12 21:20:26,748]INFO|Labeler|coverage_keyword_connectivity: 91.2%
+[2023-02-12 21:20:26,748]INFO|Labeler|coverage_keyword_individualisation: 72.7%
+[2023-02-12 21:20:26,748]INFO|Labeler|coverage_keyword_shared: 79.3%
+[2023-02-12 21:20:26,749]INFO|Labeler|Training and Evaluation of best Model with 8-fold Cross Validation with Trainingset 6
+[2023-02-12 21:21:21,218]INFO|Labeler|8-Fold Cross-Validation with Trainingsplit 6 were trained.
+[2023-02-12 21:21:21,222]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 21:21:21,223]INFO|Labeler|Training of 8-Fold Cross-Validation with Trainingsplit 7 started.
+[2023-02-12 21:29:36,729]INFO|Labeler|Training set coverage of 8-Fold Cross Validation with Trainingset 7:  100.0%
+[2023-02-12 21:29:36,758]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.174407  0.174063   0.173994
+cluster_3   1      [3]  0.108462  0.108324   0.108186
+cluster_2   2      [2]  0.239319  0.236149   0.231670
+cluster_1   3      [1]  0.104672  0.104603   0.104603
+cluster_6   4      [6]  0.153321  0.153184   0.153184
+cluster_4   5      [4]  0.090546  0.090201   0.090132
+cluster_5   6      [5]  0.129272  0.128997   0.128928
+keyword_0   7      [0]  0.924201  0.924201   0.924132
+keyword_3   8      [3]  0.865697  0.865697   0.865560
+keyword_2   9      [2]  0.993316  0.993316   0.988837
+keyword_1  10      [1]  0.911384  0.911384   0.911384
+keyword_6  11      [6]  0.771775  0.771775   0.771775
+keyword_4  12      [4]  0.729534  0.729534   0.729465
+keyword_5  13      [5]  0.794101  0.794101   0.794033
+[2023-02-12 21:29:36,833]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 21:29:36,834]INFO|Labeler|Validate metrics of 8-fold Cross Validation with Trainingset 7
+[2023-02-12 21:29:36,835]INFO|Labeler|coverage_cluster_autonomous: 17.4%
+[2023-02-12 21:29:36,836]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 21:29:36,836]INFO|Labeler|coverage_cluster_digitalisation: 23.9%
+[2023-02-12 21:29:36,836]INFO|Labeler|coverage_cluster_connectivity: 10.5%
+[2023-02-12 21:29:36,837]INFO|Labeler|coverage_cluster_sustainability: 15.3%
+[2023-02-12 21:29:36,837]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 21:29:36,837]INFO|Labeler|coverage_cluster_shared: 12.9%
+[2023-02-12 21:29:36,838]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 21:29:36,838]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 21:29:36,838]INFO|Labeler|coverage_keyword_electrification: 86.6%
+[2023-02-12 21:29:36,839]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 21:29:36,839]INFO|Labeler|coverage_keyword_connectivity: 91.1%
+[2023-02-12 21:29:36,840]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 21:29:36,840]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 21:29:36,840]INFO|Labeler|Training and Evaluation of best Model with 8-fold Cross Validation with Trainingset 7
+[2023-02-12 21:30:31,516]INFO|Labeler|8-Fold Cross-Validation with Trainingsplit 7 were trained.
+[2023-02-12 21:30:31,520]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 21:30:31,521]INFO|Labeler|Training of 8-Fold Cross-Validation with Trainingsplit 8 started.
+[2023-02-12 21:38:45,392]INFO|Labeler|Training set coverage of 8-Fold Cross Validation with Trainingset 8:  100.0%
+[2023-02-12 21:38:45,445]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.174890  0.174614   0.174545
+cluster_3   1      [3]  0.111425  0.111218   0.111080
+cluster_2   2      [2]  0.239595  0.236425   0.232153
+cluster_1   3      [1]  0.105223  0.105154   0.105154
+cluster_6   4      [6]  0.153597  0.153459   0.153459
+cluster_4   5      [4]  0.089099  0.088823   0.088754
+cluster_5   6      [5]  0.126171  0.125827   0.125758
+keyword_0   7      [0]  0.925165  0.925165   0.925096
+keyword_3   8      [3]  0.868592  0.868592   0.868454
+keyword_2   9      [2]  0.993040  0.993040   0.988768
+keyword_1  10      [1]  0.913244  0.913244   0.913244
+keyword_6  11      [6]  0.774463  0.774463   0.774463
+keyword_4  12      [4]  0.728707  0.728707   0.728638
+keyword_5  13      [5]  0.795411  0.795411   0.795342
+[2023-02-12 21:38:45,514]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 21:38:45,515]INFO|Labeler|Validate metrics of 8-fold Cross Validation with Trainingset 8
+[2023-02-12 21:38:45,516]INFO|Labeler|coverage_cluster_autonomous: 17.5%
+[2023-02-12 21:38:45,517]INFO|Labeler|coverage_cluster_electrification: 11.1%
+[2023-02-12 21:38:45,517]INFO|Labeler|coverage_cluster_digitalisation: 24.0%
+[2023-02-12 21:38:45,517]INFO|Labeler|coverage_cluster_connectivity: 10.5%
+[2023-02-12 21:38:45,518]INFO|Labeler|coverage_cluster_sustainability: 15.4%
+[2023-02-12 21:38:45,518]INFO|Labeler|coverage_cluster_individualisation: 8.9%
+[2023-02-12 21:38:45,519]INFO|Labeler|coverage_cluster_shared: 12.6%
+[2023-02-12 21:38:45,520]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 21:38:45,520]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 21:38:45,520]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 21:38:45,521]INFO|Labeler|coverage_keyword_sustainability: 77.4%
+[2023-02-12 21:38:45,521]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 21:38:45,522]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 21:38:45,522]INFO|Labeler|coverage_keyword_shared: 79.5%
+[2023-02-12 21:38:45,523]INFO|Labeler|Training and Evaluation of best Model with 8-fold Cross Validation with Trainingset 8
+[2023-02-12 21:39:39,462]INFO|Labeler|8-Fold Cross-Validation with Trainingsplit 8 were trained.
+[2023-02-12 21:39:39,465]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 21:39:39,467]INFO|Labeler|Training of 9-Fold Cross-Validation with Trainingsplit 1 started.
+[2023-02-12 21:47:53,994]INFO|Labeler|Training set coverage of 9-Fold Cross Validation with Trainingset 1:  100.0%
+[2023-02-12 21:47:54,022]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.176842  0.176435   0.176367
+cluster_3   1      [3]  0.108669  0.108466   0.108330
+cluster_2   2      [2]  0.241283  0.238027   0.233550
+cluster_1   3      [1]  0.104124  0.104056   0.104056
+cluster_6   4      [6]  0.151743  0.151608   0.151608
+cluster_4   5      [4]  0.089879  0.089540   0.089472
+cluster_5   6      [5]  0.127459  0.127120   0.127052
+keyword_0   7      [0]  0.924637  0.924637   0.924569
+keyword_3   8      [3]  0.868675  0.868675   0.868539
+keyword_2   9      [2]  0.993217  0.993217   0.988740
+keyword_1  10      [1]  0.912563  0.912563   0.912563
+keyword_6  11      [6]  0.772622  0.772622   0.772622
+keyword_4  12      [4]  0.729955  0.729955   0.729887
+keyword_5  13      [5]  0.793990  0.793990   0.793922
+[2023-02-12 21:47:54,050]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 21:47:54,050]INFO|Labeler|Validate metrics of 9-fold Cross Validation with Trainingset 1
+[2023-02-12 21:47:54,051]INFO|Labeler|coverage_cluster_autonomous: 17.7%
+[2023-02-12 21:47:54,052]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 21:47:54,052]INFO|Labeler|coverage_cluster_digitalisation: 24.1%
+[2023-02-12 21:47:54,053]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 21:47:54,053]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 21:47:54,054]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 21:47:54,054]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 21:47:54,055]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 21:47:54,055]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 21:47:54,056]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 21:47:54,056]INFO|Labeler|coverage_keyword_sustainability: 77.3%
+[2023-02-12 21:47:54,057]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 21:47:54,057]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 21:47:54,058]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 21:47:54,058]INFO|Labeler|Training and Evaluation of best Model with 9-fold Cross Validation with Trainingset 1
+[2023-02-12 21:48:52,263]INFO|Labeler|9-Fold Cross-Validation with Trainingsplit 1 were trained.
+[2023-02-12 21:48:52,266]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 21:48:52,267]INFO|Labeler|Training of 9-Fold Cross-Validation with Trainingsplit 2 started.
+[2023-02-12 21:57:08,243]INFO|Labeler|Training set coverage of 9-Fold Cross Validation with Trainingset 2:  100.0%
+[2023-02-12 21:57:08,272]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.176096  0.175756   0.175756
+cluster_3   1      [3]  0.109415  0.109280   0.109212
+cluster_2   2      [2]  0.240605  0.237213   0.232669
+cluster_1   3      [1]  0.103446  0.103378   0.103378
+cluster_6   4      [6]  0.153710  0.153575   0.153575
+cluster_4   5      [4]  0.090625  0.090218   0.090151
+cluster_5   6      [5]  0.126102  0.125899   0.125831
+keyword_0   7      [0]  0.923687  0.923687   0.923687
+keyword_3   8      [3]  0.867996  0.867996   0.867928
+keyword_2   9      [2]  0.993081  0.993081   0.988536
+keyword_1  10      [1]  0.912902  0.912902   0.912902
+keyword_6  11      [6]  0.770587  0.770587   0.770587
+keyword_4  12      [4]  0.728666  0.728666   0.728599
+keyword_5  13      [5]  0.793990  0.793990   0.793922
+[2023-02-12 21:57:08,298]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 21:57:08,298]INFO|Labeler|Validate metrics of 9-fold Cross Validation with Trainingset 2
+[2023-02-12 21:57:08,299]INFO|Labeler|coverage_cluster_autonomous: 17.6%
+[2023-02-12 21:57:08,299]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 21:57:08,300]INFO|Labeler|coverage_cluster_digitalisation: 24.1%
+[2023-02-12 21:57:08,300]INFO|Labeler|coverage_cluster_connectivity: 10.3%
+[2023-02-12 21:57:08,301]INFO|Labeler|coverage_cluster_sustainability: 15.4%
+[2023-02-12 21:57:08,302]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 21:57:08,303]INFO|Labeler|coverage_cluster_shared: 12.6%
+[2023-02-12 21:57:08,304]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 21:57:08,304]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 21:57:08,304]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 21:57:08,305]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 21:57:08,306]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 21:57:08,306]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 21:57:08,306]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 21:57:08,307]INFO|Labeler|Training and Evaluation of best Model with 9-fold Cross Validation with Trainingset 2
+[2023-02-12 21:58:01,863]INFO|Labeler|9-Fold Cross-Validation with Trainingsplit 2 were trained.
+[2023-02-12 21:58:01,868]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 21:58:01,869]INFO|Labeler|Training of 9-Fold Cross-Validation with Trainingsplit 3 started.
+[2023-02-12 22:06:24,965]INFO|Labeler|Training set coverage of 9-Fold Cross Validation with Trainingset 3:  100.0%
+[2023-02-12 22:06:24,991]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.177995  0.177588   0.177520
+cluster_3   1      [3]  0.108805  0.108601   0.108533
+cluster_2   2      [2]  0.242776  0.239248   0.235043
+cluster_1   3      [1]  0.104328  0.104260   0.104260
+cluster_6   4      [6]  0.149166  0.149030   0.149030
+cluster_4   5      [4]  0.088794  0.088387   0.088319
+cluster_5   6      [5]  0.128137  0.127798   0.127730
+keyword_0   7      [0]  0.924841  0.924841   0.924773
+keyword_3   8      [3]  0.868268  0.868268   0.868200
+keyword_2   9      [2]  0.992810  0.992810   0.988604
+keyword_1  10      [1]  0.913038  0.913038   0.913038
+keyword_6  11      [6]  0.772080  0.772080   0.772080
+keyword_4  12      [4]  0.730023  0.730023   0.729955
+keyword_5  13      [5]  0.794329  0.794329   0.794261
+[2023-02-12 22:06:25,023]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 22:06:25,023]INFO|Labeler|Validate metrics of 9-fold Cross Validation with Trainingset 3
+[2023-02-12 22:06:25,024]INFO|Labeler|coverage_cluster_autonomous: 17.8%
+[2023-02-12 22:06:25,024]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 22:06:25,025]INFO|Labeler|coverage_cluster_digitalisation: 24.3%
+[2023-02-12 22:06:25,025]INFO|Labeler|coverage_cluster_connectivity: 10.4%
+[2023-02-12 22:06:25,025]INFO|Labeler|coverage_cluster_sustainability: 14.9%
+[2023-02-12 22:06:25,025]INFO|Labeler|coverage_cluster_individualisation: 8.9%
+[2023-02-12 22:06:25,026]INFO|Labeler|coverage_cluster_shared: 12.8%
+[2023-02-12 22:06:25,026]INFO|Labeler|coverage_keyword_autonomous: 92.5%
+[2023-02-12 22:06:25,026]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 22:06:25,030]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 22:06:25,030]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 22:06:25,031]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 22:06:25,031]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 22:06:25,031]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 22:06:25,032]INFO|Labeler|Training and Evaluation of best Model with 9-fold Cross Validation with Trainingset 3
+[2023-02-12 22:07:32,558]INFO|Labeler|9-Fold Cross-Validation with Trainingsplit 3 were trained.
+[2023-02-12 22:07:32,561]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 22:07:32,562]INFO|Labeler|Training of 9-Fold Cross-Validation with Trainingsplit 4 started.
+[2023-02-12 22:17:03,044]INFO|Labeler|Training set coverage of 9-Fold Cross Validation with Trainingset 4:  100.0%
+[2023-02-12 22:17:03,077]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.174468  0.174061   0.173993
+cluster_3   1      [3]  0.110026  0.109822   0.109687
+cluster_2   2      [2]  0.241487  0.238095   0.233550
+cluster_1   3      [1]  0.103107  0.103107   0.103107
+cluster_6   4      [6]  0.151811  0.151675   0.151675
+cluster_4   5      [4]  0.090422  0.090083   0.090083
+cluster_5   6      [5]  0.128680  0.128409   0.128341
+keyword_0   7      [0]  0.923552  0.923552   0.923484
+keyword_3   8      [3]  0.868539  0.868539   0.868403
+keyword_2   9      [2]  0.993013  0.993013   0.988468
+keyword_1  10      [1]  0.912834  0.912834   0.912834
+keyword_6  11      [6]  0.771673  0.771673   0.771673
+keyword_4  12      [4]  0.728870  0.728870   0.728870
+keyword_5  13      [5]  0.794126  0.794126   0.794058
+[2023-02-12 22:17:03,102]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 22:17:03,103]INFO|Labeler|Validate metrics of 9-fold Cross Validation with Trainingset 4
+[2023-02-12 22:17:03,104]INFO|Labeler|coverage_cluster_autonomous: 17.4%
+[2023-02-12 22:17:03,104]INFO|Labeler|coverage_cluster_electrification: 11.0%
+[2023-02-12 22:17:03,104]INFO|Labeler|coverage_cluster_digitalisation: 24.1%
+[2023-02-12 22:17:03,106]INFO|Labeler|coverage_cluster_connectivity: 10.3%
+[2023-02-12 22:17:03,106]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 22:17:03,107]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 22:17:03,107]INFO|Labeler|coverage_cluster_shared: 12.9%
+[2023-02-12 22:17:03,107]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 22:17:03,108]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 22:17:03,108]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 22:17:03,109]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 22:17:03,109]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 22:17:03,110]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 22:17:03,110]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 22:17:03,110]INFO|Labeler|Training and Evaluation of best Model with 9-fold Cross Validation with Trainingset 4
+[2023-02-12 22:18:06,032]INFO|Labeler|9-Fold Cross-Validation with Trainingsplit 4 were trained.
+[2023-02-12 22:18:06,035]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 22:18:06,036]INFO|Labeler|Training of 9-Fold Cross-Validation with Trainingsplit 5 started.
+[2023-02-12 22:27:30,267]INFO|Labeler|Training set coverage of 9-Fold Cross Validation with Trainingset 5:  100.0%
+[2023-02-12 22:27:30,298]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.176638  0.176231   0.176163
+cluster_3   1      [3]  0.108194  0.108059   0.107923
+cluster_2   2      [2]  0.242504  0.239181   0.234771
+cluster_1   3      [1]  0.102564  0.102496   0.102496
+cluster_6   4      [6]  0.152015  0.151879   0.151879
+cluster_4   5      [4]  0.091032  0.090625   0.090558
+cluster_5   6      [5]  0.127052  0.126713   0.126645
+keyword_0   7      [0]  0.924434  0.924434   0.924366
+keyword_3   8      [3]  0.869014  0.869014   0.868878
+keyword_2   9      [2]  0.992877  0.992877   0.988468
+keyword_1  10      [1]  0.912970  0.912970   0.912970
+keyword_6  11      [6]  0.771876  0.771876   0.771876
+keyword_4  12      [4]  0.729413  0.729413   0.729345
+keyword_5  13      [5]  0.793312  0.793312   0.793244
+[2023-02-12 22:27:30,323]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 22:27:30,325]INFO|Labeler|Validate metrics of 9-fold Cross Validation with Trainingset 5
+[2023-02-12 22:27:30,326]INFO|Labeler|coverage_cluster_autonomous: 17.7%
+[2023-02-12 22:27:30,327]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 22:27:30,327]INFO|Labeler|coverage_cluster_digitalisation: 24.3%
+[2023-02-12 22:27:30,328]INFO|Labeler|coverage_cluster_connectivity: 10.3%
+[2023-02-12 22:27:30,329]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 22:27:30,329]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 22:27:30,330]INFO|Labeler|coverage_cluster_shared: 12.7%
+[2023-02-12 22:27:30,330]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 22:27:30,331]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 22:27:30,331]INFO|Labeler|coverage_keyword_electrification: 86.9%
+[2023-02-12 22:27:30,331]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 22:27:30,332]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 22:27:30,332]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 22:27:30,332]INFO|Labeler|coverage_keyword_shared: 79.3%
+[2023-02-12 22:27:30,333]INFO|Labeler|Training and Evaluation of best Model with 9-fold Cross Validation with Trainingset 5
+[2023-02-12 22:28:33,710]INFO|Labeler|9-Fold Cross-Validation with Trainingsplit 5 were trained.
+[2023-02-12 22:28:33,722]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 22:28:33,723]INFO|Labeler|Training of 9-Fold Cross-Validation with Trainingsplit 6 started.
+[2023-02-12 22:38:08,741]INFO|Labeler|Training set coverage of 9-Fold Cross Validation with Trainingset 6:  100.0%
+[2023-02-12 22:38:08,773]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.176028  0.175756   0.175689
+cluster_3   1      [3]  0.109076  0.108873   0.108737
+cluster_2   2      [2]  0.239723  0.236128   0.231583
+cluster_1   3      [1]  0.103175  0.103107   0.103107
+cluster_6   4      [6]  0.152489  0.152422   0.152422
+cluster_4   5      [4]  0.091032  0.090625   0.090558
+cluster_5   6      [5]  0.128476  0.128137   0.128137
+keyword_0   7      [0]  0.925519  0.925519   0.925451
+keyword_3   8      [3]  0.867861  0.867861   0.867725
+keyword_2   9      [2]  0.992945  0.992945   0.988400
+keyword_1  10      [1]  0.914123  0.914123   0.914123
+keyword_6  11      [6]  0.771741  0.771741   0.771741
+keyword_4  12      [4]  0.729209  0.729209   0.729141
+keyword_5  13      [5]  0.794600  0.794600   0.794600
+[2023-02-12 22:38:08,798]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 22:38:08,799]INFO|Labeler|Validate metrics of 9-fold Cross Validation with Trainingset 6
+[2023-02-12 22:38:08,801]INFO|Labeler|coverage_cluster_autonomous: 17.6%
+[2023-02-12 22:38:08,801]INFO|Labeler|coverage_cluster_electrification: 10.9%
+[2023-02-12 22:38:08,801]INFO|Labeler|coverage_cluster_digitalisation: 24.0%
+[2023-02-12 22:38:08,801]INFO|Labeler|coverage_cluster_connectivity: 10.3%
+[2023-02-12 22:38:08,802]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 22:38:08,802]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 22:38:08,805]INFO|Labeler|coverage_cluster_shared: 12.8%
+[2023-02-12 22:38:08,805]INFO|Labeler|coverage_keyword_autonomous: 92.6%
+[2023-02-12 22:38:08,806]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 22:38:08,806]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 22:38:08,807]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 22:38:08,807]INFO|Labeler|coverage_keyword_connectivity: 91.4%
+[2023-02-12 22:38:08,808]INFO|Labeler|coverage_keyword_individualisation: 72.9%
+[2023-02-12 22:38:08,809]INFO|Labeler|coverage_keyword_shared: 79.5%
+[2023-02-12 22:38:08,809]INFO|Labeler|Training and Evaluation of best Model with 9-fold Cross Validation with Trainingset 6
+[2023-02-12 22:39:11,066]INFO|Labeler|9-Fold Cross-Validation with Trainingsplit 6 were trained.
+[2023-02-12 22:39:11,069]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 22:39:11,071]INFO|Labeler|Training of 9-Fold Cross-Validation with Trainingsplit 7 started.
+[2023-02-12 22:47:44,294]INFO|Labeler|Training set coverage of 9-Fold Cross Validation with Trainingset 7:  100.0%
+[2023-02-12 22:47:44,322]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.175078  0.174671   0.174603
+cluster_3   1      [3]  0.109619  0.109415   0.109280
+cluster_2   2      [2]  0.242165  0.238638   0.234093
+cluster_1   3      [1]  0.103242  0.103175   0.103175
+cluster_6   4      [6]  0.151947  0.151879   0.151879
+cluster_4   5      [4]  0.090286  0.089947   0.089879
+cluster_5   6      [5]  0.127662  0.127391   0.127323
+keyword_0   7      [0]  0.923891  0.923891   0.923823
+keyword_3   8      [3]  0.867725  0.867725   0.867589
+keyword_2   9      [2]  0.992810  0.992810   0.988265
+keyword_1  10      [1]  0.912834  0.912834   0.912834
+keyword_6  11      [6]  0.771334  0.771334   0.771334
+keyword_4  12      [4]  0.727445  0.727445   0.727378
+keyword_5  13      [5]  0.793312  0.793312   0.793244
+[2023-02-12 22:47:44,347]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 22:47:44,348]INFO|Labeler|Validate metrics of 9-fold Cross Validation with Trainingset 7
+[2023-02-12 22:47:44,350]INFO|Labeler|coverage_cluster_autonomous: 17.5%
+[2023-02-12 22:47:44,350]INFO|Labeler|coverage_cluster_electrification: 11.0%
+[2023-02-12 22:47:44,351]INFO|Labeler|coverage_cluster_digitalisation: 24.2%
+[2023-02-12 22:47:44,351]INFO|Labeler|coverage_cluster_connectivity: 10.3%
+[2023-02-12 22:47:44,351]INFO|Labeler|coverage_cluster_sustainability: 15.2%
+[2023-02-12 22:47:44,352]INFO|Labeler|coverage_cluster_individualisation: 9.0%
+[2023-02-12 22:47:44,352]INFO|Labeler|coverage_cluster_shared: 12.8%
+[2023-02-12 22:47:44,353]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 22:47:44,354]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 22:47:44,354]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 22:47:44,354]INFO|Labeler|coverage_keyword_sustainability: 77.1%
+[2023-02-12 22:47:44,355]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 22:47:44,355]INFO|Labeler|coverage_keyword_individualisation: 72.7%
+[2023-02-12 22:47:44,356]INFO|Labeler|coverage_keyword_shared: 79.3%
+[2023-02-12 22:47:44,356]INFO|Labeler|Training and Evaluation of best Model with 9-fold Cross Validation with Trainingset 7
+[2023-02-12 22:48:38,852]INFO|Labeler|9-Fold Cross-Validation with Trainingsplit 7 were trained.
+[2023-02-12 22:48:38,856]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 22:48:38,857]INFO|Labeler|Training of 9-Fold Cross-Validation with Trainingsplit 8 started.
+[2023-02-12 22:57:00,561]INFO|Labeler|Training set coverage of 9-Fold Cross Validation with Trainingset 8:  100.0%
+[2023-02-12 22:57:00,618]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.174456  0.174117   0.174049
+cluster_3   1      [3]  0.107780  0.107644   0.107509
+cluster_2   2      [2]  0.239843  0.236790   0.232178
+cluster_1   3      [1]  0.104999  0.104931   0.104931
+cluster_6   4      [6]  0.153157  0.153022   0.153022
+cluster_4   5      [4]  0.090551  0.090212   0.090144
+cluster_5   6      [5]  0.129214  0.128943   0.128875
+keyword_0   7      [0]  0.923964  0.923964   0.923896
+keyword_3   8      [3]  0.865835  0.865835   0.865699
+keyword_2   9      [2]  0.993353  0.993353   0.988740
+keyword_1  10      [1]  0.911619  0.911619   0.911619
+keyword_6  11      [6]  0.771892  0.771892   0.771892
+keyword_4  12      [4]  0.730448  0.730448   0.730381
+keyword_5  13      [5]  0.793868  0.793868   0.793800
+[2023-02-12 22:57:00,662]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 22:57:00,663]INFO|Labeler|Validate metrics of 9-fold Cross Validation with Trainingset 8
+[2023-02-12 22:57:00,664]INFO|Labeler|coverage_cluster_autonomous: 17.4%
+[2023-02-12 22:57:00,664]INFO|Labeler|coverage_cluster_electrification: 10.8%
+[2023-02-12 22:57:00,665]INFO|Labeler|coverage_cluster_digitalisation: 24.0%
+[2023-02-12 22:57:00,665]INFO|Labeler|coverage_cluster_connectivity: 10.5%
+[2023-02-12 22:57:00,665]INFO|Labeler|coverage_cluster_sustainability: 15.3%
+[2023-02-12 22:57:00,666]INFO|Labeler|coverage_cluster_individualisation: 9.1%
+[2023-02-12 22:57:00,666]INFO|Labeler|coverage_cluster_shared: 12.9%
+[2023-02-12 22:57:00,666]INFO|Labeler|coverage_keyword_autonomous: 92.4%
+[2023-02-12 22:57:00,667]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 22:57:00,667]INFO|Labeler|coverage_keyword_electrification: 86.6%
+[2023-02-12 22:57:00,667]INFO|Labeler|coverage_keyword_sustainability: 77.2%
+[2023-02-12 22:57:00,667]INFO|Labeler|coverage_keyword_connectivity: 91.2%
+[2023-02-12 22:57:00,668]INFO|Labeler|coverage_keyword_individualisation: 73.0%
+[2023-02-12 22:57:00,670]INFO|Labeler|coverage_keyword_shared: 79.4%
+[2023-02-12 22:57:00,671]INFO|Labeler|Training and Evaluation of best Model with 9-fold Cross Validation with Trainingset 8
+[2023-02-12 22:57:55,438]INFO|Labeler|9-Fold Cross-Validation with Trainingsplit 8 were trained.
+[2023-02-12 22:57:55,441]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 22:57:55,442]INFO|Labeler|Training of 9-Fold Cross-Validation with Trainingsplit 9 started.
+[2023-02-12 23:06:14,741]INFO|Labeler|Training set coverage of 9-Fold Cross Validation with Trainingset 9:  100.0%
+[2023-02-12 23:06:14,787]INFO|Labeler|            j Polarity  Coverage  Overlaps  Conflicts
+cluster_0   0      [0]  0.174795  0.174524   0.174456
+cluster_3   1      [3]  0.111171  0.110968   0.110832
+cluster_2   2      [2]  0.240250  0.236926   0.232653
+cluster_1   3      [1]  0.104931  0.104863   0.104863
+cluster_6   4      [6]  0.153632  0.153497   0.153497
+cluster_4   5      [4]  0.089195  0.088924   0.088856
+cluster_5   6      [5]  0.126026  0.125687   0.125619
+keyword_0   7      [0]  0.925524  0.925524   0.925456
+keyword_3   8      [3]  0.868209  0.868209   0.868073
+keyword_2   9      [2]  0.992946  0.992946   0.988673
+keyword_1  10      [1]  0.912976  0.912976   0.912976
+keyword_6  11      [6]  0.773859  0.773859   0.773859
+keyword_4  12      [4]  0.728346  0.728346   0.728278
+keyword_5  13      [5]  0.795293  0.795293   0.795225
+[2023-02-12 23:06:14,847]INFO|Labeler|Validate metrics of trained Labeling Functions.
+[2023-02-12 23:06:14,847]INFO|Labeler|Validate metrics of 9-fold Cross Validation with Trainingset 9
+[2023-02-12 23:06:14,848]INFO|Labeler|coverage_cluster_autonomous: 17.5%
+[2023-02-12 23:06:14,849]INFO|Labeler|coverage_cluster_electrification: 11.1%
+[2023-02-12 23:06:14,849]INFO|Labeler|coverage_cluster_digitalisation: 24.0%
+[2023-02-12 23:06:14,850]INFO|Labeler|coverage_cluster_connectivity: 10.5%
+[2023-02-12 23:06:14,850]INFO|Labeler|coverage_cluster_sustainability: 15.4%
+[2023-02-12 23:06:14,850]INFO|Labeler|coverage_cluster_individualisation: 8.9%
+[2023-02-12 23:06:14,851]INFO|Labeler|coverage_cluster_shared: 12.6%
+[2023-02-12 23:06:14,851]INFO|Labeler|coverage_keyword_autonomous: 92.6%
+[2023-02-12 23:06:14,851]INFO|Labeler|coverage_keyword_digitalisation: 99.3%
+[2023-02-12 23:06:14,852]INFO|Labeler|coverage_keyword_electrification: 86.8%
+[2023-02-12 23:06:14,852]INFO|Labeler|coverage_keyword_sustainability: 77.4%
+[2023-02-12 23:06:14,853]INFO|Labeler|coverage_keyword_connectivity: 91.3%
+[2023-02-12 23:06:14,853]INFO|Labeler|coverage_keyword_individualisation: 72.8%
+[2023-02-12 23:06:14,854]INFO|Labeler|coverage_keyword_shared: 79.5%
+[2023-02-12 23:06:14,854]INFO|Labeler|Training and Evaluation of best Model with 9-fold Cross Validation with Trainingset 9
+[2023-02-12 23:07:11,927]INFO|Labeler|9-Fold Cross-Validation with Trainingsplit 9 were trained.
+[2023-02-12 23:07:11,931]INFO|Labeler|Current best training: {'Type': 'BayesSearch', 'n_epochs': 28, 'log_freq': 146, 'l2': 0.609308486794548, 'lr': 0.0022586291838636746, 'optimizer': 'adam', 'accuracy': 0.3898305084745763, 'k-fold': 8, 'trainingset': 5, 'model': 'd:\\University\\Hochschule der Medien_M.Sc. Data Science\\Master\\Repository\\ml-classification-repo\\models\\label\\model_tuning_en\\bayes_search_URL_TEXT\\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\\label_model.pkl'}
+[2023-02-12 23:07:11,938]INFO|Labeler|	             Type  n_epochs  log_freq        l2        lr optimizer  accuracy  k-fold  trainingset                                                                                                                                                                                                                                                                              model
+	95    BayesSearch        28       146  0.609308  0.002259      adam  0.389831       8            5    d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\label_model.pkl
+	77    BayesSearch        45       195  0.510570  0.000162      adam  0.386861       7            6  d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_84045_n_epochs_45_log_freq_195_l2_0.5105700416027151_lr_0.00016167952652543964_optimizer_adam_2023-02-12\label_model.pkl
+	76     GridSearch       100        30  0.200000  0.000010      adam  0.379562       7            6                                   d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_38241_n_epochs_100_log_freq_30_l2_0.2_lr_1e-05_optimizer_adam_2023-02-12\label_model.pkl
+	113   BayesSearch       107       200  0.513258  0.000467      adam  0.377358       9            3  d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_78446_n_epochs_107_log_freq_200_l2_0.5132575853544612_lr_0.0004669770365830289_optimizer_adam_2023-02-12\label_model.pkl
+	112    GridSearch        30        90  0.300000  0.000010      adam  0.377358       9            3                                    d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_27659_n_epochs_30_log_freq_90_l2_0.3_lr_1e-05_optimizer_adam_2023-02-12\label_model.pkl
+	38    BayesSearch        32        14  0.310535  0.008250      adam  0.372973       5            4     d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_23498_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\label_model.pkl
+	125   BayesSearch        32        14  0.310535  0.008250      adam  0.371681       9            7     d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_15955_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\label_model.pkl
+	23    BayesSearch        32        14  0.310535  0.008250      adam  0.370213       4            3     d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_80457_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\label_model.pkl
+	56    BayesSearch        32        14  0.310535  0.008250      adam  0.364780       6            5     d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_77903_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\label_model.pkl
+	94     GridSearch       100        30  0.300000  0.001000      adam  0.364407       8            5                                   d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_61149_n_epochs_100_log_freq_30_l2_0.3_lr_0.001_optimizer_adam_2023-02-12\label_model.pkl
+	124    GridSearch        30        90  0.100000  0.000010      adam  0.362832       9            7                                    d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_17226_n_epochs_30_log_freq_90_l2_0.1_lr_1e-05_optimizer_adam_2023-02-12\label_model.pkl
+	37     GridSearch        50        30  0.100000  0.000010      adam  0.362162       5            4                                    d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_42012_n_epochs_50_log_freq_30_l2_0.1_lr_1e-05_optimizer_adam_2023-02-12\label_model.pkl
+	111  RandomSearch       392        76  0.500000  0.011000    adamax  0.358491       9           19                               d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\random_search_URL_TEXT\model_43942_n_epochs_392_log_freq_76_l2_0.5_lr_0.011_optimizer_adamax_2023-02-12\label_model.pkl
+	55     GridSearch       100       170  0.300000  0.000010      adam  0.358491       6            5                                  d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_49768_n_epochs_100_log_freq_170_l2_0.3_lr_1e-05_optimizer_adam_2023-02-12\label_model.pkl
+	53    BayesSearch        32        14  0.310535  0.008250      adam  0.353333       6            4     d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_38916_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\label_model.pkl
+	22     GridSearch        30        30  0.300000  0.000100      adam  0.353191       4            3                                   d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_20585_n_epochs_30_log_freq_30_l2_0.3_lr_0.0001_optimizer_adam_2023-02-12\label_model.pkl
+	32    BayesSearch        28       146  0.609308  0.002259      adam  0.352632       5            2    d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_02934_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\label_model.pkl
+	98    BayesSearch        32        14  0.310535  0.008250      adam  0.350427       8            6     d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_89453_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\label_model.pkl
+	75   RandomSearch       392        76  0.500000  0.011000    adamax  0.350365       7           19                               d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\random_search_URL_TEXT\model_16212_n_epochs_392_log_freq_76_l2_0.5_lr_0.011_optimizer_adamax_2023-02-12\label_model.pkl
+	31     GridSearch        10       170  0.300000  0.000100      adam  0.347368       5            2                                  d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_84653_n_epochs_10_log_freq_170_l2_0.3_lr_0.0001_optimizer_adam_2023-02-12\label_model.pkl
+	68    BayesSearch        32        14  0.310535  0.008250      adam  0.346774       7            3     d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_82438_n_epochs_32_log_freq_14_l2_0.3105351238562443_lr_0.008249678833279326_optimizer_adam_2023-02-12\label_model.pkl
+	97     GridSearch       100        90  0.300000  0.000010      adam  0.341880       8            6                                   d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_07072_n_epochs_100_log_freq_90_l2_0.3_lr_1e-05_optimizer_adam_2023-02-12\label_model.pkl
+	47    BayesSearch        47        83  0.393674  0.003035      adam  0.341317       6            2      d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_22634_n_epochs_47_log_freq_83_l2_0.393674378031593_lr_0.003035065442442189_optimizer_adam_2023-02-12\label_model.pkl
+	89    BayesSearch        28       146  0.609308  0.002259      adam  0.339130       8            3    d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_17455_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\label_model.pkl
+	121    GridSearch        30       170  0.300000  0.000010      adam  0.336735       9            6                                   d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_47192_n_epochs_30_log_freq_170_l2_0.3_lr_1e-05_optimizer_adam_2023-02-12\label_model.pkl
+	123  RandomSearch       392        76  0.500000  0.011000    adamax  0.336283       9           19                               d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\random_search_URL_TEXT\model_70521_n_epochs_392_log_freq_76_l2_0.5_lr_0.011_optimizer_adamax_2023-02-12\label_model.pkl
+	46     GridSearch       100       170  0.300000  0.001000    adamax  0.335329       6            2                                d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_27827_n_epochs_100_log_freq_170_l2_0.3_lr_0.001_optimizer_adamax_2023-02-12\label_model.pkl
+	52     GridSearch       100        90  0.300000  0.001000      adam  0.333333       6            4                                   d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_21538_n_epochs_100_log_freq_90_l2_0.3_lr_0.001_optimizer_adam_2023-02-12\label_model.pkl
+	86    BayesSearch        13        88  0.896102  0.004066    adamax  0.333333       8            2   d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_10256_n_epochs_13_log_freq_88_l2_0.8961023814103862_lr_0.004065543850959535_optimizer_adamax_2023-02-12\label_model.pkl
+	85     GridSearch        50       170  0.200000  0.000100    adamax  0.333333       8            2                                d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\grid_search_URL_TEXT\model_07852_n_epochs_50_log_freq_170_l2_0.2_lr_0.0001_optimizer_adamax_2023-02-12\label_model.pkl
+[2023-02-12 23:07:11,946]INFO|Labeler|Best Model with 8-fold Cross Validation identified. 
+ Maximum reached accuracy: 0.3898305084745763. 
+ Path: d:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_en\bayes_search_URL_TEXT\model_99797_n_epochs_28_log_freq_146_l2_0.609308486794548_lr_0.0022586291838636746_optimizer_adam_2023-02-12\label_model.pkl
+[2023-02-12 23:07:28,620]INFO|Labeler|Accuracy on Validation set: 0.336996336996337
+[2023-02-12 23:07:28,634]INFO|Labeler|New model accuracy: 0.336996336996337. Saved model accuracy: 0.32234432234432236 (Applied on Validation Set)
+Model will be overwritten.
+[2023-02-12 23:07:28,638]INFO|Labeler|Model saved!
+[2023-02-12 23:07:28,639]INFO|Labeler|Language:en. Applying trained model with best parameters on whole data set.
+[2023-02-12 23:20:31,870]INFO|Labeler|Shape of Dataset before: (24313, 8) and after: (24305, 8)
+[2023-02-12 23:20:32,925]INFO|Labeler|Data with applied labels saved!
