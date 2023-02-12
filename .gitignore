@@ -10,7 +10,12 @@ src/archive/*
 *.exe
 *.zip
 *.feather
-models/*
+models/classification/pytorch_tuning_de/*
+models/classification/pytorch_tuning_en/*
+models/label/model_tuning_de/*
+!models/label/model_tuning_de/automated_labeling_de.log
+models/label/model_tuning_en/*
+!models/label/model_tuning_en/automated_labeling_en.log
 *.parquet
 !setup.cfg
 !setup.py
