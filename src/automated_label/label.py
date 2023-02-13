@@ -205,6 +205,7 @@ class Labeler:
         self.train_df, self.validate_df, self.test_df, self.train_test_df = self.generate_trainTestdata(lang)
         self.evaluation_data = []
         logger.info("Automated Labeling started with Language {l}, Text-Column: {t_col} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = s_path, tpath = t_path, t_col = self.text_col))
+        self.run()
     
     def load_data(self) -> pd.DataFrame:
         """Loads cleaned dataset containing topics as well.
@@ -262,53 +263,66 @@ class Labeler:
         logger = logging.getLogger("Labeler")
         logger.info("Application of Labeling Functions: {f}".format(f = self.lfs))
         self.applier = PandasLFApplier(lfs=self.lfs)
+        try:
+            #k_fold Cross Validation
+            self.L_train_list =[]
+            for j in range(2,10):
+                k_fold = KFold(n_splits = j,shuffle = True, random_state = 12)
+                i = 1
+                for split in k_fold.split(self.train_test_df):
+                    logger.info(f"Training of {j}-Fold Cross-Validation with Trainingsplit {i} started.")
+                    fold_train_df = self.train_test_df.iloc[split[0]]
+                    
+                    fold_test_df = self.train_test_df.iloc[split[1]]
+                    fold_test_df = fold_test_df[fold_test_df['LABEL']!= -2]
+                    y_test = fold_test_df['LABEL'].to_numpy()
 
-        #k_fold Cross Validation
-        self.L_train_list =[]
-        for j in range(2,10):
-            k_fold = KFold(n_splits = j,shuffle = True, random_state = 12)
-            i = 1
-            for split in k_fold.split(self.train_test_df):
-                logger.info(f"Training of {j}-Fold Cross-Validation with Trainingsplit {i} started.")
-                fold_train_df = self.train_test_df.iloc[split[0]]
-                
-                fold_test_df = self.train_test_df.iloc[split[1]]
-                fold_test_df = fold_test_df[fold_test_df['LABEL']!= -2]
-                y_test = fold_test_df['LABEL'].to_numpy()
+                    l_train = self.applier.apply(df=fold_train_df)
+                    l_test = self.applier.apply(df=fold_test_df)
+                    self.L_train_list.append((l_train,l_test,y_test,j,i))
 
-                l_train = self.applier.apply(df=fold_train_df)
-                l_test = self.applier.apply(df=fold_test_df)
-                self.L_train_list.append((l_train,l_test,y_test,j,i))
+                    # polarity = The set of unique labels this LF outputs (excluding abstains)
+                    # coverage = percentage of objects the LF labels
+                    # overlap  = percentage of objects with more than one label. 
+                    # conflict = percentage of objects with conflicting labels.
+                    L_analyis = LFAnalysis(L=l_train, lfs=self.lfs)
 
-                # polarity = The set of unique labels this LF outputs (excluding abstains)
-                # coverage = percentage of objects the LF labels
-                # overlap  = percentage of objects with more than one label. 
-                # conflict = percentage of objects with conflicting labels.
-                L_analyis = LFAnalysis(L=l_train, lfs=self.lfs)
+                    logger.info(f"Training set coverage of {j}-Fold Cross Validation with Trainingset {i}: {100 * L_analyis.label_coverage(): 0.1f}%")
+                    logger.info(L_analyis.lf_summary())
+                    self.analysis_training_result(l_train,j,i)
 
-                logger.info(f"Training set coverage of {j}-Fold Cross Validation with Trainingset {i}: {100 * L_analyis.label_coverage(): 0.1f}%")
-                logger.info(L_analyis.lf_summary())
-                self.analysis_training_result(l_train,j,i)
+                    self.train_model(l_train,l_test,y_test,j,i)
+                    logger.info(f"{j}-Fold Cross-Validation with Trainingsplit {i} were trained.")
 
-                self.train_model(l_train,l_test,y_test,j,i)
-                logger.info(f"{j}-Fold Cross-Validation with Trainingsplit {i} were trained.")
+                    result_df = pd.DataFrame(self.evaluation_data).sort_values(by=['accuracy'], ascending=[False])
+                    current_best = result_df.to_dict('records')[0]
+                    logger.info(f"Current best training: {current_best}")
+                    i+=1
+            
+            final_result_df = pd.DataFrame(self.evaluation_data).sort_values(by=['accuracy'], ascending=[False])
+            final_param = final_result_df.to_dict('records')
+            final_param = final_param[0]
+            top_30_df = final_result_df.head(30)
+            logger.info('\t'+ top_30_df.to_string().replace('\n', '\n\t'))
+            
+            logger.info(f"Best Model with {final_param['k-fold']}-fold Cross Validation identified. \n Maximum reached accuracy: {final_param['accuracy']}. \n Path: {final_param['model']}")
 
-                result_df = pd.DataFrame(self.evaluation_data).sort_values(by=['accuracy'], ascending=[False])
-                current_best = result_df.to_dict('records')[0]
-                logger.info(f"Current best training: {current_best}")
-                i+=1
-        
-        final_result_df = pd.DataFrame(self.evaluation_data).sort_values(by=['accuracy'], ascending=[False])
-        final_param = final_result_df.to_dict('records')
-        final_param = final_param[0]
-        top_30_df = final_result_df.head(30)
-        logger.info('\t'+ top_30_df.to_string().replace('\n', '\n\t'))
-        
-        logger.info(f"Best Model with {final_param['k-fold']}-fold Cross Validation identified. \n Maximum reached accuracy: {final_param['accuracy']}. \n Path: {final_param['model']}")
+            self.label_model = LabelModel(cardinality = 7, verbose=False)
+            self.label_model.load(final_param['model'])
+        except KeyboardInterrupt:
+            final_result_df = pd.DataFrame(self.evaluation_data).sort_values(by=['accuracy'], ascending=[False])
+            final_param = final_result_df.to_dict('records')
+            final_param = final_param[0]
+            top_30_df = final_result_df.head(30)
+            logger.info('\t'+ top_30_df.to_string().replace('\n', '\n\t'))
+            
+            logger.info(f"Best Model with {final_param['k-fold']}-fold Cross Validation identified. \n Maximum reached accuracy: {final_param['accuracy']}. \n Path: {final_param['model']}")
 
-        self.label_model = LabelModel(cardinality = 7, verbose=False)
-        self.label_model.load(final_param['model'])
+            self.label_model = LabelModel(cardinality = 7, verbose=False)
+            self.label_model.load(final_param['model'])
 
+            self.test_model()
+            self.save_model()
 
     def analysis_training_result(self, l_train, k, i):
         """Analysation of applied Labeling Functions and the coverage (in %) of each Function on the dataset.
@@ -531,7 +545,21 @@ class Labeler:
         validation_df = validation_df[validation_df['LABEL'] != -1]
         after_val_shape = validation_df.shape
         print(f"Shape of Validationset before: {before_val_shape} and after: {after_val_shape}")
-       
+    
+    def save_model(self):
+        """Saving of trained Label model as pickle file with optimized parameter.
+        """
+        logger = logging.getLogger("Labeler")
+        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(self.lang)+"_"+self.text_col+r".pkl"
+
+        if self.update_model:
+            self.label_model.save(path)
+            logger.info("Model saved!")
+        else:
+            logger.info(f"Model not saved!")
+            self.update_data = False
+            # self.label_model.save(path)
+            # self.update_data = True   
 
     def apply_model(self):
         logger = logging.getLogger("Labeler")
@@ -566,20 +594,6 @@ class Labeler:
         else:
             logger.info("Data with applied labels not saved!")  
 
-    def save_model(self):
-        """Saving of trained Label model as pickle file with optimized parameter.
-        """
-        logger = logging.getLogger("Labeler")
-        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(self.lang)+"_"+self.text_col+r".pkl"
-
-        if self.update_model:
-            self.label_model.save(path)
-            logger.info("Model saved!")
-        else:
-            logger.info(f"Model not saved!")
-            self.update_data = False
-            # self.label_model.save(path)
-            # self.update_data = True
             
     def run(self):
         self.train_labeling_functions()
@@ -589,11 +603,9 @@ class Labeler:
         self.save_data()
 
 if __name__ == "__main__":
-    for lang in ['en','de']:
+    for lang in ['de']:#,'en'
         topic_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\03_label\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC')
-        topic_labeling.run()
-        text_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\03_label\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
-        text_labeling.run()
+        # text_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\03_label\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
    
     ####test of model loading###
     # path =r'D:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_de\grid_search\model_10857_n_epochs_50_log_freq_10_l2_0.1_lr_0.002_optimizer_adam_2023-02-09\label_model.pkl'
