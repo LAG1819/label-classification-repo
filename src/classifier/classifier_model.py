@@ -322,10 +322,13 @@ def validate_model(text_col:str,lang:str, best_results):
         predictions = torch.argmax(logits, dim=-1)
         metric.add_batch(predictions=predictions, references=batch["labels"])
     print(metric.compute())
-
+    
+    ###TO DO Compare acc with existing model and its accuracy
     
     path_to_save_model = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+'_'+text_col+".pth"
     torch.save(model, path_to_save_model)
+
+
     
 
 def predict(sentence:str, lang:str,batch_size, text_col = 'TOPIC'):
@@ -429,7 +432,7 @@ def run(lang:str, col:str):
         logger.info(f"Overall best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config} reached")
         
         ####Test Model###
-        validate_model(col,lang, best_results)
+        validate_model(col,lang, best_results_df.to_dict('records')[0])
         print("Done")
 
 
