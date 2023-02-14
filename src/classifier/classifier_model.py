@@ -138,11 +138,11 @@ def set_params(model, config_lr, config_epoch,len_train_data):
 def train_model(config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if config['lang'] == 'de':
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
-        model = BertClassifier(checkpoint="bert-base-german-cased",num_labels=7).to(device)
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-uncased")
+        model = BertClassifier(checkpoint="bert-base-german-uncased",num_labels=7).to(device)
     elif config['lang'] == 'en':
-        tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
-        model = BertClassifier(checkpoint='bert-base-cased',num_labels=7).to(device)
+        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=7).to(device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     train_test_val_set = load_data(config["col"],config['lang'])
@@ -281,11 +281,11 @@ def hyperband(lang, col, path, num_samples=1):
 def validate_model(text_col,lang, best_results):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if lang == 'de':
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
-        model = BertClassifier(checkpoint="bert-base-german-cased",num_labels=7).to(device)
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-uncased")
+        model = BertClassifier(checkpoint="bert-base-german-uncased",num_labels=7).to(device)
     elif lang == 'en':
-        tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
-        model = BertClassifier(checkpoint='bert-base-cased',num_labels=7).to(device)
+        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=7).to(device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
     
     train_test_val_set = load_data(text_col)
