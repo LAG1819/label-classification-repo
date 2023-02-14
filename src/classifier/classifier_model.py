@@ -323,26 +323,32 @@ def validate_model(text_col:str,lang:str, best_results):
         metric.add_batch(predictions=predictions, references=batch["labels"])
     print(metric.compute())
 
-    #TODO comaprison with existing saved model
-    #TODO model saving
+    
+    path_to_save_model = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+'_'+text_col+".pth"
+    torch.save(model, path_to_save_model)
     
 
-def predict(sentence:str, lang:str,best_results):
+def predict(sentence:str, lang:str,batch_size, text_col = 'TOPIC'):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    if lang == 'de':
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
-        model = BertClassifier(checkpoint="bert-base-german-cased",num_labels=7).to(device)
-    elif lang == 'en':
-        tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
-        model = BertClassifier(checkpoint='bert-base-cased',num_labels=7).to(device)
+    
+    path_to_load_model = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+'_'+text_col+".pth"
+    model = torch.load(path_to_load_model)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
-    ag_labels = {0:"AUTONOMOUS",1:"CONNECTIVITY",2:"DIGITALISATION",3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"}
+    if lang == 'de':
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
+    elif lang == 'en':
+        tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+
     tokenized_sent = tokenizer(sentence, truncation=True, max_length = 512)
     tokenized_sent.pop('token_type_ids')
     tokenized_sent['label'] = 0
     tokenized_data = {'val':[tokenized_sent]}
-    train_dl, test_dl, val_dl = transform_eval_data(tokenized_data,data_collator,best_results.config["batch_size"])
+    train_dl, test_dl, val_dl = transform_eval_data(tokenized_data,data_collator,batch_size)
+    
+
+    ag_labels = {0:"AUTONOMOUS",1:"CONNECTIVITY",2:"DIGITALISATION",3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"}
+    
     for batch in train_dl:
         batch = {k: v.to(device) for k, v in batch.items()}
         with torch.no_grad():
@@ -421,8 +427,8 @@ def run(lang:str, col:str):
         best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
         best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
         logger.info(f"Overall best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config} reached")
-        # ###Test Model###
-        best_results = best_results_df.to_dict('records')[0]
+        
+        ####Test Model###
         validate_model(col,lang, best_results)
         print("Done")
 
