@@ -232,6 +232,7 @@ class Labeler:
             train = pd.read_feather(train_path)     
         else:
             self.data['LABEL'] = -2
+            #60 % trainset, 20% testset, 20% validation set
             train, validate, test = np.split(self.data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(self.data)), int(.8*len(self.data))])
             
             dfs = [train, test, validate]
@@ -323,6 +324,7 @@ class Labeler:
 
             self.test_model()
             self.save_model()
+            return
 
     def analysis_training_result(self, l_train, k, i):
         """Analysation of applied Labeling Functions and the coverage (in %) of each Function on the dataset.
@@ -604,8 +606,8 @@ class Labeler:
 
 if __name__ == "__main__":
     for lang in ['de']:#,'en'
-        topic_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\03_label\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC')
-        # text_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\03_label\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
+        topic_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC')
+        text_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
    
     ####test of model loading###
     # path =r'D:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_de\grid_search\model_10857_n_epochs_50_log_freq_10_l2_0.1_lr_0.002_optimizer_adam_2023-02-09\label_model.pkl'
