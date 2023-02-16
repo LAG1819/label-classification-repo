@@ -34,6 +34,8 @@ from ray.tune.schedulers import HyperBandScheduler,HyperBandForBOHB
 from ray.air.checkpoint import Checkpoint
 from ray.air import session
 from ray import air
+from ray.tune import CLIReporter
+from ray.tune.experiment.trial import Trial
 
 
 class BertClassifier(nn.Module):
@@ -61,7 +63,23 @@ class BertClassifier(nn.Module):
       loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
     
     return TokenClassifierOutput(loss=loss, logits=logits, hidden_states=outputs.hidden_states,attentions=outputs.attentions)
-        
+
+class ExperimentTerminationReporter(CLIReporter):
+    def should_report(self, trials, done=False):
+        """Reports only on experiment termination."""
+        return done
+
+class TrialTerminationReporter(CLIReporter):
+    def __init__(self):
+        super(TrialTerminationReporter, self).__init__()
+        self.num_terminated = 0
+
+    def should_report(self, trials, done=False):
+        """Reports only on trial termination events."""
+        old_num_terminated = self.num_terminated
+        self.num_terminated = len([t for t in trials if t.status == Trial.TERMINATED])
+        return self.num_terminated > old_num_terminated
+
 
 def load_data(text_col:str,lang:str) -> dict:
     """Loads labeled dataset from files/04_classify
@@ -79,7 +97,7 @@ def load_data(text_col:str,lang:str) -> dict:
     df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],dir)
     df = pd.read_feather(df_path)
     data = df.replace(np.nan, "",regex = False)
-    # data = data[:1000]
+    data = data[:1000]
     data['text'] = data[text_col]
     
     train, validate, test = np.split(data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(data)), int(.8*len(data))])
@@ -144,11 +162,11 @@ def set_params(model, config_lr, config_epoch,len_train_data):
 
     return num_training_steps,num_epochs, metric, optimizer, lr_scheduler,metric2
 
-def train_model(config):
+def train_model(config, data):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if config['lang'] == 'de':
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-uncased")
-        model = BertClassifier(checkpoint="bert-base-german-uncased",num_labels=7).to(device)
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
+        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=7).to(device)
     elif config['lang'] == 'en':
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         model = BertClassifier(checkpoint='bert-base-uncased',num_labels=7).to(device)
@@ -160,7 +178,7 @@ def train_model(config):
     # tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
 
     # train_dl,test_dl = transform_train_data(tokenized_train_test_set, data_collator,config["batch_size"])
-    train_dl,test_dl = transform_train_data(config["tokenized_train_test_set"], data_collator,config["batch_size"])
+    train_dl,test_dl = transform_train_data(data, data_collator,config["batch_size"])
     num_training_steps,num_epochs, metric, optimizer, lr_scheduler,metric2 = set_params(model, config['lr'],config['epoch'], config['len_train_dl'])
 
     for epoch in range(num_epochs):
@@ -200,13 +218,12 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
         "epoch":tune.choice([1,3,5,7,10]),
         "lang":lang,
         "col":col,
-        "tokenized_train_test_set":tokenized_train_test_set_fold,
         'len_train_dl': len_train_dl
     } 
     tuner_random = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(train_model),
-            resources={"cpu": 1}
+            tune.with_parameters(train_model, data = tokenized_train_test_set_fold),
+            resources={"cpu": 2}
         ),
         tune_config=tune.TuneConfig(
             metric="accuracy",
@@ -214,12 +231,12 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
             num_samples = num_samples,
         ),
         param_space=config_rand,
-        run_config=air.RunConfig(local_dir=path, name="random_search_"+lang)
+        run_config=air.RunConfig(local_dir=path, name="random_search_"+lang)#, progress_reporter=TrialTerminationReporter() OR ExperimentTerminationReporter()
     )
     result_rand = tuner_random.fit()
     best_results_rand = result_rand.get_best_result("accuracy", "max")
-    print("[RAND]Best trial config: {}".format(best_results_rand.config))
-    print("[RAND]Best trial final validation accuracy: {}".format(best_results_rand.metrics["accuracy"]))
+    # print("[RAND]Best trial config: {}".format(best_results_rand.config))
+    # print("[RAND]Best trial final validation accuracy: {}".format(best_results_rand.metrics["accuracy"]))
     return best_results_rand
 
 def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,num_samples=1):
@@ -229,7 +246,6 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
         "batch_size":tune.choice([2,4,6,8,16]),
         "lang":lang,
         "col":col,
-        "tokenized_train_test_set":tokenized_train_test_set_fold,
         'len_train_dl': len_train_dl
     }
     bohb = HyperBandForBOHB(
@@ -241,8 +257,8 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
     bohb_search = tune.search.ConcurrencyLimiter(bohb_search, max_concurrent=2)
     tuner_bayes = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(train_model),
-            resources={"cpu": 1}
+            tune.with_parameters(train_model, data = tokenized_train_test_set_fold),
+            resources={"cpu": 2}
         ),
         tune_config=tune.TuneConfig(
             metric="accuracy",
@@ -257,8 +273,8 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
     result_bayes = tuner_bayes.fit()
     best_results_bayes = result_bayes.get_best_result("accuracy", "max")
 
-    print("[BOHB]Best trial config: {}".format(best_results_bayes.config))
-    print("[BOHB]Best trial final validation accuracy: {}".format(best_results_bayes.metrics["accuracy"]))
+    # print("[BOHB]Best trial config: {}".format(best_results_bayes.config))
+    # print("[BOHB]Best trial final validation accuracy: {}".format(best_results_bayes.metrics["accuracy"]))
     return best_results_bayes
 
 def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_train_dl,num_samples=1):
@@ -268,14 +284,13 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
         "epoch":tune.choice([1,3,5,7,10]),
         "lang":lang,
         "col":col,
-        "tokenized_train_test_set":tokenized_train_test_set_fold,
         'len_train_dl':len_train_dl
     }
     hyperband = HyperBandScheduler(metric = "accuracy", mode = "max")
     tuner_hyper = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(train_model),
-            resources={"cpu": 1}
+            tune.with_parameters(train_model, data = tokenized_train_test_set_fold),
+            resources={"cpu": 2}
         ),
         tune_config = tune.TuneConfig(
             num_samples = num_samples,
@@ -288,16 +303,18 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
     result = tuner_hyper.fit()
     best_results = result.get_best_result("accuracy", "max")
     
-    print("[HYPER]Best trial config: {}".format(best_results.config))
-    print("[HYPER]Best trial final validation accuracy: {}".format(best_results.metrics["accuracy"]))
+    # print("[HYPER]Best trial config: {}".format(best_results.config))
+    # print("[HYPER]Best trial final validation accuracy: {}".format(best_results.metrics["accuracy"]))
     return best_results
     
     
-def validate_model(text_col:str,lang:str, best_results):
+def validate_model(text_col:str,lang:str, best_results, model_path:str, model_name:str):
+    logger = logging.getLogger("Classification")
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if lang == 'de':
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-uncased")
-        model = BertClassifier(checkpoint="bert-base-german-uncased",num_labels=7).to(device)
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
+        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=7).to(device)
     elif lang == 'en':
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         model = BertClassifier(checkpoint='bert-base-uncased',num_labels=7).to(device)
@@ -321,14 +338,21 @@ def validate_model(text_col:str,lang:str, best_results):
         logits = outputs.logits
         predictions = torch.argmax(logits, dim=-1)
         metric.add_batch(predictions=predictions, references=batch["labels"])
-    print(metric.compute())
-    
-    ###TO DO Compare acc with existing model and its accuracy
-    
-    path_to_save_model = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+'_'+text_col+".pth"
-    torch.save(model, path_to_save_model)
+    acc= metric.compute()['accuracy']
 
-
+    torch.save(model, model_path)
+    logger.info(f"[Model {model_name}]Accuracy on validation set:{acc}. Saved to {model_path}")     
+  
+def get_model_path(lang:str, text_col:str):
+    i = 0
+    path_to_save_model = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+'_'+text_col+"_"
+    model_nr = str(i)+".pth"
+    while os.path.exists(path_to_save_model+model_nr):
+        i += 1
+        model_nr = str(i)+".pth"
+    model_path = path_to_save_model+model_nr    
+    model_name = 'trained_model_'+lang+'_'+text_col+"_"+model_nr
+    return model_name, model_path
     
 
 def predict(sentence:str, lang:str,batch_size, text_col = 'TOPIC'):
@@ -365,7 +389,7 @@ def predict(sentence:str, lang:str,batch_size, text_col = 'TOPIC'):
 
 def run(lang:str, col:str):
     # Create logger and assign handler
-    logger = logging.getLogger("Labeler")
+    logger = logging.getLogger("Classification")
     if (logger.hasHandlers()):
         logger.handlers.clear()
 
@@ -381,7 +405,7 @@ def run(lang:str, col:str):
     logger.addHandler(fh)
 
     if lang == 'de':
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-uncased")
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
     elif lang == 'en':
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
   
@@ -426,17 +450,19 @@ def run(lang:str, col:str):
     except KeyboardInterrupt:       
         logger.info("KeyboardInterrupt. Current best model will be validated and saved if better than (possible) existing model.")
     finally:
+        model_name, model_path = get_model_path(lang, col)
+
         best_results_df = pd.DataFrame(best_results).sort_values(by=['Accuracy'], ascending=[False])
         best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
         best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
-        logger.info(f"Overall best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config} reached")
+        logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
         
         ####Test Model###
-        validate_model(col,lang, best_results_df.to_dict('records')[0])
-        print("Done")
+        validate_model(col,lang, best_results_df.to_dict('records')[0], model_path, model_name)
+        
 
 
-#run(lang ='de', col = 'TOPIC')
+run(lang ='de', col = 'TOPIC')
 #run(lang ='en', col = 'TOPIC')
 #run(lang ='de', col = 'URL_TEXT')
 #run(lang ='en', col = 'URL_TEXT')
