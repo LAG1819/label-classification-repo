@@ -164,6 +164,7 @@ def set_params(model, config_lr, config_epoch,len_train_data):
 
 def train_model(config, data):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     if config['lang'] == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
         model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=7).to(device)
@@ -172,14 +173,16 @@ def train_model(config, data):
         model = BertClassifier(checkpoint='bert-base-uncased',num_labels=7).to(device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
-    # train_test_val_set = load_data(config["col"],config['lang'])
-    # len_train_dl = len(train_test_val_set['train'])
-
-    # tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
-
-    # train_dl,test_dl = transform_train_data(tokenized_train_test_set, data_collator,config["batch_size"])
     train_dl,test_dl = transform_train_data(data, data_collator,config["batch_size"])
     num_training_steps,num_epochs, metric, optimizer, lr_scheduler,metric2 = set_params(model, config['lr'],config['epoch'], config['len_train_dl'])
+
+    loaded_checkpoint = session.get_checkpoint()
+    if loaded_checkpoint:
+        with loaded_checkpoint.as_directory() as loaded_checkpoint_dir:
+           model_state, optimizer_state = torch.load(os.path.join(loaded_checkpoint_dir, "checkpoint.pt"))
+        
+        model.load_state_dict(model_state)
+        optimizer.load_state_dict(optimizer_state)
 
     for epoch in range(num_epochs):
         model.train()
@@ -324,7 +327,7 @@ def validate_model(text_col:str,lang:str, best_results, model_path:str, model_na
     model_state, optimizer_state = torch.load(checkpoint_path)
     model.load_state_dict(model_state)
     
-    train_test_val_set = load_data(text_col)
+    train_test_val_set = load_data(text_col, lang)
     tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
     eval_dl = transform_eval_data(tokenized_train_test_set,data_collator,best_results["Configuration"]["batch_size"])
 
@@ -422,11 +425,11 @@ def run(lang:str, col:str):
     try:
         logger.info(f"Classification tuning started with Language {lang}, Text-Column: {col} and Data source file: 'files\04_classify\labeled_texts_{lang}_{col}.feather'.")
         #K-Fold Cross Validation
-        for k in range(2,10):
+        for k in range(2,8):
             k_fold = KFold(n_splits = k,shuffle = True, random_state = 12)
             i = 1
             tokenized_train_test_set_fold = {}
-            for split in k_fold.split(tokenized_data):
+            for i,split in enumerate(k_fold.split(tokenized_data)):
                 logger.info(f"Training of {k}-Fold Cross-Validation with Trainingsplit {i} started.")
                 tokenized_train_test_set_fold['train'] = tokenized_data.iloc[split[0]].to_dict('records')
                 tokenized_train_test_set_fold['test'] = tokenized_data.iloc[split[1]].to_dict('records')
