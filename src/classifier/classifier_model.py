@@ -97,7 +97,7 @@ def load_data(text_col:str,lang:str) -> dict:
     df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],dir)
     df = pd.read_feather(df_path)
     data = df.replace(np.nan, "",regex = False)
-    data = data[:1000]
+    # data = data[:1000]
     data['text'] = data[text_col]
     
     train, validate, test = np.split(data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(data)), int(.8*len(data))])
@@ -313,7 +313,7 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
     
 def validate_model(text_col:str,lang:str, best_results, model_path:str, model_name:str):
     logger = logging.getLogger("Classification")
-
+    print("Validate best found model and save it.")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if lang == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
@@ -420,16 +420,18 @@ def run(lang:str, col:str):
     tokenized_data = pd.DataFrame(tokenized_data)
 
     path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_"+lang
-    num_samples_per_tune = 1
+    num_samples_per_tune = 5
     best_results = []
-    try:
-        logger.info(f"Classification tuning started with Language {lang}, Text-Column: {col} and Data source file: 'files\04_classify\labeled_texts_{lang}_{col}.feather'.")
-        #K-Fold Cross Validation
-        for k in range(2,8):
-            k_fold = KFold(n_splits = k,shuffle = True, random_state = 12)
-            i = 1
-            tokenized_train_test_set_fold = {}
-            for i,split in enumerate(k_fold.split(tokenized_data)):
+    
+    logger.info(f"Classification tuning started with Language {lang}, Text-Column: {col} and Data source file: 'files\04_classify\labeled_texts_{lang}_{col}.feather'.")
+    
+    #K-Fold Cross Validation
+    for k in range(2,8):
+        k_fold = KFold(n_splits = k,shuffle = True, random_state = 12)
+        i = 1
+        tokenized_train_test_set_fold = {}
+        for i,split in enumerate(k_fold.split(tokenized_data)):
+            try:
                 logger.info(f"Training of {k}-Fold Cross-Validation with Trainingsplit {i} started.")
                 tokenized_train_test_set_fold['train'] = tokenized_data.iloc[split[0]].to_dict('records')
                 tokenized_train_test_set_fold['test'] = tokenized_data.iloc[split[1]].to_dict('records')
@@ -449,21 +451,21 @@ def run(lang:str, col:str):
                 hyperband_best_results = hyperband(lang, col, path,tokenized_train_test_set_fold,len_train_dl,num_samples_per_tune)
                 best_results.append({"Type":"Hyperband","Accuracy":hyperband_best_results.metrics['accuracy'],"Configuration":hyperband_best_results.config,"Log_Dir":hyperband_best_results.log_dir, "Checkpoint":hyperband_best_results.checkpoint})
                 logger.info(f"[Hyperband]Best Model with Accuracy:{hyperband_best_results.metrics['accuracy']} and Configuration:{hyperband_best_results.config} reached. Checkpoint: {hyperband_best_results.checkpoint}")
-
-    except KeyboardInterrupt:       
-        logger.info("KeyboardInterrupt. Current best model will be validated and saved if better than (possible) existing model.")
-    finally:
-        model_name, model_path = get_model_path(lang, col)
-
-        best_results_df = pd.DataFrame(best_results).sort_values(by=['Accuracy'], ascending=[False])
-        best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
-        best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
-        logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
+            
+            except KeyboardInterrupt:
+                logger.info("KeyboardInterrupt. Current best model will be validated and saved if better than (possible) existing model.")
         
-        ####Test Model###
-        validate_model(col,lang, best_results_df.to_dict('records')[0], model_path, model_name)
-        
+            finally:
+                model_name, model_path = get_model_path(lang, col)
 
+                best_results_df = pd.DataFrame(best_results).sort_values(by=['Accuracy'], ascending=[False])
+                best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
+                best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
+                logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
+                
+                ####Test Model###
+                validate_model(col,lang, best_results_df.to_dict('records')[0], model_path, model_name)
+                return
 
 run(lang ='de', col = 'TOPIC')
 #run(lang ='en', col = 'TOPIC')
