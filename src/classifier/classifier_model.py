@@ -16,18 +16,19 @@
 
 from transformers import AutoTokenizer, BertTokenizer, DataCollatorWithPadding,AutoTokenizer,AutoModel,AutoConfig, get_scheduler, create_optimizer
 from transformers.modeling_outputs import TokenClassifierOutput
+from datasets import Dataset, DatasetDict
+import evaluate
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
+from torch.optim import AdamW 
 import pandas as pd
 import numpy as np
 import logging 
 from sklearn.model_selection import KFold
-from datasets import Dataset, DatasetDict
-import evaluate
 import os 
-from tqdm.auto import tqdm
-from torch.utils.data import DataLoader
-from torch.optim import AdamW 
+# from tqdm.auto import tqdm
+import ray
 from ray import tune 
 from ray.tune.search.bohb import TuneBOHB
 from ray.tune.schedulers import HyperBandScheduler,HyperBandForBOHB
@@ -37,6 +38,8 @@ from ray import air
 from ray.tune import CLIReporter
 from ray.tune.experiment.trial import Trial
 
+#pip install datasets transformers numpy pandas evaluate scikit-learn hpbandster "ray[default]" "ray[tune]" "ray[air]"
+#pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
 
 class BertClassifier(nn.Module):
   def __init__(self,checkpoint,num_labels): 
@@ -163,7 +166,8 @@ def set_params(model, config_lr, config_epoch,len_train_data):
     return num_training_steps,num_epochs, metric, optimizer, lr_scheduler,metric2
 
 def train_model(config, data):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    torch.cuda.empty_cache()
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     if config['lang'] == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
@@ -214,7 +218,7 @@ def train_model(config, data):
         checkpoint = Checkpoint.from_directory("bert")
         session.report({"accuracy": acc['accuracy']}, checkpoint=checkpoint)#, "roc_auc":rocauc["roc_auc"]
 
-def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_train_dl,num_samples = 1):
+def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_train_dl,num_samples = 1, num_cpu=2, num_gpu=1):
     config_rand = {
         "lr":tune.loguniform(1e-4,1e-1),
         "batch_size":tune.choice([2,4,6,8,16]),
@@ -226,7 +230,7 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
     tuner_random = tune.Tuner(
         tune.with_resources(
             tune.with_parameters(train_model, data = tokenized_train_test_set_fold),
-            resources={"cpu": 2}
+            resources={"cpu": num_cpu, "gpu":num_gpu}
         ),
         tune_config=tune.TuneConfig(
             metric="accuracy",
@@ -234,7 +238,7 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
             num_samples = num_samples,
         ),
         param_space=config_rand,
-        run_config=air.RunConfig(local_dir=path, name="random_search_"+lang)#, progress_reporter=TrialTerminationReporter() OR ExperimentTerminationReporter()
+        run_config=air.RunConfig(local_dir=path, name="random_search_"+lang, stop={"training_iteration": 2})#, progress_reporter=TrialTerminationReporter() OR ExperimentTerminationReporter()
     )
     result_rand = tuner_random.fit()
     best_results_rand = result_rand.get_best_result("accuracy", "max")
@@ -242,7 +246,7 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
     # print("[RAND]Best trial final validation accuracy: {}".format(best_results_rand.metrics["accuracy"]))
     return best_results_rand
 
-def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,num_samples=1):
+def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,num_samples=1, num_cpu=2, num_gpu=1):
     config = {
         "lr":tune.loguniform(1e-4,1e-1),
         "epoch":tune.choice([1,3,5,7,10]),
@@ -261,7 +265,7 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
     tuner_bayes = tune.Tuner(
         tune.with_resources(
             tune.with_parameters(train_model, data = tokenized_train_test_set_fold),
-            resources={"cpu": 2}
+            resources={"cpu": num_cpu, "gpu":num_gpu}
         ),
         tune_config=tune.TuneConfig(
             metric="accuracy",
@@ -270,7 +274,7 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
             search_alg=bohb_search,
             num_samples=num_samples,
         ),
-        run_config=air.RunConfig(stop={"training_iteration": 1},local_dir=path, name="bohb_search_"+lang),
+        run_config=air.RunConfig(stop={"training_iteration": 2},local_dir=path, name="bohb_search_"+lang),
         param_space=config,
     )
     result_bayes = tuner_bayes.fit()
@@ -280,7 +284,7 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
     # print("[BOHB]Best trial final validation accuracy: {}".format(best_results_bayes.metrics["accuracy"]))
     return best_results_bayes
 
-def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_train_dl,num_samples=1):
+def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_train_dl,num_samples=1, num_cpu=2, num_gpu=1):
     config = {
         "lr":tune.loguniform(1e-4,1e-1),
         "batch_size":tune.choice([2,4,6,8,16]),
@@ -293,14 +297,14 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
     tuner_hyper = tune.Tuner(
         tune.with_resources(
             tune.with_parameters(train_model, data = tokenized_train_test_set_fold),
-            resources={"cpu": 2}
+            resources={"cpu": num_cpu, "gpu":num_gpu}
         ),
         tune_config = tune.TuneConfig(
             num_samples = num_samples,
             scheduler = hyperband
         ),
         param_space = config,
-        run_config=air.RunConfig(local_dir=path, name="hyperband_"+lang)
+        run_config=air.RunConfig(local_dir=path, name="hyperband_"+lang, stop={"training_iteration": 2})
     )
     
     result = tuner_hyper.fit()
@@ -312,6 +316,7 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
     
     
 def validate_model(text_col:str,lang:str, best_results, model_path:str, model_name:str):
+    torch.cuda.empty_cache()
     logger = logging.getLogger("Classification")
     print("Validate best found model and save it.")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -391,6 +396,10 @@ def predict(sentence:str, lang:str,batch_size, text_col = 'TOPIC'):
         print(label)
 
 def run(lang:str, col:str):
+    temp_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],r"models\classification\temp")
+    ray.init(_temp_dir = temp_path)
+    torch.cuda.empty_cache() 
+
     # Create logger and assign handler
     logger = logging.getLogger("Classification")
     if (logger.hasHandlers()):
@@ -416,61 +425,72 @@ def run(lang:str, col:str):
     len_train_dl = len(train_test_val_set['train'])
 
     tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
-    tokenized_data = tokenized_train_test_set['train']+tokenized_train_test_set['test']
-    tokenized_data = pd.DataFrame(tokenized_data)
 
     path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_"+lang
-    num_samples_per_tune = 5
+    num_samples_per_tune = 3
+    num_cpu = 4
+    num_gpu = 1
     best_results = []
     
     logger.info(f"Classification tuning started with Language {lang}, Text-Column: {col} and Data source file: 'files\04_classify\labeled_texts_{lang}_{col}.feather'.")
     
     #K-Fold Cross Validation
-    for k in range(2,8):
-        k_fold = KFold(n_splits = k,shuffle = True, random_state = 12)
-        i = 1
-        tokenized_train_test_set_fold = {}
-        for i,split in enumerate(k_fold.split(tokenized_data)):
-            try:
-                logger.info(f"Training of {k}-Fold Cross-Validation with Trainingsplit {i} started.")
-                tokenized_train_test_set_fold['train'] = tokenized_data.iloc[split[0]].to_dict('records')
-                tokenized_train_test_set_fold['test'] = tokenized_data.iloc[split[1]].to_dict('records')
-                len_train_dl = tokenized_data.iloc[split[0]].shape[0]
+    # tokenized_data = tokenized_train_test_set['train']+tokenized_train_test_set['test']
+    # tokenized_data = pd.DataFrame(tokenized_data)
+    # for k in range(5,6):
+    #     k_fold = KFold(n_splits = k,shuffle = True, random_state = 12)
+    #     i = 1
+    #     tokenized_train_test_set_fold = {}
+    #     for i,split in enumerate(k_fold.split(tokenized_data)):
+    #         try:
+    #             logger.info(f"Training of {k}-Fold Cross-Validation with Trainingsplit {i} started.")
+    #             tokenized_train_test_set_fold['train'] = tokenized_data.iloc[split[0]].to_dict('records')
+    #             tokenized_train_test_set_fold['test'] = tokenized_data.iloc[split[1]].to_dict('records')
+    #             len_train_dl = tokenized_data.iloc[split[0]].shape[0]
 
-                ###Random Search###
-                rand_best_results = random_search(lang,col,path,tokenized_train_test_set_fold,len_train_dl,num_samples_per_tune)
-                best_results.append({"Type":"Random Search","Accuracy": rand_best_results.metrics['accuracy'],"Configuration":rand_best_results.config,"Log_Dir":rand_best_results.log_dir, "Checkpoint":rand_best_results.checkpoint})
-                logger.info(f"[Random Search]Best Model with Accuracy: {rand_best_results.metrics['accuracy']} and Configuration:{rand_best_results.config} reached. Checkpoint: {rand_best_results.checkpoint}")
-                
-                ###Hyberpban Bayesian Optimization###
-                bohb_best_results = bohb(lang,col,path,tokenized_train_test_set_fold,len_train_dl,num_samples_per_tune)
-                best_results.append({"Type":"BOHB","Accuracy":bohb_best_results.metrics['accuracy'],"Configuration":bohb_best_results.config,"Log_Dir": bohb_best_results.log_dir, "Checkpoint":bohb_best_results.checkpoint})
-                logger.info(f"[BOHB]Best Model with Accuracy: {bohb_best_results.metrics['accuracy']} and Configuration:{bohb_best_results.config} reached. Checkpoint: {bohb_best_results.checkpoint}")
-                
-                ####Hyperband Optimization###
-                hyperband_best_results = hyperband(lang, col, path,tokenized_train_test_set_fold,len_train_dl,num_samples_per_tune)
-                best_results.append({"Type":"Hyperband","Accuracy":hyperband_best_results.metrics['accuracy'],"Configuration":hyperband_best_results.config,"Log_Dir":hyperband_best_results.log_dir, "Checkpoint":hyperband_best_results.checkpoint})
-                logger.info(f"[Hyperband]Best Model with Accuracy:{hyperband_best_results.metrics['accuracy']} and Configuration:{hyperband_best_results.config} reached. Checkpoint: {hyperband_best_results.checkpoint}")
-            
-            except KeyboardInterrupt:
-                logger.info("KeyboardInterrupt. Current best model will be validated and saved if better than (possible) existing model.")
+    try:
+        # ###Random Search###
+        rand_best_results = random_search(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
+        best_results.append({"Type":"Random Search","Accuracy": rand_best_results.metrics['accuracy'],"Configuration":rand_best_results.config,"Log_Dir":rand_best_results.log_dir, "Checkpoint":rand_best_results.checkpoint})
+        logger.info(f"[Random Search]Best Model with Accuracy: {rand_best_results.metrics['accuracy']} and Configuration:{rand_best_results.config} reached. Checkpoint: {rand_best_results.checkpoint}")
         
-            finally:
-                model_name, model_path = get_model_path(lang, col)
 
-                best_results_df = pd.DataFrame(best_results).sort_values(by=['Accuracy'], ascending=[False])
-                best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
-                best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
-                logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
-                
-                ####Test Model###
-                validate_model(col,lang, best_results_df.to_dict('records')[0], model_path, model_name)
-                return
+        ###Hyberpban Bayesian Optimization###
+        bohb_best_results = bohb(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
+        best_results.append({"Type":"BOHB","Accuracy":bohb_best_results.metrics['accuracy'],"Configuration":bohb_best_results.config,"Log_Dir": bohb_best_results.log_dir, "Checkpoint":bohb_best_results.checkpoint})
+        logger.info(f"[BOHB]Best Model with Accuracy: {bohb_best_results.metrics['accuracy']} and Configuration:{bohb_best_results.config} reached. Checkpoint: {bohb_best_results.checkpoint}")
 
-run(lang ='de', col = 'TOPIC')
-#run(lang ='en', col = 'TOPIC')
+        ####Hyperband Optimization###
+        hyperband_best_results = hyperband(lang, col, path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
+        best_results.append({"Type":"Hyperband","Accuracy":hyperband_best_results.metrics['accuracy'],"Configuration":hyperband_best_results.config,"Log_Dir":hyperband_best_results.log_dir, "Checkpoint":hyperband_best_results.checkpoint})
+        logger.info(f"[Hyperband]Best Model with Accuracy:{hyperband_best_results.metrics['accuracy']} and Configuration:{hyperband_best_results.config} reached. Checkpoint: {hyperband_best_results.checkpoint}")
+    except KeyboardInterrupt:
+        logger.info("KeyboardInterrupt. Current best model will be validated and saved if better than (possible) existing model.")
+
+    finally:
+        model_name, model_path = get_model_path(lang, col)
+
+        best_results_df = pd.DataFrame(best_results).sort_values(by=['Accuracy'], ascending=[False])
+        best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
+        best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
+        if best_result_acc == 1:
+            logger.info(f"[Model {model_name}] Found best Accuracy:{best_result_acc}. Models with Accuracy == 1 will be ignored for saving.")
+            best_results_df = best_results_df[best_results_df['Accuracy'] != 1]
+            best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
+            best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
+        logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
+        
+        ####Test Model###
+        validate_model(col,lang, best_results_df.to_dict('records')[0], model_path, model_name)
+        return
+
+
+# run(lang ='de', col = 'TOPIC')
+run(lang ='en', col = 'TOPIC')
 #run(lang ='de', col = 'URL_TEXT')
 #run(lang ='en', col = 'URL_TEXT')
+ray.shutdown()
+
 
 # ###Test new sample sentence###
 # predict("Connectivität ist digitale Vernetzung")

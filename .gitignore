@@ -15,6 +15,7 @@ src/archive/*
 models/classification/pytorch_tuning_de/*
 models/classification/pytorch_tuning_en/*
 models/label/model_tuning_de/*
+models/classification/temp*
 !models/label/model_tuning_de/automated_labeling_de.log
 models/label/model_tuning_en/*
 !models/label/model_tuning_en/automated_labeling_en.log
@@ -27,3 +28,4 @@ src/url_scrape/url_scrape/spiders/__pycache__/seeder.cpython-39.pyc
 src/url_scrape/url_scrape/__pycache__/__init__.cpython-39.pyc
 src/url_scrape/url_scrape/spiders/__pycache__/__init__.cpython-39.pyc
 src/url_scrape/url_scrape/spiders/__pycache__/seeder.cpython-39.pyc
+
