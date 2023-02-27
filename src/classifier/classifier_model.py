@@ -568,12 +568,13 @@ def run(lang:str, col:str):
             logger.info(f"[Hyperband]Error occurred:{e}")
 
     except KeyboardInterrupt:
-            logger.info("KeyboardInterrupt. Current best model will be validated and saved if better than (possible) existing model.")
+            logger.info("KeyboardInterrupt. Session will be finished")
     finally:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         r= torch.cuda.memory_summary(device=device)
-        print(r)
+        # print(r)
         if best_results:
+            logger.info("Current best model will be validated and saved (if better than existing model).")
             model_name, model_path = get_model_path(lang, col)
             best_results_df = pd.DataFrame(best_results).sort_values(by=['Accuracy'], ascending=[False])
             save_results(lang, best_results_df)
@@ -595,7 +596,7 @@ def run(lang:str, col:str):
 
 
 run(lang ='de', col = 'TOPIC')
-# run(lang ='en', col = 'TOPIC')
+run(lang ='en', col = 'TOPIC')
 #run(lang ='de', col = 'URL_TEXT')
 #run(lang ='en', col = 'URL_TEXT')
 
