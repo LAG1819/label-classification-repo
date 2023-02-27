@@ -20,7 +20,7 @@ from datasets import Dataset, DatasetDict
 import evaluate
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 from torch.optim import AdamW 
 import pandas as pd
 import numpy as np
@@ -37,7 +37,7 @@ from ray.air import session
 from ray import air
 from ray.tune import CLIReporter
 from ray.tune.experiment.trial import Trial
-
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 #pip install datasets transformers numpy pandas evaluate scikit-learn hpbandster "ray[default]" "ray[tune]" "ray[air]"
 #pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
 
@@ -130,11 +130,23 @@ def transform_train_data(tokenized_data:dict, data_collator:DataCollatorWithPadd
     })
     data.set_format('torch', columns = ['input_ids', 'attention_mask', 'label'])
     
+    ##Weight Classes trainset
+    train_labels_unique, counts = np.unique(data['train']['label'], return_counts= True)
+    train_weights_per_class = [sum(counts) / cl for cl in counts]
+    train_weights = [train_weights_per_class[l] for l in data['train']['label']]
+    train_sampler = WeightedRandomSampler(train_weights, len(data['train']['label']))
+
+    ##Weight Classes testset
+    test_labels_unique, counts = np.unique(data['test']['label'], return_counts= True)
+    test_weights_per_class = [sum(counts) / cl for cl in counts]
+    test_weights = [test_weights_per_class[l] for l in data['test']['label']]
+    test_sampler = WeightedRandomSampler(test_weights, len(data['test']['label']))
+
     train_dataloader = DataLoader(
-        data["train"], shuffle=True, batch_size=config_batch_size, collate_fn=data_collator
+        data["train"], sampler = train_sampler, batch_size=config_batch_size, collate_fn=data_collator
     )
     test_dataloader = DataLoader(
-        data["test"], batch_size=config_batch_size, collate_fn=data_collator
+        data["test"], sampler = test_sampler, batch_size=config_batch_size, collate_fn=data_collator
     )
     return train_dataloader, test_dataloader
 
@@ -143,6 +155,12 @@ def transform_eval_data(tokenized_data:dict,data_collator:DataCollatorWithPaddin
     'val': Dataset.from_list(tokenized_data['val'])
     })
     data.set_format('torch', columns = ['input_ids', 'attention_mask', 'label'])
+
+    ##Weight Classes valtset
+    val_labels_unique, counts = np.unique(data['val']['label'], return_counts= True)
+    val_weights_per_class = [sum(counts) / cl for cl in counts]
+    val_weights = [val_weights_per_class[l] for l in data['val']['label']]
+    val_sampler = WeightedRandomSampler(val_weights, len(data['val']['label']))
     
     eval_dataloader = DataLoader(
         data["val"], batch_size=batch_size, collate_fn=data_collator
@@ -160,10 +178,13 @@ def set_params(model, config_lr, config_epoch,len_train_data):
         num_training_steps=num_training_steps,
     )
 
-    metric = evaluate.load("accuracy")
-    metric2 = evaluate.load("roc_auc","multilabel")
+    accuracy = evaluate.load('accuracy')
+    f1 = evaluate.load('f1')
+    precision = evaluate.load('precision')
+    recall = evaluate.load('recall')
+    roc_auc = evaluate.load("roc_auc","multiclass")
 
-    return num_training_steps,num_epochs, metric, optimizer, lr_scheduler,metric2
+    return num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1,precision,recall, roc_auc
 
 def train_model(config, data):
     torch.cuda.empty_cache()
@@ -178,7 +199,7 @@ def train_model(config, data):
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     train_dl,test_dl = transform_train_data(data, data_collator,config["batch_size"])
-    num_training_steps,num_epochs, metric, optimizer, lr_scheduler,metric2 = set_params(model, config['lr'],config['epoch'], config['len_train_dl'])
+    num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1,precision,recall, roc_auc = set_params(model, config['lr'],config['epoch'], config['len_train_dl'])
 
     loaded_checkpoint = session.get_checkpoint()
     if loaded_checkpoint:
@@ -199,7 +220,8 @@ def train_model(config, data):
             optimizer.step()
             lr_scheduler.step()
             optimizer.zero_grad()
-
+        r= torch.cuda.memory_summary(device=device)
+        print(r)
         model.eval()
         for batch in test_dl:
             batch = {k: v.to(device) for k, v in batch.items()}
@@ -208,25 +230,48 @@ def train_model(config, data):
 
             logits = outputs.logits
             predictions = torch.argmax(logits, dim=-1)
-            metric.add_batch(predictions=predictions, references=batch["labels"])
-            #metric2.add_batch(predictions=predictions, references=batch["labels"])
-            acc = metric.compute()
-            #rocauc = metric2.compute()
-        
+            
+            #references is list of list tensor -> convert to single tensor list
+            # roc_auc.add_batch(prediction_scores=predictions, references=batch["labels"])#multi_class ='ovr'
+            
+            accuracy.add_batch(predictions=predictions, references=batch["labels"])
+            f1.add_batch(predictions=predictions, references=batch["labels"])
+            precision.add_batch(predictions=predictions, references=batch["labels"])
+            recall.add_batch(predictions=predictions, references=batch["labels"])
+            # metric.add_batch(predictions=predictions, references=batch["labels"], average = None)
+                
+            # roc_auc_metrics = roc_auc.compute()   
+            acc_metric = accuracy.compute()
+            f1_metric = f1.compute(labels = [0,1,2,3,4,5,6], average=None)
+            precision_metric = precision.compute(labels = [0,1,2,3,4,5,6], average=None, zero_division = 0)
+            recall_metric = recall.compute(labels = [0,1,2,3,4,5,6], average=None, zero_division = 0)             
+        r= torch.cuda.memory_summary(device=device)
+        print(r)
         os.makedirs("bert", exist_ok=True)
         torch.save((model.state_dict(), optimizer.state_dict()), "bert/checkpoint.pt")
         checkpoint = Checkpoint.from_directory("bert")
-        session.report({"accuracy": acc['accuracy']}, checkpoint=checkpoint)#, "roc_auc":rocauc["roc_auc"]
+        #roc_auc_metrics['roc_auc']
+        session.report({"accuracy": acc_metric['accuracy'], "precision":precision_metric['precision'],"f1": f1_metric['f1'],"recall":recall_metric['recall'], "roc_auc":0}, checkpoint=checkpoint)
 
 def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_train_dl,num_samples = 1, num_cpu=2, num_gpu=1):
-    config_rand = {
-        "lr":tune.loguniform(1e-4,1e-1),
-        "batch_size":tune.choice([2,4,6,8,16]),
-        "epoch":tune.choice([1,3,5,7,10]),
-        "lang":lang,
-        "col":col,
-        'len_train_dl': len_train_dl
-    } 
+    if lang == 'de':
+        config_rand = {
+            "lr":tune.loguniform(1e-4,1e-1),
+            "batch_size":tune.choice([2,4,6,8,12]),
+            "epoch":tune.choice([1,3,5,7,10]),
+            "lang":lang,
+            "col":col,
+            'len_train_dl': len_train_dl
+        }
+    if lang == 'en':
+        config_rand = {
+            "lr":tune.loguniform(1e-4,1e-1),
+            "batch_size":tune.choice([2,4]),
+            "epoch":tune.choice([1,3,5,7,10]),
+            "lang":lang,
+            "col":col,
+            'len_train_dl': len_train_dl
+        } 
     tuner_random = tune.Tuner(
         tune.with_resources(
             tune.with_parameters(train_model, data = tokenized_train_test_set_fold),
@@ -247,14 +292,24 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
     return best_results_rand
 
 def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,num_samples=1, num_cpu=2, num_gpu=1):
-    config = {
-        "lr":tune.loguniform(1e-4,1e-1),
-        "epoch":tune.choice([1,3,5,7,10]),
-        "batch_size":tune.choice([2,4,6,8,16]),
-        "lang":lang,
-        "col":col,
-        'len_train_dl': len_train_dl
-    }
+    if lang == 'de':
+        config = {
+            "lr":tune.loguniform(1e-4,1e-1),
+            "batch_size":tune.choice([2,4,6,8,12]),
+            "epoch":tune.choice([1,3,5,7,10]),
+            "lang":lang,
+            "col":col,
+            'len_train_dl': len_train_dl
+        }
+    if lang == 'en':
+        config = {
+            "lr":tune.loguniform(1e-4,1e-1),
+            "batch_size":tune.choice([2,4]),
+            "epoch":tune.choice([1,3,5,7,10]),
+            "lang":lang,
+            "col":col,
+            'len_train_dl': len_train_dl
+        } 
     bohb = HyperBandForBOHB(
         time_attr="training_iteration",
         max_t=1,
@@ -285,14 +340,24 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
     return best_results_bayes
 
 def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_train_dl,num_samples=1, num_cpu=2, num_gpu=1):
-    config = {
-        "lr":tune.loguniform(1e-4,1e-1),
-        "batch_size":tune.choice([2,4,6,8,16]),
-        "epoch":tune.choice([1,3,5,7,10]),
-        "lang":lang,
-        "col":col,
-        'len_train_dl':len_train_dl
-    }
+    if lang == 'de':
+        config = {
+            "lr":tune.loguniform(1e-4,1e-1),
+            "batch_size":tune.choice([2,4,6,8,12]),
+            "epoch":tune.choice([1,3,5,7,10]),
+            "lang":lang,
+            "col":col,
+            'len_train_dl': len_train_dl
+        }
+    if lang == 'en':
+        config = {
+            "lr":tune.loguniform(1e-4,1e-1),
+            "batch_size":tune.choice([2,4]),
+            "epoch":tune.choice([1,3,5,7,10]),
+            "lang":lang,
+            "col":col,
+            'len_train_dl': len_train_dl
+        } 
     hyperband = HyperBandScheduler(metric = "accuracy", mode = "max")
     tuner_hyper = tune.Tuner(
         tune.with_resources(
@@ -337,6 +402,7 @@ def validate_model(text_col:str,lang:str, best_results, model_path:str, model_na
     eval_dl = transform_eval_data(tokenized_train_test_set,data_collator,best_results["Configuration"]["batch_size"])
 
     metric = evaluate.load("accuracy")
+
     model.eval()
     for batch in eval_dl:
         batch = {k: v.to(device) for k, v in batch.items()}
@@ -395,10 +461,23 @@ def predict(sentence:str, lang:str,batch_size, text_col = 'TOPIC'):
         print(prediction)
         print(label)
 
+def save_results(lang, df_new):
+    t_path = r'models\classification\pytorch_tuning_'+lang+r'\eval_results.feather'
+    path = str(os.path.dirname(__file__)).split("src")[0]
+    ##check if target_path already exists
+    if os.path.exists(path+t_path):
+        df_all = pd.read_feather(path+t_path)
+        df_all_new = pd.concat([df_all,df_new])
+    else:
+        df_all_new = df_new
+
+    ##save dataset to target paths as feather
+    df_all_new = df_all_new.reset_index() 
+    df_all_new.to_feather(path+t_path)
+
 def run(lang:str, col:str):
     temp_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],r"models\classification\temp")
     ray.init(_temp_dir = temp_path)
-    torch.cuda.empty_cache() 
 
     # Create logger and assign handler
     logger = logging.getLogger("Classification")
@@ -427,13 +506,14 @@ def run(lang:str, col:str):
     tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
 
     path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_"+lang
-    num_samples_per_tune = 3
+    num_samples_per_tune = 1
     num_cpu = 4
     num_gpu = 1
     best_results = []
     
     logger.info(f"Classification tuning started with Language {lang}, Text-Column: {col} and Data source file: 'files\04_classify\labeled_texts_{lang}_{col}.feather'.")
-    
+    k=0
+    i=0
     #K-Fold Cross Validation
     # tokenized_data = tokenized_train_test_set['train']+tokenized_train_test_set['test']
     # tokenized_data = pd.DataFrame(tokenized_data)
@@ -447,52 +527,79 @@ def run(lang:str, col:str):
     #             tokenized_train_test_set_fold['train'] = tokenized_data.iloc[split[0]].to_dict('records')
     #             tokenized_train_test_set_fold['test'] = tokenized_data.iloc[split[1]].to_dict('records')
     #             len_train_dl = tokenized_data.iloc[split[0]].shape[0]
-
+    
     try:
-        # ###Random Search###
-        rand_best_results = random_search(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
-        best_results.append({"Type":"Random Search","Accuracy": rand_best_results.metrics['accuracy'],"Configuration":rand_best_results.config,"Log_Dir":rand_best_results.log_dir, "Checkpoint":rand_best_results.checkpoint})
-        logger.info(f"[Random Search]Best Model with Accuracy: {rand_best_results.metrics['accuracy']} and Configuration:{rand_best_results.config} reached. Checkpoint: {rand_best_results.checkpoint}")
-        
+        try:
+            ####Random Search###
+            torch.cuda.empty_cache() 
+            rand_best_results = random_search(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
+            best_results.append({"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i), "Type":"Random Search","Accuracy": rand_best_results.metrics['accuracy'],"Precision":rand_best_results.metrics['precision'],"F1": rand_best_results.metrics['f1'],"Recall":rand_best_results.metrics['recall'], "Roc_auc":rand_best_results.metrics['roc_auc'],"Configuration":rand_best_results.config,"Log_Dir":rand_best_results.log_dir, "Checkpoint":rand_best_results.checkpoint})
+            logger.info(f"[Random Search]Best Model with Accuracy: {rand_best_results.metrics['accuracy']} and Configuration:{rand_best_results.config} reached. Checkpoint: {rand_best_results.checkpoint}")
+        except RuntimeError as e:
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            r= torch.cuda.memory_summary(device=device)
+            print(r)
+            torch.cuda.empty_cache()
+            logger.info(f"[Random Search]Error occurred:{e}")
+        try:
+            ###Hyberpban Bayesian Optimization###
+            torch.cuda.empty_cache() 
+            bohb_best_results = bohb(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
+            best_results.append({"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i),"Type":"BOHB","Accuracy":bohb_best_results.metrics['accuracy'],"Precision":bohb_best_results.metrics['precision'],"F1": bohb_best_results.metrics['f1'],"Recall":bohb_best_results.metrics['recall'], "Roc_auc":bohb_best_results.metrics['roc_auc'],"Configuration":bohb_best_results.config,"Log_Dir": bohb_best_results.log_dir, "Checkpoint":bohb_best_results.checkpoint})
+            logger.info(f"[BOHB]Best Model with Accuracy: {bohb_best_results.metrics['accuracy']} and Configuration:{bohb_best_results.config} reached. Checkpoint: {bohb_best_results.checkpoint}")
+        except RuntimeError as e:
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            r= torch.cuda.memory_summary(device=device)
+            print(r)
+            torch.cuda.empty_cache()
+            logger.info(f"[BOHB]Error occurred:{e}")
 
-        ###Hyberpban Bayesian Optimization###
-        bohb_best_results = bohb(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
-        best_results.append({"Type":"BOHB","Accuracy":bohb_best_results.metrics['accuracy'],"Configuration":bohb_best_results.config,"Log_Dir": bohb_best_results.log_dir, "Checkpoint":bohb_best_results.checkpoint})
-        logger.info(f"[BOHB]Best Model with Accuracy: {bohb_best_results.metrics['accuracy']} and Configuration:{bohb_best_results.config} reached. Checkpoint: {bohb_best_results.checkpoint}")
+        try:
+            ####Hyperband Optimization###
+            torch.cuda.empty_cache() 
+            hyperband_best_results = hyperband(lang, col, path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
+            best_results.append({"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i),"Type":"Hyperband","Accuracy":hyperband_best_results.metrics['accuracy'],"Precision":hyperband_best_results.metrics['precision'],"F1": hyperband_best_results.metrics['f1'],"Recall":hyperband_best_results.metrics['recall'], "Roc_auc":hyperband_best_results.metrics['roc_auc'],"Configuration":hyperband_best_results.config,"Log_Dir":hyperband_best_results.log_dir, "Checkpoint":hyperband_best_results.checkpoint})
+            logger.info(f"[Hyperband]Best Model with Accuracy:{hyperband_best_results.metrics['accuracy']} and Configuration:{hyperband_best_results.config} reached. Checkpoint: {hyperband_best_results.checkpoint}")
+        except RuntimeError as e:
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            r= torch.cuda.memory_summary(device=device)
+            print(r)
+            torch.cuda.empty_cache()
+            logger.info(f"[Hyperband]Error occurred:{e}")
 
-        ####Hyperband Optimization###
-        hyperband_best_results = hyperband(lang, col, path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
-        best_results.append({"Type":"Hyperband","Accuracy":hyperband_best_results.metrics['accuracy'],"Configuration":hyperband_best_results.config,"Log_Dir":hyperband_best_results.log_dir, "Checkpoint":hyperband_best_results.checkpoint})
-        logger.info(f"[Hyperband]Best Model with Accuracy:{hyperband_best_results.metrics['accuracy']} and Configuration:{hyperband_best_results.config} reached. Checkpoint: {hyperband_best_results.checkpoint}")
     except KeyboardInterrupt:
-        logger.info("KeyboardInterrupt. Current best model will be validated and saved if better than (possible) existing model.")
-
+            logger.info("KeyboardInterrupt. Current best model will be validated and saved if better than (possible) existing model.")
     finally:
-        model_name, model_path = get_model_path(lang, col)
-
-        best_results_df = pd.DataFrame(best_results).sort_values(by=['Accuracy'], ascending=[False])
-        best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
-        best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
-        if best_result_acc == 1:
-            logger.info(f"[Model {model_name}] Found best Accuracy:{best_result_acc}. Models with Accuracy == 1 will be ignored for saving.")
-            best_results_df = best_results_df[best_results_df['Accuracy'] != 1]
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        r= torch.cuda.memory_summary(device=device)
+        print(r)
+        if best_results:
+            model_name, model_path = get_model_path(lang, col)
+            best_results_df = pd.DataFrame(best_results).sort_values(by=['Accuracy'], ascending=[False])
+            save_results(lang, best_results_df)
             best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
             best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
-        logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
+            # if best_result_acc == 1:
+            #     logger.info(f"[Model {model_name}] Found best Accuracy:{best_result_acc}. Models with Accuracy == 1 will be ignored for saving.")
+            #     best_results_df = best_results_df[best_results_df['Accuracy'] != 1]
+            #     best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
+            #     best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
+            logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
         
-        ####Test Model###
-        validate_model(col,lang, best_results_df.to_dict('records')[0], model_path, model_name)
+            ####Test Model###
+            validate_model(col,lang, best_results_df.to_dict('records')[0], model_path, model_name)
+
+        ray.shutdown()
+        torch.cuda.empty_cache()
         return
 
 
-# run(lang ='de', col = 'TOPIC')
-run(lang ='en', col = 'TOPIC')
+run(lang ='de', col = 'TOPIC')
+# run(lang ='en', col = 'TOPIC')
 #run(lang ='de', col = 'URL_TEXT')
 #run(lang ='en', col = 'URL_TEXT')
-ray.shutdown()
 
 
 # ###Test new sample sentence###
 # predict("Connectivität ist digitale Vernetzung")
-    
 
