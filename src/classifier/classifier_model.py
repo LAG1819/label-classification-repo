@@ -472,6 +472,7 @@ def save_results(lang, df_new):
         df_all_new = df_new
 
     ##save dataset to target paths as feather
+    df_all_new = df_all_new[["Language", "Text", "K-Fold", "Split", "Type", "Accuracy", "Precision","F1", "Recall","Roc-auc", "Configuration"]]
     df_all_new = df_all_new.reset_index() 
     df_all_new.to_feather(path+t_path)
 
@@ -536,7 +537,7 @@ def run(lang:str, col:str):
             best_results.append({"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i), "Type":"Random Search","Accuracy": rand_best_results.metrics['accuracy'],"Precision":rand_best_results.metrics['precision'],"F1": rand_best_results.metrics['f1'],"Recall":rand_best_results.metrics['recall'], "Roc_auc":rand_best_results.metrics['roc_auc'],"Configuration":rand_best_results.config,"Log_Dir":rand_best_results.log_dir, "Checkpoint":rand_best_results.checkpoint})
             logger.info(f"[Random Search]Best Model with Accuracy: {rand_best_results.metrics['accuracy']} and Configuration:{rand_best_results.config} reached. Checkpoint: {rand_best_results.checkpoint}")
         except RuntimeError as e:
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
             r= torch.cuda.memory_summary(device=device)
             print(r)
             torch.cuda.empty_cache()
@@ -580,13 +581,13 @@ def run(lang:str, col:str):
             save_results(lang, best_results_df)
             best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
             best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
+            logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
             # if best_result_acc == 1:
             #     logger.info(f"[Model {model_name}] Found best Accuracy:{best_result_acc}. Models with Accuracy == 1 will be ignored for saving.")
             #     best_results_df = best_results_df[best_results_df['Accuracy'] != 1]
             #     best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
             #     best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
-            logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
-        
+
             ####Test Model###
             validate_model(col,lang, best_results_df.to_dict('records')[0], model_path, model_name)
 
@@ -596,7 +597,7 @@ def run(lang:str, col:str):
 
 
 run(lang ='de', col = 'TOPIC')
-run(lang ='en', col = 'TOPIC')
+# run(lang ='en', col = 'TOPIC')
 #run(lang ='de', col = 'URL_TEXT')
 #run(lang ='en', col = 'URL_TEXT')
 
