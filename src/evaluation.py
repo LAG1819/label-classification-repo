@@ -48,9 +48,9 @@ def load_eval_data_automated_label_old():
     print(df)
 
 def load_eval_data_automated_label():
-    coverage_de = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label\model_tuning_de\coverage_results.feather')
-    eval_de = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label\model_tuning_de\eval_results.feather')
-    eval_en = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label\model_tuning_en\eval_results.feather')
+    coverage_de = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label\model_tuning_de\results\coverage_results.feather')
+    eval_de = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label\model_tuning_de\results\eval_results.feather')
+    eval_en = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label\model_tuning_en\results\eval_results.feather')
     return eval_de,eval_en
 
 def laod_eval_data_classification():
