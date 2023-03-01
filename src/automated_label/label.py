@@ -18,14 +18,13 @@ import pandas as pd
 import os
 import time
 import numpy as np
+import random
 import pickle
 from sys import exit
 from itertools import product
 import numpy as np
 import logging 
 from datetime import date
-from snorkel.labeling import labeling_function
-from snorkel.preprocess import preprocessor
 from snorkel.labeling import PandasLFApplier
 from snorkel.labeling import LFAnalysis
 from snorkel.labeling.model.label_model import LabelModel
@@ -335,7 +334,7 @@ class Labeler:
         logger.info(f"Validate metrics of {k}-fold Cross Validation with Trainingset {i}")
         
         #get current trial number
-        eval_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results.feather'
+        eval_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results_'+self.text_col+r'.feather'
         path = str(os.path.dirname(__file__)).split("src")[0]
         ##check if target_path already exists
         if os.path.exists(path+eval_path):
@@ -346,7 +345,7 @@ class Labeler:
             trial = 0
 
         #save coverage data next to eval data
-        coverage_path = r'models\label\model_tuning_'+self.lang+r'\results\coverage_results.feather'
+        coverage_path = r'models\label\model_tuning_'+self.lang+r'\results\coverage_results_'+self.text_col+r'.feather'
         coverage_df['LF'] = coverage_df.index
         coverage_df['TRIAL'] = trial
         coverage_df['k_fold'] = k
@@ -370,12 +369,11 @@ class Labeler:
         logger = logging.getLogger("Labeler")
         logger.info(f"Training and Evaluation of best Model with {k}-fold Cross Validation with Trainingset {i}")
 
+
         #random search
         loggerr = logging.getLogger("Labeler.randomSearch")
         try:
             self.apply_randomSearch(L_train_fold,L_test_fold,Y_test,k,i)
-        except AttributeError:
-            pass
         except Exception as e:
             loggerr.warning("Error occurred: ", e)
             pass
@@ -384,8 +382,6 @@ class Labeler:
         loggerg = logging.getLogger("Labeler.gridSearch")
         try:
             self.apply_gridSearch(L_train_fold,L_test_fold,Y_test,k,i)
-        except AttributeError:
-            pass
         except Exception as e:
             loggerg.warning("Error occurred: ", e)
             pass
@@ -394,37 +390,38 @@ class Labeler:
         loggerb = logging.getLogger("Labeler.bayesianOptim")
         try:
             self.apply_bayesianOptimization(L_train_fold,L_test_fold,Y_test,k,i)
-        except AttributeError:
-            pass
         except Exception as e:
             loggerb.warning("Error occurred: ", e)
             pass
 
     @loggingdecorator("label.function")
-    def apply_randomSearch(self,train,test,y_test,k,i, max_evals = 20):
+    def apply_randomSearch(self,train,test,y_test,k,i, max_evals = 40):
         
         # Set up random search checkpoint folder
         eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\random_search_"+self.text_col
         
-        #  random.seed(123)
         #  Choose random hyperparameters until reach max evaluations
         eval_data_intern = []
+        n_epochs = [random.randint(10,800) for _ in range(max_evals)]
+        log_freq = [random.randint(10,200) for _ in range(max_evals)]
+        l2 = [round(random.uniform(0.1,0.4),1) for _ in range(max_evals)]
+        lr = [round(random.uniform(0.001,0.02),3)for _ in range(max_evals)]
+        optimizer = [random.choice(["sgd", "adam", "adamax"])for _ in range(max_evals)]
         for l in range(max_evals):
-            p = {'n_epochs':np.random.randint(low = 10,high = 800),
-            'log_freq':np.random.randint(low = 10,high = 200),
-            'l2':round(np.random.uniform(low = 0.1,high = 2.0, size = 1)[0],1),
-            'lr':round(np.random.uniform(low = 0.001,high = 0.02, size = 1)[0],3),
-            'optimizer':np.random.choice(["sgd", "adam", "adamax"],1)[0],
-            'lr_scheduler': np.random.choice(["constant", "linear", "exponential", "step"],1)[0]
-            }
-            label_model = LabelModel(cardinality = 7, verbose=False)
-            label_model.fit(L_train=train, n_epochs=p['n_epochs'], seed=123, log_freq=p['log_freq'], l2=p['l2'], lr=p['lr'], optimizer = p['optimizer'], lr_scheduler = p['lr_scheduler'])
-            label_model_acc = label_model.score(L=test, Y=y_test, tie_break_policy="random")["accuracy" ]
+            label_model = LabelModel(cardinality = 7, verbose=False, device = 'cuda:0')
+            label_model.fit(L_train=train, n_epochs=n_epochs[l], seed=123, log_freq=log_freq[l], l2=l2[l], lr=lr[l], optimizer = optimizer[l])
+
+            #Metrics: `accuracy`, `coverage`,`precision`, `recall`, `f1`, `f1_micro`, `f1_macro`, `fbeta`,`matthews_corrcoef`, `roc_auc`
+            label_model_metrics = label_model.score(L=test, Y=y_test, metrics=['accuracy', 'coverage','precision_micro','precision_macro','f1_micro', 'f1_macro','matthews_corrcoef'],\
+                                                    tie_break_policy="random")
             
-            eval_data_intern.append({'Type':'RandomSearch','n_epochs':p['n_epochs'],'log_freq':p['log_freq'],'l2':p['l2'],'lr':p['lr'],'optimizer':p['optimizer'],'lr_scheduler':p['lr_scheduler'],'accuracy':label_model_acc,'k-fold':k,'trainingset':i})
+            eval_data_intern.append({'Type':'RandomSearch','n_epochs':n_epochs[l],'log_freq':log_freq[l],'l2':l2[l],'lr':lr[l],'optimizer':optimizer[l],\
+                                     'accuracy':label_model_metrics["accuracy" ],'PrecisionMicro':label_model_metrics['precision_micro'],'PrecisionMacro':label_model_metrics['precision_macro'],\
+                                        'F1Micro':label_model_metrics['f1_micro'],'F1Macro':label_model_metrics['f1_macro'],'MCC':label_model_metrics['matthews_corrcoef'],\
+                                            'Coverage':label_model_metrics['coverage'],'k-fold':k,'trainingset':i})
         
         # sort results by accuracy
-        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False])
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy','MCC'], ascending=[False,False])
         best_model = df.to_dict('records')[0]
             
         # Set up model checkpoint folder and save model including log
@@ -432,11 +429,15 @@ class Labeler:
         model_folder = eval_folder+r"\model_"+rand_name+'_n_epochs_'+str(best_model['n_epochs'])+'_log_freq_'+str(best_model['log_freq'])+'_l2_'+str(best_model['l2'])+'_lr_'+str(best_model['lr'])+'_optimizer_'+best_model['optimizer']+"_"+str(date.today())
         os.makedirs(model_folder)
         label_model = LabelModel(cardinality = 7, verbose=False)
-        label_model.fit(L_train=train, n_epochs=best_model['n_epochs'], seed=123, log_freq=best_model['log_freq'], l2=best_model['l2'], lr=best_model['lr'], optimizer = best_model['optimizer'], lr_scheduler = best_model['lr_scheduler'])
+        label_model.fit(L_train=train, n_epochs=best_model['n_epochs'], seed=123, log_freq=best_model['log_freq'], l2=best_model['l2'], lr=best_model['lr'], optimizer = best_model['optimizer'])
         label_model.save(model_folder+r"\label_model.pkl")
 
         # add best result to overall evaluation results
-        self.evaluation_data.append({'Type':'RandomSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],'optimizer':best_model['optimizer'],'lr_scheduler':best_model['lr_scheduler'],'accuracy':best_model['accuracy'],'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl"})
+        self.evaluation_data.append({'Type':'RandomSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],\
+                                     'optimizer':best_model['optimizer'],\
+                                        'accuracy':best_model["accuracy" ],'PrecisionMicro':best_model['PrecisionMicro'],'PrecisionMacro':best_model['PrecisionMacro'],\
+                                            'F1Micro':best_model['F1Micro'],'F1Macro':best_model['F1Macro'],'MCC':best_model['MCC'],'Coverage':best_model['Coverage'],\
+                                                'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl"})
 
     @loggingdecorator("label.function")
     def apply_gridSearch(self,train,test,y_test,k,i):
@@ -449,21 +450,26 @@ class Labeler:
             'log_freq':[30,90,170],
             'l2':[0.1,0.2,0.3],
             'lr':[0.00001,0.0001, 0.001],
-            'optimizer':["sgd", "adam", "adamax"],
-            'lr_scheduler': ["constant", "linear", "exponential", "step"]
+            'optimizer':["sgd", "adam", "adamax"]
         }
-        permutations = list(product(hyperparameter_space['n_epochs'],hyperparameter_space['log_freq'],hyperparameter_space['l2'],hyperparameter_space['lr'],hyperparameter_space['optimizer'], hyperparameter_space['lr_scheduler']))
+        permutations = list(product(hyperparameter_space['n_epochs'],hyperparameter_space['log_freq'],hyperparameter_space['l2'],hyperparameter_space['lr'],hyperparameter_space['optimizer']))
         eval_data_intern = []
         for p in permutations:
             #logger.info(f"Selected parameter {p}")
-            label_model = LabelModel(cardinality = 7, verbose=False)
-            label_model.fit(L_train=train, n_epochs=p[0], seed=123, log_freq=p[1], l2=p[2], lr=p[3], optimizer = p[4], lr_scheduler = p[5])
-            label_model_acc = label_model.score(L=test, Y=y_test, tie_break_policy="random")["accuracy" ]
+            label_model = LabelModel(cardinality = 7, verbose=False, device = 'cuda:0')
+            label_model.fit(L_train=train, n_epochs=p[0], seed=123, log_freq=p[1], l2=p[2], lr=p[3], optimizer = p[4])
+
+            #Metrics: `accuracy`, `coverage`,`precision`, `recall`, `f1`, `f1_micro`, `f1_macro`, `fbeta`,`matthews_corrcoef`, `roc_auc`
+            label_model_metrics = label_model.score(L=test, Y=y_test, metrics=['accuracy', 'coverage','precision_micro','precision_macro','f1_micro', 'f1_macro','matthews_corrcoef'],\
+                                                    tie_break_policy="random")
             
-            eval_data_intern.append({'Type':'GridSearch','n_epochs':p[0],'log_freq':p[1],'l2':p[2],'lr':p[3],'optimizer':p[4],'lr_scheduler':p[5],'accuracy':label_model_acc,'k-fold':k,'trainingset':i})
+            eval_data_intern.append({'Type':'GridSearch','n_epochs':p[0],'log_freq':p[1],'l2':p[2],'lr':p[3],'optimizer':p[4],\
+                                     'accuracy':label_model_metrics["accuracy" ],'PrecisionMicro':label_model_metrics['precision_micro'],'PrecisionMacro':label_model_metrics['precision_macro'],\
+                                        'F1Micro':label_model_metrics['f1_micro'],'F1Macro':label_model_metrics['f1_macro'],'MCC':label_model_metrics['matthews_corrcoef'],\
+                                            'Coverage':label_model_metrics['coverage'],'k-fold':k,'trainingset':i})
             
         # sort results by accuracy
-        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False])
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy','MCC'], ascending=[False,False])
         best_model = df.to_dict('records')[0]
 
         # Set up model checkpoint folder and save model including log
@@ -472,10 +478,14 @@ class Labeler:
         os.makedirs(model_folder)
 
         # add best result to overall evaluation results
-        self.evaluation_data.append({'Type':'GridSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],'optimizer':best_model['optimizer'],'lr_scheduler':best_model['lr_scheduler'],'accuracy':best_model['accuracy'],'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl"})
+        self.evaluation_data.append({'Type':'GridSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],\
+                                    'optimizer':best_model['optimizer'],\
+                                        'accuracy':best_model["accuracy" ],'PrecisionMicro':best_model['PrecisionMicro'],'PrecisionMacro':best_model['PrecisionMacro'],\
+                                            'F1Micro':best_model['F1Micro'],'F1Macro':best_model['F1Macro'],'MCC':best_model['MCC'],'Coverage':best_model['Coverage'],\
+                                                'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl"})
 
         label_model = LabelModel(cardinality = 7, verbose=False)
-        label_model.fit(L_train=train, n_epochs=best_model['n_epochs'], seed=123, log_freq=best_model['log_freq'], l2=best_model['l2'], lr=best_model['lr'], optimizer = best_model['optimizer'], lr_scheduler = best_model['lr_scheduler'])
+        label_model.fit(L_train=train, n_epochs=best_model['n_epochs'], seed=123, log_freq=best_model['log_freq'], l2=best_model['l2'], lr=best_model['lr'], optimizer = best_model['optimizer'])
         label_model.save(model_folder+r"\label_model.pkl")
 
 
@@ -488,14 +498,13 @@ class Labeler:
         hyperparameter_space ={
             'n_epochs':[10,150],
             'log_freq':[10,200],
-            'l2':[0.1,2.0],
+            'l2':[0.1,0.5],
             'lr':[0.0001,0.01],
-            'optimizer':[0,2],
-            #'lr_scheduler': [0,3]
+            'optimizer':[0,2]
         }
         eval_data_intern = []
         def model_train(n_epochs,log_freq,l2,lr, optimizer):
-            label_model = LabelModel(cardinality = 7, verbose=False)
+            label_model = LabelModel(cardinality = 7, verbose=False, device = 'cuda:0')
             if round(optimizer) == 0:
                 optim = "sgd"
             elif round(optimizer) == 1:
@@ -505,23 +514,18 @@ class Labeler:
             else:
                 optim = "adam"
 
-            # if round(lr_scheduler) == 0:
-            #     lr_schedul = "constant" 
-            # elif round(lr_scheduler) == 1:
-            #     lr_schedul = "linear"
-            # elif round(lr_scheduler) == 2:
-            #     lr_schedul = "exponential"
-            # elif round(lr_scheduler) == 3:
-            #     lr_schedul = "step"
-            # else:
-            #     lr_schedul = "step"
+            label_model.fit(L_train=train, n_epochs=round(n_epochs), seed=123, log_freq=round(log_freq), l2=l2, lr=lr, optimizer = optim)
 
-            label_model.fit(L_train=train, n_epochs=round(n_epochs), seed=123, log_freq=round(log_freq), l2=l2, lr=lr, optimizer = optim)#, lr_scheduler = lr_schedul)
-            label_model_acc = label_model.score(L=test, Y=y_test, tie_break_policy="random")["accuracy" ]
+            # Metrics: `accuracy`, `coverage`,`precision`, `recall`, `f1`, `f1_micro`, `f1_macro`, `fbeta`,`matthews_corrcoef`, `roc_auc`
+            label_model_metrics = label_model.score(L=test, Y=y_test, metrics=['accuracy', 'coverage','precision_micro','precision_macro','f1_micro', 'f1_macro','matthews_corrcoef'],\
+                                                    tie_break_policy="random")
             
             # Save evaluation results temporarily
-            eval_data_intern.append({'Type':'BayesSearch','n_epochs':round(n_epochs),'log_freq':round(log_freq),'l2':l2,'lr':lr,'optimizer':optim,'lr_scheduler':'None','accuracy':label_model_acc,'k-fold':k,'trainingset':i})
-            return label_model_acc
+            eval_data_intern.append({'Type':'BayesSearch','n_epochs':round(n_epochs),'log_freq':round(log_freq),'l2':l2,'lr':lr,'optimizer':optim,\
+                                     'accuracy':label_model_metrics["accuracy" ],'PrecisionMicro':label_model_metrics['precision_micro'],'PrecisionMacro':label_model_metrics['precision_macro'],\
+                                        'F1Micro':label_model_metrics['f1_micro'],'F1Macro':label_model_metrics['f1_macro'],'MCC':label_model_metrics['matthews_corrcoef'],\
+                                            'Coverage':label_model_metrics['coverage'],'k-fold':k,'trainingset':i})
+            return label_model_metrics["accuracy" ]
 
         optimizer = bayes_opt.BayesianOptimization(f=model_train,pbounds =hyperparameter_space ,verbose = 1, random_state = 4)
         optimizer.maximize(init_points = 5, n_iter = max_evals)        
@@ -530,7 +534,7 @@ class Labeler:
         # highest_accuracy = optimizer.max["target"]
 
         # sort results by accuracy
-        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False])
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy','MCC'], ascending=[False,False])
         best_model = df.to_dict('records')[0]
 
         # Set up model checkpoint folder and save model including log
@@ -539,7 +543,11 @@ class Labeler:
         os.makedirs(model_folder)
 
         # add best result to overall evaluation results
-        self.evaluation_data.append({'Type':'BayesSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],'optimizer':best_model['optimizer'],'lr_scheduler':'None','accuracy':best_model['accuracy'],'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl"})
+        self.evaluation_data.append({'Type':'BayesSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],\
+                                     'optimizer':best_model['optimizer'],\
+                                        'accuracy':best_model["accuracy" ],'PrecisionMicro':best_model['PrecisionMicro'],'PrecisionMacro':best_model['PrecisionMacro'],\
+                                            'F1Micro':best_model['F1Micro'],'F1Macro':best_model['F1Macro'],'MCC':best_model['MCC'],'Coverage':best_model['Coverage'],\
+                                                'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl"})
 
         label_model = LabelModel(cardinality = 7, verbose=False)
         label_model.fit(L_train=train, n_epochs=best_model['n_epochs'], seed=123, log_freq=best_model['log_freq'], l2=best_model['l2'], lr=best_model['lr'], optimizer = best_model['optimizer'])
@@ -633,7 +641,7 @@ class Labeler:
             logger.info("Data with applied labels not saved!")
 
     def save_results(self, df_new):
-        t_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results.feather'
+        t_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results_'+self.text_col+r'.feather'
         path = str(os.path.dirname(__file__)).split("src")[0]
         trial = 0
         ##check if target_path already exists
@@ -661,9 +669,9 @@ class Labeler:
         self.save_data()
 
 if __name__ == "__main__":
-    for lang in ['de','en']:
+    for lang in ['de']:#,'en']:
         topic_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC')
-        text_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
+        # text_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
    
     ####test of model loading###
     # path =r'D:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_de\grid_search\model_10857_n_epochs_50_log_freq_10_l2_0.1_lr_0.002_optimizer_adam_2023-02-09\label_model.pkl'
