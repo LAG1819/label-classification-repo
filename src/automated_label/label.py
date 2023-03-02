@@ -26,6 +26,7 @@ import numpy as np
 import logging 
 from datetime import date
 from snorkel.labeling import PandasLFApplier
+from snorkel.labeling.apply.spark import SparkLFApplier
 from snorkel.labeling import LFAnalysis
 from snorkel.labeling.model.label_model import LabelModel
 from snorkel.labeling.model import MajorityLabelVoter
@@ -262,9 +263,14 @@ class Labeler:
         logger = logging.getLogger("Labeler")
         logger.info("Application of Labeling Functions: {f}".format(f = self.lfs))
         self.applier = PandasLFApplier(lfs=self.lfs)
+        # self.applier2 = SparkLFApplier(lfs=self.lfs)
+        # spark = SparkSession.builder\
+        # .appName("Test application")\
+        #     .master("local[1]") \
+        #         .config("spark.driver.bindAddress", "127.0.0.1") \
+        #             .getOrCreate()
         try:
             #k_fold Cross Validation
-            self.L_train_list =[]
             for j in range(2,10):
                 k_fold = KFold(n_splits = j,shuffle = True, random_state = 12)
                 i = 1
@@ -276,9 +282,23 @@ class Labeler:
                     fold_test_df = fold_test_df[fold_test_df['LABEL']!= -2]
                     y_test = fold_test_df['LABEL'].to_numpy()
 
+                    # start = time.time()
                     l_train = self.applier.apply(df=fold_train_df)
+                    # print(f"Time with Pandas (trainset):{time.time()-start}")
+
+                    # start = time.time()
+                    # train = spark.createDataFrame(fold_train_df)
+                    # l_train2 = self.applier2.apply(train.rdd)
+                    # print(f"Time with Spark (trainset):{time.time()-start}")
+                    
+                    # start = time.time()
                     l_test = self.applier.apply(df=fold_test_df)
-                    self.L_train_list.append((l_train,l_test,y_test,j,i))
+                    # print(f"Time with Pandas (testset):{time.time()-start}")
+
+                    # start = time.time()
+                    # test = spark.createDataFrame(fold_test_df)
+                    # l_test2 = self.applier2.apply(test.rdd)
+                    # print(f"Time with Spark (testset):{time.time()-start}")
 
                     # polarity = The set of unique labels this LF outputs (excluding abstains)
                     # coverage = percentage of objects the LF labels
@@ -639,7 +659,7 @@ class Labeler:
             logger.info("Data with applied labels saved!")
         else:
             logger.info("Data with applied labels not saved!")
-
+ 
     def save_results(self, df_new):
         t_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results_'+self.text_col+r'.feather'
         path = str(os.path.dirname(__file__)).split("src")[0]
@@ -655,7 +675,7 @@ class Labeler:
         else:
             df_all_new = df_new
             df_all_new['Trial'] = trial
-
+ 
         df_all_new['TEXT'] = self.text_col
         df_all_new.reset_index(inplace = True, drop = True)
         df_all_new.to_feather(path+t_path)
@@ -669,7 +689,7 @@ class Labeler:
         self.save_data()
 
 if __name__ == "__main__":
-    for lang in ['de']:#,'en']:
+    for lang in ['en']:#,'de']:
         topic_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC')
         # text_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
    
