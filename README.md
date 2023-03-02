@@ -1,9 +1,10 @@
-# BERT-Based Classification algorithm based on deep learning and automated labeling.
-A classification of texts based on automated labeling and tranfsormers
+# BERT-Based Text classification framework for the german industry.
+A text classificatior of industry-specific texts based on automated labeling and tranfsormers.
 
-This repository was generated and developed as part of the master thesis "Analysis and automated labeling of topics and trends in the German
-automotive industry using Deep Learning and Natural Language Processing based on of industry-specific website content.".
-In the context of this work, a BERT-based classification algorithm is trained and developed that can identify and classify topics and trends of a predefined industry.
+This repository was generated and developed as part of the master thesis "Development and analysis of a framework for the classification of German industry-specific texts using Deep learning and Automated Labeling for the application in the German industry using the example of the automotive industry."
+In the context of this work, a Automated Labeling model and a BERT-based text classification model is trained and developed. In combination e.g. topics and trends of a predefined industry can be identified and classified.
+<!-- "Analysis and automated labeling of topics and trends in the German
+automotive industry using Deep Learning and Natural Language Processing based on of industry-specific website content.". -->
 
 ## Motivation
 
@@ -11,6 +12,7 @@ In the context of this work, a BERT-based classification algorithm is trained an
 [0] Install [Python](https://www.python.org/downloads/release/python-3111/) or [Anaconda](https://www.anaconda.com/products/distribution).
 
 [1] Download Repository:
+
 ```python
 git clone https://github.com/LGHDM/ml-classification-repo.git
 ```
@@ -39,7 +41,8 @@ pip install -r environment/requirements.txt
    - Companies and others related to industry and its url: KEYWORD, URL  
 - Class data for labeling:
    - Labeling classes and related url links (two per class) for Cluster Centroids: KMEANS_CLASS, KMEANS_URL, KMEANS_LANG
-- Labeling classes and matching keywords: **CLASS_keywords.json** 
+- Labeling classes and matching keywords:
+   - Predfined labeling classes: AUTONOMOUS; ELECTRIFICATION, CONNECTIVITY, SHARED, SUSTAINABILITY, DIGITALISATION, INDIVIDUALISATION.
    
 
 ## Usage
@@ -49,6 +52,8 @@ example_text = "This is an example text. It contains automotive specific words l
 classifier = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/classifier.pkl", 'rb')) 
 predicted_topic = classifier.predict(example_text)
 ```
+What it offers: A basic framwork to develop and adapt to industry specific text classification problems. 
+What it doesn't offer: The frame work is designed for user-specific requirements and must be adapted accordingly before it can be used!
 
 ## Description
 It can be selected between German and English with a resulting german or english specified classifier.
