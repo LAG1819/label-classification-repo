@@ -42,30 +42,36 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 #pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
 
 class BertClassifier(nn.Module):
-  def __init__(self,checkpoint,num_labels): 
-    super(BertClassifier,self).__init__() 
-    self.num_labels = num_labels 
+    """Customised Bert Classifier. The Class takes a pretrained Model as input and adds a Classifier Layer on top.
+    Pretrained Modell Bert-based (german): bert-base-german-dbmdz-uncased
+    Pretrained Modell Bert-based (english): bert-base-uncased
+    Args:
+        nn (_type_): Neurol Network Module from Pytorch
+    """
+    def __init__(self,checkpoint,num_labels): 
+        super(BertClassifier,self).__init__() 
+        self.num_labels = num_labels 
 
-    #Load Model with given checkpoint and extract its body
-    self.model = AutoModel.from_pretrained(checkpoint,config=AutoConfig.from_pretrained(checkpoint, output_attentions=True,output_hidden_states=True))
-    self.dropout = nn.Dropout(0.1) 
-    self.classifier = nn.Linear(768,num_labels) # load and initialize weights
+        #Load Model with given checkpoint and extract its body
+        self.model = AutoModel.from_pretrained(checkpoint,config=AutoConfig.from_pretrained(checkpoint, output_attentions=True,output_hidden_states=True))
+        self.dropout = nn.Dropout(0.1) 
+        self.classifier = nn.Linear(768,num_labels) # load and initialize weights
 
-  def forward(self, input_ids=None, attention_mask=None,labels=None):
-    #Extract outputs from the body
-    outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
+    def forward(self, input_ids=None, attention_mask=None,labels=None):
+        #Extract outputs from the body
+        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
 
-    #Add custom layers
-    sequence_output = self.dropout(outputs[0]) #outputs[0]=last hidden state
+        #Add custom layers
+        sequence_output = self.dropout(outputs[0]) #outputs[0]=last hidden state
 
-    logits = self.classifier(sequence_output[:,0,:].view(-1,768)) # calculate losses
-    
-    loss = None
-    if labels is not None:
-      loss_fct = nn.CrossEntropyLoss()
-      loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
-    
-    return TokenClassifierOutput(loss=loss, logits=logits, hidden_states=outputs.hidden_states,attentions=outputs.attentions)
+        logits = self.classifier(sequence_output[:,0,:].view(-1,768)) # calculate losses
+        
+        loss = None
+        if labels is not None:
+            loss_fct = nn.CrossEntropyLoss()
+            loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+        
+        return TokenClassifierOutput(loss=loss, logits=logits, hidden_states=outputs.hidden_states,attentions=outputs.attentions)
 
 class ExperimentTerminationReporter(CLIReporter):
     def should_report(self, trials, done=False):
@@ -89,8 +95,8 @@ def load_data(text_col:str,lang:str) -> dict:
 
     Args:
         text_col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT. 
-                        If TOPIC is choosen, the data had been labeled based on the previous extracted TOPICS of each text (for more info check src/cleans/topic_lda.py)
-                        If URL_TEXT is choosen, the data had been labeled based on the previous cleaned texts (for more info check src/cleans/clean.py)
+                        If TOPIC is choosen, the data had been labeled based on the extracted TOPICS of the cleaned text (for more info check src/cleans/topic_lda.py)
+                        If URL_TEXT is choosen, the data had been labeled based on the cleaned texts (for more info check src/cleans/clean.py)
         lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
 
     Returns:
@@ -182,9 +188,10 @@ def set_params(model, config_lr, config_epoch,len_train_data):
     f1 = evaluate.load('f1')
     precision = evaluate.load('precision')
     recall = evaluate.load('recall')
-    roc_auc = evaluate.load("roc_auc","multiclass")
+    # roc_auc = evaluate.load("roc_auc","multiclass")
+    mcc = evaluate.load("matthews_correlation")
 
-    return num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1,precision,recall, roc_auc
+    return num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1,precision,recall, mcc
 
 def train_model(config, data):
     torch.cuda.empty_cache()
@@ -199,7 +206,7 @@ def train_model(config, data):
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     train_dl,test_dl = transform_train_data(data, data_collator,config["batch_size"])
-    num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1,precision,recall, roc_auc = set_params(model, config['lr'],config['epoch'], config['len_train_dl'])
+    num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1,precision,recall, mcc = set_params(model, config['lr'],config['epoch'], config['len_train_dl'])
 
     loaded_checkpoint = session.get_checkpoint()
     if loaded_checkpoint:
@@ -240,10 +247,12 @@ def train_model(config, data):
             recall.add_batch(predictions=predictions, references=batch["labels"])
             # metric.add_batch(predictions=predictions, references=batch["labels"], average = None)
                 
-            # roc_auc_metrics = roc_auc.compute()   
+            mcc_metrics = mcc.compute(average = 'macro')   
             acc_metric = accuracy.compute()
-            f1_metric = f1.compute(labels = [0,1,2,3,4,5,6], average=None)
-            precision_metric = precision.compute(labels = [0,1,2,3,4,5,6], average=None, zero_division = 0)
+            f1_metric_micro = f1.compute(labels = [0,1,2,3,4,5,6], average='micro')
+            f1_metric_macro = f1.compute(labels = [0,1,2,3,4,5,6], average='macro')
+            precision_metric_micro = precision.compute(labels = [0,1,2,3,4,5,6], average='micro', zero_division = 0)
+            precision_metric_macro = precision.compute(labels = [0,1,2,3,4,5,6], average='macro', zero_division = 0)
             recall_metric = recall.compute(labels = [0,1,2,3,4,5,6], average=None, zero_division = 0)             
         r= torch.cuda.memory_summary(device=device)
         print(r)
@@ -251,7 +260,9 @@ def train_model(config, data):
         torch.save((model.state_dict(), optimizer.state_dict()), "bert/checkpoint.pt")
         checkpoint = Checkpoint.from_directory("bert")
         #roc_auc_metrics['roc_auc']
-        session.report({"accuracy": acc_metric['accuracy'], "precision":precision_metric['precision'],"f1": f1_metric['f1'],"recall":recall_metric['recall'], "roc_auc":0}, checkpoint=checkpoint)
+        session.report({"accuracy": acc_metric['accuracy'], "precisionMicro":precision_metric_micro['precision'], "precisionMacro":precision_metric_macro['precision'],\
+                        "f1Micro": f1_metric_micro['f1'],"f1Macro": f1_metric_macro['f1'],"recall":recall_metric['recall'],\
+                              "mcc":mcc_metrics['matthews_correlation']}, checkpoint=checkpoint)
 
 def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_train_dl,num_samples = 1, num_cpu=2, num_gpu=1):
     if lang == 'de':
@@ -427,8 +438,161 @@ def get_model_path(lang:str, text_col:str):
     model_path = path_to_save_model+model_nr    
     model_name = 'trained_model_'+lang+'_'+text_col+"_"+model_nr
     return model_name, model_path
-    
 
+
+def save_results(lang, col,df_new):
+    t_path = r'models\classification\pytorch_tuning_'+lang+r'\results\eval_results_'+col+r'.feather'
+    path = str(os.path.dirname(__file__)).split("src")[0]
+
+    if not os.path.exists(str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\results'):
+        os.makedirs(str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\results')
+
+    ##check if target_path already exists
+    if os.path.exists(path+t_path):
+        df_all = pd.read_feather(path+t_path)
+        df_all_new = pd.concat([df_all,df_new])
+    else:
+        df_all_new = df_new
+
+    ##save dataset to target paths as feather
+    df_all_new = df_all_new[["Language", "Text", "K-Fold", "Split", "Type", "Accuracy", "Precision","F1", "Recall","Roc-auc", "Configuration"]]
+    df_all_new = df_all_new.reset_index() 
+    df_all_new.to_feather(path+t_path)
+
+def get_current_trial(lang,col):
+    t_path = r'models\classification\pytorch_tuning_'+lang+r'\results\eval_results_'+col+r'.feather'
+    path = str(os.path.dirname(__file__)).split("src")[0]
+    if os.path.exists(path+t_path):
+        df_all = pd.read_feather(path+t_path)
+        last_trial = df_all[['Trial']].sort_values(by=['Trial'], ascending=[False]).to_dict('records')[0]['Trial']
+        trail = last_trial+1
+    else:
+        trial = 0
+    return trial
+
+def run(lang:str, col:str):
+    temp_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],r"models\classification\temp")
+    ray.init(_temp_dir = temp_path)
+
+    # Create logger and assign handler
+    logger = logging.getLogger("Classification")
+    if (logger.hasHandlers()):
+        logger.handlers.clear()
+
+    handler  = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+
+    filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\classifier_training_'+lang+r'.log'
+    fh = logging.FileHandler(filename=filenames)
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+    logger.addHandler(fh)
+
+    if lang == 'de':
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
+    elif lang == 'en':
+        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+  
+    train_test_val_set = load_data(col,lang)
+    #len_train_dl = len(train_test_val_set['train'])
+
+    tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
+
+    path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_"+lang
+    num_samples_per_tune = 1
+    num_cpu = 4
+    num_gpu = 1
+    best_results = []
+    
+    logger.info(f"Classification tuning started with Language {lang}, Text-Column: {col} and Data source file: 'files\04_classify\labeled_texts_{lang}_{col}.feather'.")
+    current_trial = get_current_trial(lang,col)
+    
+    try:
+        #K-Fold Cross Validation
+        tokenized_data = tokenized_train_test_set['train']+tokenized_train_test_set['test']
+        tokenized_data = pd.DataFrame(tokenized_data)
+        for k in range(2,3):
+            k_fold = KFold(n_splits = k,shuffle = True, random_state = 42)
+            tokenized_train_test_set_fold = {}
+            for i,split in enumerate(k_fold.split(tokenized_data)):
+                logger.info(f"Training of {k}-Fold Cross-Validation with Trainingsplit {i} started.")
+                tokenized_train_test_set_fold['train'] = tokenized_data.iloc[split[0]].to_dict('records')
+                tokenized_train_test_set_fold['test'] = tokenized_data.iloc[split[1]].to_dict('records')
+                len_train_dl = tokenized_data.iloc[split[0]].shape[0]
+                try:
+                    ####Random Search###
+                    torch.cuda.empty_cache() 
+                    rand_best_results = random_search(lang,col,path,tokenized_train_test_set_fold,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
+                    best_results.append({"Trial":current_trial,"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i), "Type":"RandomSearch",\
+                                        "Accuracy": rand_best_results.metrics['accuracy'],"PrecisionMicro":rand_best_results.metrics["precisionMicro"],\
+                                            "PrecisionMacro":rand_best_results.metrics["precisionMacro"],"F1Micro": rand_best_results.metrics["f1Micro"],\
+                                                "F1Macro": rand_best_results.metrics["f1Macro"],"Recall":rand_best_results.metrics['recall'],\
+                                                "MCC":rand_best_results.metrics["mcc"],"Configuration":rand_best_results.config,\
+                                                    "Log_Dir":rand_best_results.log_dir, "Checkpoint":rand_best_results.checkpoint})
+                    logger.info(f"[Random Search]Best Model with Accuracy: {rand_best_results.metrics['accuracy']} and Configuration:{rand_best_results.config} reached. Checkpoint: {rand_best_results.checkpoint}")
+                except RuntimeError as e:
+                    r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+                    print(r)
+                    torch.cuda.empty_cache()
+                    logger.info(f"[Random Search]Error occurred:{e}")
+                try:
+                    ###Hyberpban Bayesian Optimization###
+                    torch.cuda.empty_cache() 
+                    bohb_best_results = bohb(lang,col,path,tokenized_train_test_set_fold,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
+                    best_results.append({"Trial":current_trial,"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i),"Type":"BOHB",\
+                                        "Accuracy": bohb_best_results.metrics['accuracy'],"PrecisionMicro":bohb_best_results.metrics["precisionMicro"],\
+                                            "PrecisionMacro":bohb_best_results.metrics["precisionMacro"],"F1Micro": bohb_best_results.metrics["f1Micro"],\
+                                                "F1Macro": bohb_best_results.metrics["f1Macro"],"Recall":bohb_best_results.metrics['recall'],\
+                                                "MCC":bohb_best_results.metrics["mcc"],"Configuration":bohb_best_results.config,\
+                                                    "Log_Dir": bohb_best_results.log_dir, "Checkpoint":bohb_best_results.checkpoint})
+                    logger.info(f"[BOHB]Best Model with Accuracy: {bohb_best_results.metrics['accuracy']} and Configuration:{bohb_best_results.config} reached. Checkpoint: {bohb_best_results.checkpoint}")
+                except RuntimeError as e:
+                    r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+                    print(r)
+                    torch.cuda.empty_cache()
+                    logger.info(f"[BOHB]Error occurred:{e}")
+
+                try:
+                    ####Hyperband Optimization###
+                    torch.cuda.empty_cache() 
+                    hyperband_best_results = hyperband(lang, col, path,tokenized_train_test_set_fold,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
+                    best_results.append({"Trial":current_trial,"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i),"Type":"Hyperband",\
+                                        "Accuracy": hyperband_best_results.metrics['accuracy'],"PrecisionMicro":hyperband_best_results.metrics["precisionMicro"],\
+                                            "PrecisionMacro":hyperband_best_results.metrics["precisionMacro"],"F1Micro": hyperband_best_results.metrics["f1Micro"],\
+                                                "F1Macro": hyperband_best_results.metrics["f1Macro"],"Recall":hyperband_best_results.metrics['recall'],\
+                                                "MCC":hyperband_best_results.metrics["mcc"],"Configuration":hyperband_best_results.config,\
+                                                    "Log_Dir":hyperband_best_results.log_dir, "Checkpoint":hyperband_best_results.checkpoint})
+                    logger.info(f"[Hyperband]Best Model with Accuracy:{hyperband_best_results.metrics['accuracy']} and Configuration:{hyperband_best_results.config} reached. Checkpoint: {hyperband_best_results.checkpoint}")
+                except RuntimeError as e:
+                    r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+                    print(r)
+                    torch.cuda.empty_cache()
+                    logger.info(f"[Hyperband]Error occurred:{e}")
+    except KeyboardInterrupt:
+            logger.info("KeyboardInterrupt. Session will be finished")
+    finally:
+        if best_results:
+            logger.info("Current best model will be validated and saved (if better than existing model).")
+            
+            #save evaluation data
+            best_results_df = pd.DataFrame(best_results).sort_values(by=['Accuracy'], ascending=[False])
+            save_results(lang, col, best_results_df)
+
+            #identify best model and load for valdation
+            model_name, model_path = get_model_path(lang, col)
+            best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
+            best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
+            logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
+
+            #validate best model on validation data###
+            validate_model(col,lang, best_results_df.to_dict('records')[0], model_path, model_name)
+
+        ray.shutdown()
+        torch.cuda.empty_cache()
+        return
+    
 def predict(sentence:str, lang:str,batch_size, text_col = 'TOPIC'):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
@@ -460,141 +624,6 @@ def predict(sentence:str, lang:str,batch_size, text_col = 'TOPIC'):
         label = ag_labels[prediction]
         print(prediction)
         print(label)
-
-def save_results(lang, df_new):
-    t_path = r'models\classification\pytorch_tuning_'+lang+r'\eval_results.feather'
-    path = str(os.path.dirname(__file__)).split("src")[0]
-    ##check if target_path already exists
-    if os.path.exists(path+t_path):
-        df_all = pd.read_feather(path+t_path)
-        df_all_new = pd.concat([df_all,df_new])
-    else:
-        df_all_new = df_new
-
-    ##save dataset to target paths as feather
-    df_all_new = df_all_new[["Language", "Text", "K-Fold", "Split", "Type", "Accuracy", "Precision","F1", "Recall","Roc-auc", "Configuration"]]
-    df_all_new = df_all_new.reset_index() 
-    df_all_new.to_feather(path+t_path)
-
-def run(lang:str, col:str):
-    temp_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],r"models\classification\temp")
-    ray.init(_temp_dir = temp_path)
-
-    # Create logger and assign handler
-    logger = logging.getLogger("Classification")
-    if (logger.hasHandlers()):
-        logger.handlers.clear()
-
-    handler  = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
-    logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
-
-    filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\classifier_training_'+lang+r'.log'
-    fh = logging.FileHandler(filename=filenames)
-    fh.setLevel(logging.DEBUG)
-    fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
-    logger.addHandler(fh)
-
-    if lang == 'de':
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
-    elif lang == 'en':
-        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-  
-    train_test_val_set = load_data(col,lang)
-    len_train_dl = len(train_test_val_set['train'])
-
-    tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
-
-    path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_"+lang
-    num_samples_per_tune = 1
-    num_cpu = 4
-    num_gpu = 1
-    best_results = []
-    
-    logger.info(f"Classification tuning started with Language {lang}, Text-Column: {col} and Data source file: 'files\04_classify\labeled_texts_{lang}_{col}.feather'.")
-    k=0
-    i=0
-    #K-Fold Cross Validation
-    # tokenized_data = tokenized_train_test_set['train']+tokenized_train_test_set['test']
-    # tokenized_data = pd.DataFrame(tokenized_data)
-    # for k in range(5,6):
-    #     k_fold = KFold(n_splits = k,shuffle = True, random_state = 12)
-    #     i = 1
-    #     tokenized_train_test_set_fold = {}
-    #     for i,split in enumerate(k_fold.split(tokenized_data)):
-    #         try:
-    #             logger.info(f"Training of {k}-Fold Cross-Validation with Trainingsplit {i} started.")
-    #             tokenized_train_test_set_fold['train'] = tokenized_data.iloc[split[0]].to_dict('records')
-    #             tokenized_train_test_set_fold['test'] = tokenized_data.iloc[split[1]].to_dict('records')
-    #             len_train_dl = tokenized_data.iloc[split[0]].shape[0]
-    
-    try:
-        try:
-            ####Random Search###
-            torch.cuda.empty_cache() 
-            rand_best_results = random_search(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
-            best_results.append({"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i), "Type":"Random Search","Accuracy": rand_best_results.metrics['accuracy'],"Precision":rand_best_results.metrics['precision'],"F1": rand_best_results.metrics['f1'],"Recall":rand_best_results.metrics['recall'], "Roc_auc":rand_best_results.metrics['roc_auc'],"Configuration":rand_best_results.config,"Log_Dir":rand_best_results.log_dir, "Checkpoint":rand_best_results.checkpoint})
-            logger.info(f"[Random Search]Best Model with Accuracy: {rand_best_results.metrics['accuracy']} and Configuration:{rand_best_results.config} reached. Checkpoint: {rand_best_results.checkpoint}")
-        except RuntimeError as e:
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
-            r= torch.cuda.memory_summary(device=device)
-            print(r)
-            torch.cuda.empty_cache()
-            logger.info(f"[Random Search]Error occurred:{e}")
-        try:
-            ###Hyberpban Bayesian Optimization###
-            torch.cuda.empty_cache() 
-            bohb_best_results = bohb(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
-            best_results.append({"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i),"Type":"BOHB","Accuracy":bohb_best_results.metrics['accuracy'],"Precision":bohb_best_results.metrics['precision'],"F1": bohb_best_results.metrics['f1'],"Recall":bohb_best_results.metrics['recall'], "Roc_auc":bohb_best_results.metrics['roc_auc'],"Configuration":bohb_best_results.config,"Log_Dir": bohb_best_results.log_dir, "Checkpoint":bohb_best_results.checkpoint})
-            logger.info(f"[BOHB]Best Model with Accuracy: {bohb_best_results.metrics['accuracy']} and Configuration:{bohb_best_results.config} reached. Checkpoint: {bohb_best_results.checkpoint}")
-        except RuntimeError as e:
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            r= torch.cuda.memory_summary(device=device)
-            print(r)
-            torch.cuda.empty_cache()
-            logger.info(f"[BOHB]Error occurred:{e}")
-
-        try:
-            ####Hyperband Optimization###
-            torch.cuda.empty_cache() 
-            hyperband_best_results = hyperband(lang, col, path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
-            best_results.append({"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i),"Type":"Hyperband","Accuracy":hyperband_best_results.metrics['accuracy'],"Precision":hyperband_best_results.metrics['precision'],"F1": hyperband_best_results.metrics['f1'],"Recall":hyperband_best_results.metrics['recall'], "Roc_auc":hyperband_best_results.metrics['roc_auc'],"Configuration":hyperband_best_results.config,"Log_Dir":hyperband_best_results.log_dir, "Checkpoint":hyperband_best_results.checkpoint})
-            logger.info(f"[Hyperband]Best Model with Accuracy:{hyperband_best_results.metrics['accuracy']} and Configuration:{hyperband_best_results.config} reached. Checkpoint: {hyperband_best_results.checkpoint}")
-        except RuntimeError as e:
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            r= torch.cuda.memory_summary(device=device)
-            print(r)
-            torch.cuda.empty_cache()
-            logger.info(f"[Hyperband]Error occurred:{e}")
-
-    except KeyboardInterrupt:
-            logger.info("KeyboardInterrupt. Session will be finished")
-    finally:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        r= torch.cuda.memory_summary(device=device)
-        # print(r)
-        if best_results:
-            logger.info("Current best model will be validated and saved (if better than existing model).")
-            model_name, model_path = get_model_path(lang, col)
-            best_results_df = pd.DataFrame(best_results).sort_values(by=['Accuracy'], ascending=[False])
-            save_results(lang, best_results_df)
-            best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
-            best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
-            logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
-            # if best_result_acc == 1:
-            #     logger.info(f"[Model {model_name}] Found best Accuracy:{best_result_acc}. Models with Accuracy == 1 will be ignored for saving.")
-            #     best_results_df = best_results_df[best_results_df['Accuracy'] != 1]
-            #     best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
-            #     best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
-
-            ####Test Model###
-            validate_model(col,lang, best_results_df.to_dict('records')[0], model_path, model_name)
-
-        ray.shutdown()
-        torch.cuda.empty_cache()
-        return
-
 
 run(lang ='de', col = 'TOPIC')
 # run(lang ='en', col = 'TOPIC')
