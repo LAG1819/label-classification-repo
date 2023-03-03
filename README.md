@@ -35,7 +35,7 @@ py -3 -m venv .venv
 pip install -r environment/requirements.txt
 ```
 
-[4] Adapt and Review prefered Topics and Keywords in **Seed.xlsx** (only if needed!):
+[4] Adapt and Review prefered Classes in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) (only if needed!):
 - Seed data:
    - Labeling classes and related seed keywords to crawl: CLASS,KEYWORD_DE/KEYWORD_EN
    - Companies and others related to industry and its url: KEYWORD, URL  
