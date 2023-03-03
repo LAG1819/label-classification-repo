@@ -60,7 +60,7 @@ example_text = "This is an example text. It contains automotive specific words l
 classifier = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/classifier.pkl", 'rb')) 
 predicted_topic = classifier.predict(example_text)
 ```
-**What it offers:** A basic framwork to develop and adapt to industry specific text classification problems.
+**What it offers:** A basic framwork to develop and adapt to industry specific text classification problems.\t
 **What it doesn't offer:** The framework is designed for user-specific requirements and must be adapted accordingly before it can be used!
 
 ## Description
