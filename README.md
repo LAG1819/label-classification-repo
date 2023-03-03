@@ -102,14 +102,15 @@ It is possible to select languages german and english. The general steps to deve
  
 ***
 #### Classification Model
-   A classification model based on BERT [Bidirectional Encoder Representations from Transformers](https://arxiv.org/abs/1810.04805) is trained. 
-   - English Model based on TensorFlow trained model by [google](https://tfhub.dev/google/collections/bert/1). 
-   - German Model based on huggingface trained model by [deepset](https://huggingface.co/bert-base-german-cased). A classifier layer is placed on top of pretrained model.
+   A classification model based on BERT [Bidirectional Encoder Representations from Transformers](https://arxiv.org/abs/1810.04805) is trained. A classifier layer is placed on top of the pretrained models.
+   The selected models are  not case-sensitive, because all cleaned texts are in lower case!
+   - English Model extracted from Hugging Face: [Hugging Face team (hf-maintiners) - bert-base-uncased](https://huggingface.co/bert-base-uncased). 
+   - German Model extracted from Hugging Face: [MDZ Digital Library team (dbmdz) - bert-base-german-uncased](https://huggingface.co/dbmdz/bert-base-german-uncased). 
 
 ## Results
 Two results each are reported for labeling and classification depending on the selected texts (Topics or Continuous texts) on which the models were trained.
 ### Automated Labeling
-|Language|Text           | Parameter                       | Resutl | Run |
+|Language|Text           | Parameter                       | Result | Run |
 |:------ |:-------------:|:--------------------------------| :-----:| :--:|
 |DE      |TOPIC          | Accuracy                        | 0.56   | 1   |
 |DE      |TEXTS          | Accuracy                        | 0.00   | 1   |
@@ -122,7 +123,7 @@ Two results each are reported for labeling and classification depending on the s
 |EN      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
 
 ### Classification
-|Language|Text           | Parameter                       | Resutl | Run |
+|Language|Text           | Parameter                       | Result | Run |
 |:------ |:-------------:|:--------------------------------| :-----:| :--:|
 |DE      |TOPIC          | Accuracy                        | 0.00   | 1   |
 |DE      |TEXTS          | Accuracy                        | 0.00   | 1   |
@@ -135,7 +136,10 @@ Two results each are reported for labeling and classification depending on the s
 |EN      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
 
 ## References
-[Automated Labeling](https://www.snorkel.org/features/)
+[[Snorkel Automated Labeling] https://www.snorkel.org/features/](https://www.snorkel.org/features/)
+[[Google Bidirectional Encoder Representations from Transformers] https://arxiv.org/abs/1810.04805](https://arxiv.org/abs/1810.04805)
+[Hugging Face [English] Bert model](https://huggingface.co/bert-base-uncased)
+[Hugging Face [German] Bert model](https://huggingface.co/dbmdz/bert-base-german-uncased). 
 ## Licence
 This work is licensed under a [Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/4.0/legalcode) and of the 
 [GNU General Public License](http://www.gnu.org/licenses/).
