@@ -64,7 +64,7 @@ predicted_topic = classifier.predict(example_text)
 **What it doesn't offer:** The framework is designed for user-specific requirements and must be adapted accordingly before it can be used!
 
 ## Description
-It can be selected between the Languages german and english. The general steps to develop the classifier are as follows:
+It is possible to select languages german and english. The general steps to develop the classifier are as follows:
 
    1. [Text mining and crawling of website text content using seed url list and seed keywords.](#text-mining-and-crawling-of-website-text-content)
    2. [Data cleansing and topic extraction of website text content.](#data-cleansing-and-topic-extraction)
@@ -94,10 +94,9 @@ It can be selected between the Languages german and english. The general steps t
    After text cleaning a topic extraction is performed using the [Latent Dirichlet Allocation Algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.LatentDirichletAllocation.html)
 ***
 #### Automated Labeling
-   With the help of [automated labeling](https://www.snorkel.org/features/) the cleaned data is labeled. 
-   * Labeling Function 1: Keyword matching with help of pre-defined keywords (**CLASS_keywords.json**)
-   * Labeling Function 2: Labeled dataset by a domain expert consisting 500 samples.
-   * Labeling Function 3: Trained k-Means model with fixed centroids (according to centroids from **Seed.xlsx.**). 
+   A Label Model ist trained to automize the labeling of the whole dataset. 
+   * Labeling Function 1: Keyword matching with help of pre-defined keywords. The [keywords](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) are user-defined and case specific!
+   * Labeling Function 2: Trained k-Means model with fixed centroids. The [K-Means Centroids](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) is user-defined and case specific! 
 
    Predefined classes based on literature: AUTONOMOUS, CONNECTIVITY, DIGITALISATION, ELECTRIFICATION, INDIVIDUALISATION, SHARED, SUSTAINABILITY.
  
@@ -107,8 +106,19 @@ It can be selected between the Languages german and english. The general steps t
    - English Model based on TensorFlow trained model by [google](https://tfhub.dev/google/collections/bert/1). 
    - German Model based on huggingface trained model by [deepset](https://huggingface.co/bert-base-german-cased). A classifier layer is placed on top of pretrained model.
 
-## References
+## Results
+Two results each are reported for labeling and classification depending on the selected texts on which the models were trained.
+### Automated Labeling
+| Model         | Parameter                        | Run |
+|:-------------:|:--------------------------------:| :--:|
+| AL            | Accuracy                         | 1   |
+| AL            | Matthews Correlation Coefficent  | 1   |
 
+
+### Classification
+
+## References
+[Automated Labeling](https://www.snorkel.org/features/)
 ## Licence
 This work is licensed under a [Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/4.0/legalcode) and of the 
 [GNU General Public License](http://www.gnu.org/licenses/).
