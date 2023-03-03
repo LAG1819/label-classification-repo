@@ -43,29 +43,36 @@ pip install -r environment/requirements.txt
    - Labeling classes and related url links (two per class) for Cluster Centroids: KMEANS_CLASS, KMEANS_URL, KMEANS_LANG
 - Labeling classes and matching keywords:
    - Predfined labeling classes: AUTONOMOUS; ELECTRIFICATION, CONNECTIVITY, SHARED, SUSTAINABILITY, DIGITALISATION, INDIVIDUALISATION.
-   
+
+[5] Adapt and Review prefered Classes in **Data Cleaning, Automated Labeling and Classification**(only if needed!):
+- Data Cleaning:
+   - Adapt industry-specific stopwords.
+- Automated Labeling:
+   - Adapt requested classes to assign to
+   - Adapt Label Functions (LF) corresponding to requested classes.
+- Classification:
+   - Adapt number of classes (number labels) upon invoking the classifier model
 
 ## Usage
-The generated classifier can classify random texts into the industry-specific topics and trends and returns the most appropriate topic to which the text is related. 
+The generated classifier can classify random industry-specifc texts into the dedicated classes and predicts the best fitting class.
 ```python
 example_text = "This is an example text. It contains automotive specific words like battery, electrical, loading station, autonomic driving and many more car words."
 classifier = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/classifier.pkl", 'rb')) 
 predicted_topic = classifier.predict(example_text)
 ```
 What it offers: A basic framwork to develop and adapt to industry specific text classification problems. 
-What it doesn't offer: The frame work is designed for user-specific requirements and must be adapted accordingly before it can be used!
+What it doesn't offer: The framework is designed for user-specific requirements and must be adapted accordingly before it can be used!
 
 ## Description
-It can be selected between German and English with a resulting german or english specified classifier.
-The general steps to develop the classifier are as follows:
+It can be selected between the Languages german and english. The general steps to develop the classifier are as follows:
 
-   1. [Data mining and crawling of website text content using seed url list and seed keywords.](#data-mining-and-crawling-of-website-text-content)
+   1. [Text mining and crawling of website text content using seed url list and seed keywords.](#text-mining-and-crawling-of-website-text-content)
    2. [Data cleansing and topic extraction of website text content.](#data-cleansing-and-topic-extraction)
    3. [Automated labeling of cleaned website text content and of topics.](#automated-labeling)
    4. [Train Classification model (BERT-based).](#classification-model)
 
 ***
-#### Data Mining and Crawling 
+#### Text Mining and Crawling 
 
    At first one Excel Sheet is assigned: **Seed.xlsx.** This file contains the following sets of data:
    - A base (seed) of website links and a list of keywords to be crawled. The seed is crawled with help of a scrapy spider specified for the industries (BFS). 
