@@ -89,7 +89,7 @@ It is possible to select languages german and english. The general steps to deve
       - website-specific stopwords: stopwords like *login*, *privacy policy* or *imprint*.  
    3. Language detection of the texts and filtration of not corresponding texts to a preset language (en/de). 
    4. Lemmatization of the texts. <br>
-   (Optional: 5. Removal of city names in texts.) 
+   5. [Optional] Removal of city names in texts.
 
    After text cleaning a topic extraction is performed using the [Latent Dirichlet Allocation Algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.LatentDirichletAllocation.html)
 ***
