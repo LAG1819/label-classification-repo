@@ -136,8 +136,8 @@ Two results each are reported for labeling and classification depending on the s
 |EN      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
 
 ## References
-Programmatic Labeling: [https://proceedings.neurips.cc/paper/2016/file/6709e8d64a5f47269ed5cea9f625f7ab-Paper.pdf](https://proceedings.neurips.cc/paper/2016/file/6709e8d64a5f47269ed5cea9f625f7ab-Paper.pdf)
-Automated Labeling with Snorkel: [https://doi.org/10.1145/3035918.3056442](https://doi.org/10.1145/3035918.3056442)
+Programmatic Labeling: [https://proceedings.neurips.cc/paper/2016/file/6709e8d64a5f47269ed5cea9f625f7ab-Paper.pdf](https://proceedings.neurips.cc/paper/2016/file/6709e8d64a5f47269ed5cea9f625f7ab-Paper.pdf)<br>
+Automated Labeling with Snorkel: [https://doi.org/10.1145/3035918.3056442](https://doi.org/10.1145/3035918.3056442)<br>
 Snorkel: [https://www.snorkel.org/features/](https://www.snorkel.org/features/) <br>
 <br>
 Google Bidirectional Encoder Representations from Transformers: [https://arxiv.org/abs/1810.04805](https://arxiv.org/abs/1810.04805)<br>
