@@ -115,8 +115,8 @@ Two results each are reported for labeling and classification depending on the s
 |DE      |TEXTS          | Accuracy                        | 0.00   | 1   |
 |DE      |TOPIC          | Matthews Correlation Coefficent | 0.48   | 1   |
 |DE      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
-   
-   
+<br>
+
 |Language|Text           | Parameter                       | Resutl | Run |
 |EN      |TOPIC          | Accuracy                        | 0.47   | 1   |
 |EN      |TEXTS          | Accuracy                        | 0.00   | 1   |
