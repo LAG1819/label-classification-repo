@@ -48,7 +48,13 @@ class BertClassifier(nn.Module):
     Args:
         nn (_type_): Neurol Network Module from Pytorch
     """
-    def __init__(self,checkpoint,num_labels): 
+    def __init__(self,checkpoint,num_labels):
+        """Initialisation of a given pytorch model.
+
+        Args:
+            checkpoint (_type_): Checkpoint to load of a (pretrained) pytorch model for text classification.
+            num_labels (_type_): Given number of classes the classification layer has, that will be added on top of the (pretrained) pytorch model.
+        """
         super(BertClassifier,self).__init__() 
         self.num_labels = num_labels 
 
@@ -58,6 +64,16 @@ class BertClassifier(nn.Module):
         self.classifier = nn.Linear(768,num_labels) # load and initialize weights
 
     def forward(self, input_ids=None, attention_mask=None,labels=None):
+        """Obligatory forward function of a pytorch nn model. Takes ids, attention maksk AND labels as input. Those are generated of given data in prerocess_data function.
+
+        Args:
+            input_ids (_type_, optional): _description_. Defaults to None.
+            attention_mask (_type_, optional): _description_. Defaults to None.
+            labels (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            TokenClassifierOutput: Returns Base class for outputs of token classification models.
+        """
         #Extract outputs from the body
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
 
@@ -74,17 +90,45 @@ class BertClassifier(nn.Module):
         return TokenClassifierOutput(loss=loss, logits=logits, hidden_states=outputs.hidden_states,attentions=outputs.attentions)
 
 class ExperimentTerminationReporter(CLIReporter):
+    """Helper class for ray tune. Manages reporting while tuning with selected hyperparameter optimization techniques. 
+    Reports only after whole experiment of ray tune finished.
+
+    Args:
+        CLIReporter (_type_): Takes obligatory CLIReporter of ray as input to manage reporting.
+    """
     def should_report(self, trials, done=False):
-        """Reports only on experiment termination."""
+        """Reports only on experiment termination.
+
+        Args:
+            trials (_type_): trial objects containing status and other meta information about each trial of current tuning.
+            done (bool, optional): Status of experiment. Returns True if experiment finished. Defaults to False.
+
+        Returns:
+           bool: Returns status of experiment.
+        """
         return done
 
 class TrialTerminationReporter(CLIReporter):
+    """Helper class for ray tune. Manages reporting while tuning with selected hyperparameter optimization techniques. 
+    Reports only after one trial in experiment of ray tune finished.
+
+    Args:
+        CLIReporter (_type_): Takes obligatory CLIReporter of ray as input to manage reporting.
+    """
     def __init__(self):
         super(TrialTerminationReporter, self).__init__()
         self.num_terminated = 0
 
     def should_report(self, trials, done=False):
-        """Reports only on trial termination events."""
+        """Reports only on trial termination. Checks number of terminated trials and updates them.
+
+        Args:
+            trials (_type_): trial objects containing status and other meta information about each trial of current tuning.
+            done (bool, optional): Status of experiment. Returns True if experiment finished. Defaults to False.
+
+        Returns:
+            bool: Returns status of experiment.
+        """
         old_num_terminated = self.num_terminated
         self.num_terminated = len([t for t in trials if t.status == Trial.TERMINATED])
         return self.num_terminated > old_num_terminated
@@ -120,6 +164,17 @@ def load_data(text_col:str,lang:str) -> dict:
     return dataset
 
 def preprocess_data(data:dict, tokenizer) -> dict:
+    """Prepares data for text classification:
+            texts will be tokenized with corresponding tokenizer of loaded pytorch model.
+            labels will be specifically set as key,value pair based on given label per sample.
+    Args:
+        data (dict): Dictionary containing text data. Contains trainset,texts, testset,texts and validationset,texts as key,value pair.
+        tokenizer (_type_): Corresponding tokenizer of loaded pytorch model. Needs to be loaded as well as pytorch model. 
+
+    Returns:
+        dict: Returns dictionary containing preprocessd train,test and validation data. 
+        Contains trainset,label, input_ids, attention_mask and testset,label, input_ids, attention_mask and validationset,label, input_ids, attention_mask as key, value pair.
+    """
     tokenized_data = {'train':[],'test':[],'val':[]}
     for set in data:
         for sample in data[str(set)]:
@@ -130,6 +185,17 @@ def preprocess_data(data:dict, tokenizer) -> dict:
     return tokenized_data
 
 def transform_train_data(tokenized_data:dict, data_collator:DataCollatorWithPadding, config_batch_size:int):
+    """Transforms preprocessed trainset and testset with pytorch DataLoader. Adds weighting to data with WeightedRandomSampler to neutrolize unbalanced classes.
+
+    Args:
+        tokenized_data (dict): Dictionary containing preprocessd train and test and validation data. 
+        Contains dataset,label, input_ids, attention_mask as key, value pair for each set.
+        data_collator (DataCollatorWithPadding): Loaded DataCollator for applying Padding on texts.
+        config_batch_size (int): Given batch size for DataLoader.
+
+    Returns:
+        DataLoader: Transofrmed train- and testset, ready to apply on model.
+    """
     data = DatasetDict({
     'train': Dataset.from_list(tokenized_data['train']),
     'test': Dataset.from_list(tokenized_data['test'])
@@ -157,6 +223,17 @@ def transform_train_data(tokenized_data:dict, data_collator:DataCollatorWithPadd
     return train_dataloader, test_dataloader
 
 def transform_eval_data(tokenized_data:dict,data_collator:DataCollatorWithPadding,batch_size:int):
+    """Transforms preprocessed validationset with pytorch DataLoader. Adds weighting to data with WeightedRandomSampler to neutrolize unbalanced classes.
+
+    Args:
+        tokenized_data (dict): Dictionary containing preprocessd train and test and validation data. 
+        Contains dataset,label, input_ids, attention_mask as key, value pair for each set.
+        data_collator (DataCollatorWithPadding): Loaded DataCollator for applying Padding on texts.
+        config_batch_size (int): Given batch size for DataLoader.
+
+    Returns:
+        DataLoader: Transofrmed validationset, ready to apply on trained model.
+    """
     data = DatasetDict({
     'val': Dataset.from_list(tokenized_data['val'])
     })
@@ -173,7 +250,18 @@ def transform_eval_data(tokenized_data:dict,data_collator:DataCollatorWithPaddin
     )
     return eval_dataloader
 
-def set_params(model, config_lr, config_epoch,len_train_data):   
+def set_params(model:BertClassifier, config_lr:float, config_epoch:int,len_train_data:int):
+    """Generate parameters and metrics for model training and evaluation.
+
+    Args:
+        model (BertClassifier): Loaded model for classification.
+        config_lr (float): Learning rate.
+        config_epoch (int): Number of epochs.
+        len_train_data (int): Length of training data to determine number of training steps.
+
+    Returns:
+        parameters: Returns generated parameters and dedicted metrics for evaluation.
+    """
     optimizer = AdamW(model.parameters(), lr=config_lr)
     num_epochs = config_epoch
     num_training_steps = num_epochs * len_train_data
@@ -184,6 +272,7 @@ def set_params(model, config_lr, config_epoch,len_train_data):
         num_training_steps=num_training_steps,
     )
 
+    #load metrics from hugging face evaluate
     accuracy = evaluate.load('accuracy')
     f1 = evaluate.load('f1')
     precision = evaluate.load('precision')
@@ -194,6 +283,12 @@ def set_params(model, config_lr, config_epoch,len_train_data):
     return num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1,precision,recall, mcc
 
 def train_model(config, data):
+    """Training function of model. Follows the usual procedure consisting training and evaluation of the model with training and testing set.
+
+    Args:
+        config (_type_): Configuration of model containing parameters and metrics.
+        data (_type_): train and testset for training the model.
+    """
     torch.cuda.empty_cache()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -265,6 +360,21 @@ def train_model(config, data):
                               "mcc":mcc_metrics['matthews_correlation']}, checkpoint=checkpoint)
 
 def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_train_dl,num_samples = 1, num_cpu=2, num_gpu=1):
+    """Hyperparameter Optimization techinique of Random Search using ray.tune. 
+
+    Args:
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        path (str): Path to save experiment.
+        tokenized_train_test_set_fold (_type_): train and test set for model training.
+        len_train_dl (_type_): Length of training data to determine number of training steps.
+        num_samples (int, optional): Number of samples to train. Defaults to 1.
+        num_cpu (int, optional): Number of cpu to use. Defaults to 2.
+        num_gpu (int, optional): Number of gpu to use. Defaults to 1.
+
+    Returns:
+        Result: Returns metainformation and metrics of best trial.
+    """
     if lang == 'de':
         config_rand = {
             "lr":tune.loguniform(1e-4,1e-1),
@@ -303,6 +413,21 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
     return best_results_rand
 
 def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,num_samples=1, num_cpu=2, num_gpu=1):
+    """Hyperparameter Optimization techinique of combination of Bayesian optimization (BO) and Hyperband (HB) using ray.tune. 
+
+    Args:
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        path (str): Path to save experiment.
+        tokenized_train_test_set_fold (_type_): train and test set for model training.
+        len_train_dl (_type_): Length of training data to determine number of training steps.
+        num_samples (int, optional): Number of samples to train. Defaults to 1.
+        num_cpu (int, optional): Number of cpu to use. Defaults to 2.
+        num_gpu (int, optional): Number of gpu to use. Defaults to 1.
+
+    Returns:
+        Result: Returns metainformation and metrics of best trial.
+    """
     if lang == 'de':
         config = {
             "lr":tune.loguniform(1e-4,1e-1),
@@ -351,6 +476,21 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
     return best_results_bayes
 
 def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_train_dl,num_samples=1, num_cpu=2, num_gpu=1):
+    """Hyperparameter Optimization techinique of Hyperband (HB) using ray.tune. 
+
+    Args:
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        path (str): Path to save experiment.
+        tokenized_train_test_set_fold (_type_): train and test set for model training.
+        len_train_dl (_type_): Length of training data to determine number of training steps.
+        num_samples (int, optional): Number of samples to train. Defaults to 1.
+        num_cpu (int, optional): Number of cpu to use. Defaults to 2.
+        num_gpu (int, optional): Number of gpu to use. Defaults to 1.
+
+    Returns:
+        Result: Returns metainformation and metrics of best trial.
+    """
     if lang == 'de':
         config = {
             "lr":tune.loguniform(1e-4,1e-1),
@@ -392,6 +532,15 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
     
     
 def validate_model(text_col:str,lang:str, best_results, model_path:str, model_name:str):
+    """Validation function of model. Follows the usual procedure consisting testing of the optimized trained model with validation set.
+
+    Args:
+        text_col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        best_results (_type_): _description_
+        model_path (str): Path of best trained model.
+        model_name (str): Model name containing metainformation about language, texttype and random model number(unique).
+    """
     torch.cuda.empty_cache()
     logger = logging.getLogger("Classification")
     print("Validate best found model and save it.")
@@ -429,6 +578,15 @@ def validate_model(text_col:str,lang:str, best_results, model_path:str, model_na
     logger.info(f"[Model {model_name}]Accuracy on validation set:{acc}. Saved to {model_path}")     
   
 def get_model_path(lang:str, text_col:str):
+    """Get path of best trained model and model name to save best model to specfic path for loading.
+
+    Args:
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        text_col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+
+    Returns:
+        _type_: Returns model_name and model path as str.
+    """
     i = 0
     path_to_save_model = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+'_'+text_col+"_"
     model_nr = str(i)+".pth"
@@ -440,7 +598,14 @@ def get_model_path(lang:str, text_col:str):
     return model_name, model_path
 
 
-def save_results(lang, col,df_new):
+def save_results(lang:str, col:str,df_new:pd.DataFrame):
+    """Saves evaluation results to dedicated result folder.
+
+    Args:
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        df_new (pd.DataFrame): DataFrame containing metrics per hyperparameter optimization technique.
+    """
     t_path = r'models\classification\pytorch_tuning_'+lang+r'\results\eval_results_'+col+r'.feather'
     path = str(os.path.dirname(__file__)).split("src")[0]
 
@@ -459,7 +624,17 @@ def save_results(lang, col,df_new):
     df_all_new = df_all_new.reset_index() 
     df_all_new.to_feather(path+t_path)
 
-def get_current_trial(lang,col):
+def get_current_trial(lang:str,col:str)-> int:
+    """Checks the number of trials based on evaluation data and sets trial number based on exististing number of trials.
+
+    Args:
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+
+    Returns:
+        int: Returns number of current trial.
+    """
+    
     t_path = r'models\classification\pytorch_tuning_'+lang+r'\results\eval_results_'+col+r'.feather'
     path = str(os.path.dirname(__file__)).split("src")[0]
     if os.path.exists(path+t_path):
@@ -471,6 +646,13 @@ def get_current_trial(lang,col):
     return trial
 
 def run(lang:str, col:str):
+    """Main function. Combines the training of the model with the different hyperparameter optimization techniques, 
+    the validation of the best model and stores them including the evaluation results. Whole Run based on specified language and column
+
+    Args:
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+    """
     temp_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],r"models\classification\temp")
     ray.init(_temp_dir = temp_path)
 
@@ -593,12 +775,19 @@ def run(lang:str, col:str):
         torch.cuda.empty_cache()
         return
     
-def predict(sentence:str, lang:str,batch_size, text_col = 'TOPIC'):
+def predict(sentence:str, lang:str,text_col = 'TOPIC'):
+    """Final Prediction Function. The trained model is loaded and predicts the class of the input sentence.
+
+    Args:
+        sentence (str): Input sentence to predict class of.
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        text_col (str, optional): Dedicated trained model. Currently selectable from 'TOPIC' or 'URL_TEXT' trained. Defaults to 'TOPIC' due to better evaluation results.
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
     path_to_load_model = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+'_'+text_col+".pth"
     model = torch.load(path_to_load_model)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+    batch_size = 15
 
     if lang == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
@@ -609,8 +798,7 @@ def predict(sentence:str, lang:str,batch_size, text_col = 'TOPIC'):
     tokenized_sent.pop('token_type_ids')
     tokenized_sent['label'] = 0
     tokenized_data = {'val':[tokenized_sent]}
-    train_dl, test_dl, val_dl = transform_eval_data(tokenized_data,data_collator,batch_size)
-    
+    train_dl = transform_eval_data(tokenized_data,data_collator,batch_size)
 
     ag_labels = {0:"AUTONOMOUS",1:"CONNECTIVITY",2:"DIGITALISATION",3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"}
     
