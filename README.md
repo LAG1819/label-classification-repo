@@ -106,6 +106,8 @@ It is possible to select languages german and english. The general steps to deve
    - INDIVIDUALISATION, 
    - SHARED, 
    - SUSTAINABILITY.<br>
+     
+     
    In total there are number_classes * LF = 14 Labeling Functions generated.
  
 ***
