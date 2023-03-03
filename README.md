@@ -45,12 +45,12 @@ pip install -r environment/requirements.txt
    - Predfined labeling classes: AUTONOMOUS; ELECTRIFICATION, CONNECTIVITY, SHARED, SUSTAINABILITY, DIGITALISATION, INDIVIDUALISATION.
 
 [5] Adapt and Review prefered Classes in **Data Cleaning, Automated Labeling and Classification**(only if needed!):
-- Data Cleaning:
+- Data Cleaning (src/cleans):
    - Adapt industry-specific stopwords.
-- Automated Labeling:
+- Automated Labeling (src/automated_label):
    - Adapt requested classes to assign to
    - Adapt Label Functions (LF) corresponding to requested classes.
-- Classification:
+- Classification (src/classification):
    - Adapt number of classes (number labels) upon invoking the classifier model
 
 ## Usage
