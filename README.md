@@ -107,15 +107,30 @@ It is possible to select languages german and english. The general steps to deve
    - German Model based on huggingface trained model by [deepset](https://huggingface.co/bert-base-german-cased). A classifier layer is placed on top of pretrained model.
 
 ## Results
-Two results each are reported for labeling and classification depending on the selected texts on which the models were trained.
+Two results each are reported for labeling and classification depending on the selected texts (Topics or Continuous texts) on which the models were trained.
 ### Automated Labeling
-| Model         | Parameter                        | Run |
-|:-------------:|:--------------------------------:| :--:|
-| AL            | Accuracy                         | 1   |
-| AL            | Matthews Correlation Coefficent  | 1   |
-
+|Language|Text           | Parameter                       | Resutl | Run |
+|:------ |:-------------:|:--------------------------------| :-----:| :--:|
+|DE      |TOPIC          | Accuracy                        | 0.56   | 1   |
+|DE      |TEXTS          | Accuracy                        | 0.00   | 1   |
+|DE      |TOPIC          | Matthews Correlation Coefficent | 0.48   | 1   |
+|DE      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
+|EN      |TOPIC          | Accuracy                        | 0.47   | 1   |
+|EN      |TEXTS          | Accuracy                        | 0.00   | 1   |
+|EN      |TOPIC          | Matthews Correlation Coefficent | 0.37   | 1   |
+|EN      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
 
 ### Classification
+|Language|Text           | Parameter                       | Resutl | Run |
+|:------ |:-------------:|:--------------------------------| :-----:| :--:|
+|DE      |TOPIC          | Accuracy                        | 0.00   | 1   |
+|DE      |TEXTS          | Accuracy                        | 0.00   | 1   |
+|DE      |TOPIC          | Matthews Correlation Coefficent | 0.00   | 1   |
+|DE      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
+|EN      |TOPIC          | Accuracy                        | 0.00   | 1   |
+|EN      |TEXTS          | Accuracy                        | 0.00   | 1   |
+|EN      |TOPIC          | Matthews Correlation Coefficent | 0.00   | 1   |
+|EN      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
 
 ## References
 [Automated Labeling](https://www.snorkel.org/features/)
