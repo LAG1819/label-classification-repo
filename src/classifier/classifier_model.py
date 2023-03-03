@@ -1,4 +1,4 @@
-# <one line to give the program's name and a brief idea of what it does.>
+# <Text Classification bert-based of german texts. Classificator trained seperately on topics or texts for comparison.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,6 @@ import numpy as np
 import logging 
 from sklearn.model_selection import KFold
 import os 
-# from tqdm.auto import tqdm
 import ray
 from ray import tune 
 from ray.tune.search.bohb import TuneBOHB
@@ -363,7 +362,7 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
     """Hyperparameter Optimization techinique of Random Search using ray.tune. 
 
     Args:
-        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        lang (str): Unicode of language to train model with. It can be choosen between de (german) and en (englisch).
         col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
         path (str): Path to save experiment.
         tokenized_train_test_set_fold (_type_): train and test set for model training.
