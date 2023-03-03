@@ -1,4 +1,4 @@
-# BERT-Based Text classification framework for the german industry.
+# BERT-based text classification framework for the german industry.
 A text classificatior of industry-specific texts based on automated labeling and tranfsormers.
 
 This repository was generated and developed as part of the master thesis "Development and analysis of a framework for the classification of German industry-specific texts using Deep learning and Automated Labeling for the application in the German industry using the example of the automotive industry."
@@ -107,7 +107,7 @@ It is possible to select languages german and english. The general steps to deve
    - SHARED, 
    - SUSTAINABILITY.<br>
      
-     
+
    In total there are number_classes * LF = 14 Labeling Functions generated.
  
 ***
