@@ -94,11 +94,12 @@ It is possible to select languages german and english. The general steps to deve
    After text cleaning a topic extraction is performed using the [Latent Dirichlet Allocation Algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.LatentDirichletAllocation.html)
 ***
 #### Automated Labeling
-   A Label Model ist trained to automize the labeling of the whole dataset. 
-   * Labeling Function 1: Keyword matching with help of pre-defined keywords. The [keywords](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) are user-defined and case specific!
-   * Labeling Function 2: Trained k-Means model with fixed centroids. The [K-Means Centroids](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) is user-defined and case specific! 
+   A Label Model ist trained to automize the labeling of the whole dataset. Two types of Labeling Functions were generated. 
+   * Labeling Function Type 1: Keyword matching with help of pre-defined keywords. The [keywords](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) are user-defined and case specific!
+   * Labeling Function Type 2: Trained k-Means model with fixed centroids. The [K-Means Centroids](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) is user-defined and case specific! 
 
-   Predefined classes based on literature: AUTONOMOUS, CONNECTIVITY, DIGITALISATION, ELECTRIFICATION, INDIVIDUALISATION, SHARED, SUSTAINABILITY.
+   Predefined classes based on literature: AUTONOMOUS, CONNECTIVITY, DIGITALISATION, ELECTRIFICATION, INDIVIDUALISATION, SHARED, SUSTAINABILITY.<br>
+   In total there are number_classes * LF = 14 Labeling Functions generated.
  
 ***
 #### Classification Model
