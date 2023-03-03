@@ -98,7 +98,14 @@ It is possible to select languages german and english. The general steps to deve
    * Labeling Function Type 1: Keyword matching with help of pre-defined keywords. The [keywords](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) are user-defined and case specific!
    * Labeling Function Type 2: Trained k-Means model with fixed centroids. The [K-Means Centroids](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) are user-defined and case specific! 
 
-   Predefined classes based on literature: AUTONOMOUS, CONNECTIVITY, DIGITALISATION, ELECTRIFICATION, INDIVIDUALISATION, SHARED, SUSTAINABILITY.<br>
+   Predefined classes based on literature: 
+   - AUTONOMOUS, 
+   - CONNECTIVITY, 
+   - DIGITALISATION, 
+   - ELECTRIFICATION, 
+   - INDIVIDUALISATION, 
+   - SHARED, 
+   - SUSTAINABILITY.<br>
    In total there are number_classes * LF = 14 Labeling Functions generated.
  
 ***
