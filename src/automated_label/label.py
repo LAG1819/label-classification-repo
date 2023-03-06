@@ -514,7 +514,7 @@ class Labeler:
                                             'Coverage':label_model_metrics['coverage'],'k-fold':k,'trainingset':i})
         
         # sort results by accuracy
-        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy','MCC'], ascending=[False,False])
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False,False])
         best_model = df.to_dict('records')[0]
             
         # Set up model checkpoint folder and save model including log
@@ -572,7 +572,7 @@ class Labeler:
                                             'Coverage':label_model_metrics['coverage'],'k-fold':k,'trainingset':i})
             
         # sort results by accuracy
-        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy','MCC'], ascending=[False,False])
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False,False])
         best_model = df.to_dict('records')[0]
 
         # Set up model checkpoint folder and save model including log
@@ -652,7 +652,7 @@ class Labeler:
                                      'accuracy':label_model_metrics["accuracy" ],'PrecisionMicro':label_model_metrics['precision_micro'],'PrecisionMacro':label_model_metrics['precision_macro'],\
                                         'F1Micro':label_model_metrics['f1_micro'],'F1Macro':label_model_metrics['f1_macro'],'MCC':label_model_metrics['matthews_corrcoef'],\
                                             'Coverage':label_model_metrics['coverage'],'k-fold':k,'trainingset':i})
-            return label_model_metrics["accuracy" ]
+            return label_model_metrics["accuracy"]
 
         optimizer = bayes_opt.BayesianOptimization(f=model_train,pbounds =hyperparameter_space ,verbose = 1, random_state = 4)
         optimizer.maximize(init_points = 5, n_iter = max_evals)        
@@ -661,7 +661,7 @@ class Labeler:
         # highest_accuracy = optimizer.max["target"]
 
         # sort results by accuracy of all internal optimization loops and takes best result
-        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy','MCC'], ascending=[False,False])
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False,False])
         best_model = df.to_dict('records')[0]
 
         # set up model checkpoint folder to save model in
