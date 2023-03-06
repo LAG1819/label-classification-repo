@@ -36,6 +36,8 @@ from ray.air import session
 from ray import air
 from ray.tune import CLIReporter
 from ray.tune.experiment.trial import Trial
+from tqdm import tqdm
+
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 #pip install datasets transformers numpy pandas evaluate scikit-learn hpbandster "ray[default]" "ray[tune]" "ray[air]"
 #pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
@@ -149,7 +151,7 @@ def load_data(text_col:str,lang:str) -> dict:
     df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],dir)
     df = pd.read_feather(df_path)
     data = df.replace(np.nan, "",regex = False)
-    # data = data[:1000]
+    data = data[:200]
     data['text'] = data[text_col]
     
     train, validate, test = np.split(data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(data)), int(.8*len(data))])
@@ -201,16 +203,20 @@ def transform_train_data(tokenized_data:dict, data_collator:DataCollatorWithPadd
     })
     data.set_format('torch', columns = ['input_ids', 'attention_mask', 'label'])
     
-    ##Weight Classes trainset
+    #Weight Classes trainset
     train_labels_unique, counts = np.unique(data['train']['label'], return_counts= True)
-    train_weights_per_class = [sum(counts) / cl for cl in counts]
-    train_weights = [train_weights_per_class[l] for l in data['train']['label']]
+    train_weights_per_class = {}#[sum(counts) / cl for cl in counts]
+    for f,cl in enumerate(counts):
+        train_weights_per_class[train_labels_unique[f]] = sum(counts) / cl
+    train_weights = [train_weights_per_class[l.item()] for l in data['train']['label']]
     train_sampler = WeightedRandomSampler(train_weights, len(data['train']['label']))
 
     ##Weight Classes testset
     test_labels_unique, counts = np.unique(data['test']['label'], return_counts= True)
-    test_weights_per_class = [sum(counts) / cl for cl in counts]
-    test_weights = [test_weights_per_class[l] for l in data['test']['label']]
+    test_weights_per_class = {} #[sum(counts) / cl for cl in counts]
+    for p,cl in enumerate(counts):
+        test_weights_per_class[test_labels_unique[p]] = sum(counts) / cl
+    test_weights = [test_weights_per_class[l.item()] for l in data['test']['label']]
     test_sampler = WeightedRandomSampler(test_weights, len(data['test']['label']))
 
     train_dataloader = DataLoader(
@@ -240,8 +246,10 @@ def transform_eval_data(tokenized_data:dict,data_collator:DataCollatorWithPaddin
 
     ##Weight Classes valtset
     val_labels_unique, counts = np.unique(data['val']['label'], return_counts= True)
-    val_weights_per_class = [sum(counts) / cl for cl in counts]
-    val_weights = [val_weights_per_class[l] for l in data['val']['label']]
+    val_weights_per_class = {}#[sum(counts) / cl for cl in counts]
+    for p,cl in enumerate(counts):
+        val_weights_per_class[val_labels_unique[p]] = sum(counts) / cl
+    val_weights = [val_weights_per_class[l.item()] for l in data['val']['label']]
     val_sampler = WeightedRandomSampler(val_weights, len(data['val']['label']))
     
     eval_dataloader = DataLoader(
@@ -273,13 +281,15 @@ def set_params(model:BertClassifier, config_lr:float, config_epoch:int,len_train
 
     #load metrics from hugging face evaluate
     accuracy = evaluate.load('accuracy')
-    f1 = evaluate.load('f1')
-    precision = evaluate.load('precision')
+    f1_mi = evaluate.load('f1')
+    f1_ma = evaluate.load('f1')
+    precision_mi = evaluate.load('precision')
+    precision_ma = evaluate.load('precision')
     recall = evaluate.load('recall')
     # roc_auc = evaluate.load("roc_auc","multiclass")
     mcc = evaluate.load("matthews_correlation")
 
-    return num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1,precision,recall, mcc
+    return num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1_mi,f1_ma,precision_mi,precision_ma,recall, mcc
 
 def train_model(config, data):
     """Training function of model. Follows the usual procedure consisting training and evaluation of the model with training and testing set.
@@ -299,8 +309,8 @@ def train_model(config, data):
         model = BertClassifier(checkpoint='bert-base-uncased',num_labels=7).to(device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
-    train_dl,test_dl = transform_train_data(data, data_collator,config["batch_size"])
-    num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1,precision,recall, mcc = set_params(model, config['lr'],config['epoch'], config['len_train_dl'])
+    train_dl,test_dl = transform_train_data(data, data_collator, config["batch_size"])
+    num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1_mi,f1_ma,pr_mi,pr_ma,recall, mcc = set_params(model, config['lr'],config['epoch'], config['len_train_dl'])
 
     loaded_checkpoint = session.get_checkpoint()
     if loaded_checkpoint:
@@ -321,8 +331,7 @@ def train_model(config, data):
             optimizer.step()
             lr_scheduler.step()
             optimizer.zero_grad()
-        r= torch.cuda.memory_summary(device=device)
-        print(r)
+        
         model.eval()
         for batch in test_dl:
             batch = {k: v.to(device) for k, v in batch.items()}
@@ -335,21 +344,23 @@ def train_model(config, data):
             #references is list of list tensor -> convert to single tensor list
             # roc_auc.add_batch(prediction_scores=predictions, references=batch["labels"])#multi_class ='ovr'
             
+            mcc.add_batch(predictions=predictions, references=batch["labels"])
             accuracy.add_batch(predictions=predictions, references=batch["labels"])
-            f1.add_batch(predictions=predictions, references=batch["labels"])
-            precision.add_batch(predictions=predictions, references=batch["labels"])
+            f1_mi.add_batch(predictions=predictions, references=batch["labels"])
+            f1_ma.add_batch(predictions=predictions, references=batch["labels"])
+            pr_mi.add_batch(predictions=predictions, references=batch["labels"])
+            pr_ma.add_batch(predictions=predictions, references=batch["labels"])
             recall.add_batch(predictions=predictions, references=batch["labels"])
             # metric.add_batch(predictions=predictions, references=batch["labels"], average = None)
                 
             mcc_metrics = mcc.compute(average = 'macro')   
             acc_metric = accuracy.compute()
-            f1_metric_micro = f1.compute(labels = [0,1,2,3,4,5,6], average='micro')
-            f1_metric_macro = f1.compute(labels = [0,1,2,3,4,5,6], average='macro')
-            precision_metric_micro = precision.compute(labels = [0,1,2,3,4,5,6], average='micro', zero_division = 0)
-            precision_metric_macro = precision.compute(labels = [0,1,2,3,4,5,6], average='macro', zero_division = 0)
-            recall_metric = recall.compute(labels = [0,1,2,3,4,5,6], average=None, zero_division = 0)             
-        r= torch.cuda.memory_summary(device=device)
-        print(r)
+            f1_metric_micro = f1_mi.compute(labels = [0,1,2,3,4,5,6], average='micro')
+            f1_metric_macro = f1_ma.compute(labels = [0,1,2,3,4,5,6], average='macro')
+            precision_metric_micro = pr_mi.compute(labels = [0,1,2,3,4,5,6], average='micro', zero_division = 0)
+            precision_metric_macro = pr_ma.compute(labels = [0,1,2,3,4,5,6], average='macro', zero_division = 0)
+            recall_metric = recall.compute(labels = [0,1,2,3,4,5,6], average='macro', zero_division = 0)             
+        
         os.makedirs("bert", exist_ok=True)
         torch.save((model.state_dict(), optimizer.state_dict()), "bert/checkpoint.pt")
         checkpoint = Checkpoint.from_directory("bert")
@@ -403,7 +414,7 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
             num_samples = num_samples,
         ),
         param_space=config_rand,
-        run_config=air.RunConfig(local_dir=path, name="random_search_"+lang, stop={"training_iteration": 2})#, progress_reporter=TrialTerminationReporter() OR ExperimentTerminationReporter()
+        run_config=air.RunConfig(local_dir=path, name="random_search_"+lang, stop={"training_iteration": 2},progress_reporter=ExperimentTerminationReporter())#, progress_reporter=TrialTerminationReporter() OR ExperimentTerminationReporter()
     )
     result_rand = tuner_random.fit()
     best_results_rand = result_rand.get_best_result("accuracy", "max")
@@ -464,7 +475,7 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
             search_alg=bohb_search,
             num_samples=num_samples,
         ),
-        run_config=air.RunConfig(stop={"training_iteration": 2},local_dir=path, name="bohb_search_"+lang),
+        run_config=air.RunConfig(stop={"training_iteration": 2},local_dir=path, name="bohb_search_"+lang,progress_reporter=ExperimentTerminationReporter()),
         param_space=config,
     )
     result_bayes = tuner_bayes.fit()
@@ -519,7 +530,7 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
             scheduler = hyperband
         ),
         param_space = config,
-        run_config=air.RunConfig(local_dir=path, name="hyperband_"+lang, stop={"training_iteration": 2})
+        run_config=air.RunConfig(local_dir=path, name="hyperband_"+lang, stop={"training_iteration": 2},progress_reporter=ExperimentTerminationReporter())
     )
     
     result = tuner_hyper.fit()
@@ -530,7 +541,7 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
     return best_results
     
     
-def validate_model(text_col:str,lang:str, best_results, model_path:str, model_name:str):
+def validate_model(text_col:str,lang:str, best_result, model_path:str, model_name:str):
     """Validation function of model. Follows the usual procedure consisting testing of the optimized trained model with validation set.
 
     Args:
@@ -552,13 +563,13 @@ def validate_model(text_col:str,lang:str, best_results, model_path:str, model_na
         model = BertClassifier(checkpoint='bert-base-uncased',num_labels=7).to(device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
-    checkpoint_path = os.path.join(best_results["Checkpoint"].to_directory(), "checkpoint.pt")
+    checkpoint_path = best_result["Checkpoint"]+ "\checkpoint.pt"
     model_state, optimizer_state = torch.load(checkpoint_path)
     model.load_state_dict(model_state)
     
     train_test_val_set = load_data(text_col, lang)
     tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
-    eval_dl = transform_eval_data(tokenized_train_test_set,data_collator,best_results["Configuration"]["batch_size"])
+    eval_dl = transform_eval_data(tokenized_train_test_set,data_collator,best_result["batch_size"])
 
     metric = evaluate.load("accuracy")
 
@@ -586,42 +597,15 @@ def get_model_path(lang:str, text_col:str):
     Returns:
         _type_: Returns model_name and model path as str.
     """
-    i = 0
+    i = get_current_trial(lang,text_col)
     path_to_save_model = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+'_'+text_col+"_"
     model_nr = str(i)+".pth"
-    while os.path.exists(path_to_save_model+model_nr):
-        i += 1
-        model_nr = str(i)+".pth"
+    # while os.path.exists(path_to_save_model+model_nr):
+    #     i += 1
+    #     model_nr = str(i)+".pth"
     model_path = path_to_save_model+model_nr    
     model_name = 'trained_model_'+lang+'_'+text_col+"_"+model_nr
     return model_name, model_path
-
-
-def save_results(lang:str, col:str,df_new:pd.DataFrame):
-    """Saves evaluation results to dedicated result folder.
-
-    Args:
-        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
-        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
-        df_new (pd.DataFrame): DataFrame containing metrics per hyperparameter optimization technique.
-    """
-    t_path = r'models\classification\pytorch_tuning_'+lang+r'\results\eval_results_'+col+r'.feather'
-    path = str(os.path.dirname(__file__)).split("src")[0]
-
-    if not os.path.exists(str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\results'):
-        os.makedirs(str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\results')
-
-    ##check if target_path already exists
-    if os.path.exists(path+t_path):
-        df_all = pd.read_feather(path+t_path)
-        df_all_new = pd.concat([df_all,df_new])
-    else:
-        df_all_new = df_new
-
-    ##save dataset to target paths as feather
-    df_all_new = df_all_new[["Language", "Text", "K-Fold", "Split", "Type", "Accuracy", "Precision","F1", "Recall","Roc-auc", "Configuration"]]
-    df_all_new = df_all_new.reset_index() 
-    df_all_new.to_feather(path+t_path)
 
 def get_current_trial(lang:str,col:str)-> int:
     """Checks the number of trials based on evaluation data and sets trial number based on exististing number of trials.
@@ -639,10 +623,71 @@ def get_current_trial(lang:str,col:str)-> int:
     if os.path.exists(path+t_path):
         df_all = pd.read_feather(path+t_path)
         last_trial = df_all[['Trial']].sort_values(by=['Trial'], ascending=[False]).to_dict('records')[0]['Trial']
-        trail = last_trial+1
+        trial = last_trial+1
     else:
         trial = 0
     return trial
+
+def save_current_result(lang, col, k,i,type, best_results):#df_new (pd.DataFrame): DataFrame containing metrics per hyperparameter optimization technique.
+
+    if not os.path.exists(str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\results'):
+        os.makedirs(str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\results')
+
+    config = {"lr":best_results.config["lr"], 'batch_size':best_results.config['batch_size'], 'epoch':best_results.config['epoch']}
+    # path = best_results.log_dir.__str__()
+    checkpoint = best_results.checkpoint._local_path
+
+    current_trial = get_current_trial(lang,col)
+    best_results_list = [{"Trial":current_trial,"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i), "Type":type,\
+                                        "Accuracy": best_results.metrics['accuracy'],"PrecisionMicro":best_results.metrics["precisionMicro"],\
+                                            "PrecisionMacro":best_results.metrics["precisionMacro"],"F1Micro": best_results.metrics["f1Micro"],\
+                                                "F1Macro": best_results.metrics["f1Macro"],"RecallMacro":best_results.metrics['recall'],\
+                                                "MCC":best_results.metrics["mcc"],"lr":best_results.config["lr"],'batch_size':best_results.config['batch_size'],\
+                                                    'epoch':best_results.config['epoch'],"Log_Dir":best_results.log_dir.__str__(), "Checkpoint":str(checkpoint)}]
+    df_new = pd.DataFrame(best_results_list)
+
+    t_path = r'models\classification\pytorch_tuning_'+lang+r'\results\temp_eval_results_'+col+r'.feather'
+    path = str(os.path.dirname(__file__)).split("src")[0]
+    if os.path.exists(path+t_path):
+        df_all = pd.read_feather(path+t_path)
+        df_all_new = pd.concat([df_all,df_new])
+    else:
+        df_all_new = df_new
+    
+    df_all_new.reset_index(inplace = True, drop = True) 
+    df_all_new.to_feather(path+t_path)
+
+def save_results(lang:str, col:str):
+    """Saves evaluation results to dedicated result folder.
+
+    Args:
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+    """
+    temp_t_path = r'models\classification\pytorch_tuning_'+lang+r'\results\temp_eval_results_'+col+r'.feather'
+    t_path = r'models\classification\pytorch_tuning_'+lang+r'\results\eval_results_'+col+r'.feather'
+    path = str(os.path.dirname(__file__)).split("src")[0]
+
+    #get best trial
+    best_results_df = pd.read_feather(path+temp_t_path)
+    best_results_df.sort_values(by=['Accuracy'], ascending=[False], inplace=True)
+
+    #check if target_path with previous trials already exists
+    if os.path.exists(path+t_path):
+        df_all = pd.read_feather(path+t_path)
+        df_all_new = pd.concat([df_all,best_results_df])
+    else:
+        df_all_new = best_results_df
+
+    #save dataset to target paths as feather
+    #df_all_new = df_all_new[["Language", "Text", "K-Fold", "Split", "Type", "Accuracy", "Precision","F1", "Recall","Roc-auc", "Configuration"]]
+    df_all_new.reset_index(inplace = True, drop = True) 
+    df_all_new.to_feather(path+t_path)
+
+    #remove temporary files
+    os.remove(path+temp_t_path)
+
+    return best_results_df.to_dict('records')[0]
 
 def run(lang:str, col:str):
     """Main function. Combines the training of the model with the different hyperparameter optimization techniques, 
@@ -671,67 +716,58 @@ def run(lang:str, col:str):
     fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
     logger.addHandler(fh)
 
+    #select tokenizer for prerpocessing data
     if lang == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
     elif lang == 'en':
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-  
+    
+    #load and preprocess data 
     train_test_val_set = load_data(col,lang)
-    #len_train_dl = len(train_test_val_set['train'])
-
     tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
 
+    #set meta-parameters
     path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_"+lang
-    num_samples_per_tune = 1
+    num_samples_per_tune = 2
     num_cpu = 4
     num_gpu = 1
     best_results = []
     
     logger.info(f"Classification tuning started with Language {lang}, Text-Column: {col} and Data source file: 'files\04_classify\labeled_texts_{lang}_{col}.feather'.")
-    current_trial = get_current_trial(lang,col)
     
     try:
         #K-Fold Cross Validation
         tokenized_data = tokenized_train_test_set['train']+tokenized_train_test_set['test']
         tokenized_data = pd.DataFrame(tokenized_data)
-        for k in range(2,3):
+        for k in range(2,6):
             k_fold = KFold(n_splits = k,shuffle = True, random_state = 42)
             tokenized_train_test_set_fold = {}
             for i,split in enumerate(k_fold.split(tokenized_data)):
-                logger.info(f"Training of {k}-Fold Cross-Validation with Trainingsplit {i} started.")
+                logger.info(f"Training of {k}-Fold Cross-Validation with Trainingsplit {i+1} started.")
                 tokenized_train_test_set_fold['train'] = tokenized_data.iloc[split[0]].to_dict('records')
                 tokenized_train_test_set_fold['test'] = tokenized_data.iloc[split[1]].to_dict('records')
-                len_train_dl = tokenized_data.iloc[split[0]].shape[0]
+                len_train_dl = len(tokenized_train_test_set_fold['train'])
+                
                 try:
                     ####Random Search###
                     torch.cuda.empty_cache() 
                     rand_best_results = random_search(lang,col,path,tokenized_train_test_set_fold,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
-                    best_results.append({"Trial":current_trial,"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i), "Type":"RandomSearch",\
-                                        "Accuracy": rand_best_results.metrics['accuracy'],"PrecisionMicro":rand_best_results.metrics["precisionMicro"],\
-                                            "PrecisionMacro":rand_best_results.metrics["precisionMacro"],"F1Micro": rand_best_results.metrics["f1Micro"],\
-                                                "F1Macro": rand_best_results.metrics["f1Macro"],"Recall":rand_best_results.metrics['recall'],\
-                                                "MCC":rand_best_results.metrics["mcc"],"Configuration":rand_best_results.config,\
-                                                    "Log_Dir":rand_best_results.log_dir, "Checkpoint":rand_best_results.checkpoint})
+                    save_current_result(lang, col, k,i,"RandomSearch", rand_best_results)
                     logger.info(f"[Random Search]Best Model with Accuracy: {rand_best_results.metrics['accuracy']} and Configuration:{rand_best_results.config} reached. Checkpoint: {rand_best_results.checkpoint}")
                 except RuntimeError as e:
-                    r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-                    print(r)
+                    # r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+                    # print(r)
                     torch.cuda.empty_cache()
                     logger.info(f"[Random Search]Error occurred:{e}")
                 try:
                     ###Hyberpban Bayesian Optimization###
                     torch.cuda.empty_cache() 
                     bohb_best_results = bohb(lang,col,path,tokenized_train_test_set_fold,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
-                    best_results.append({"Trial":current_trial,"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i),"Type":"BOHB",\
-                                        "Accuracy": bohb_best_results.metrics['accuracy'],"PrecisionMicro":bohb_best_results.metrics["precisionMicro"],\
-                                            "PrecisionMacro":bohb_best_results.metrics["precisionMacro"],"F1Micro": bohb_best_results.metrics["f1Micro"],\
-                                                "F1Macro": bohb_best_results.metrics["f1Macro"],"Recall":bohb_best_results.metrics['recall'],\
-                                                "MCC":bohb_best_results.metrics["mcc"],"Configuration":bohb_best_results.config,\
-                                                    "Log_Dir": bohb_best_results.log_dir, "Checkpoint":bohb_best_results.checkpoint})
+                    save_current_result(lang, col, k,i,"BOHB", bohb_best_results)
                     logger.info(f"[BOHB]Best Model with Accuracy: {bohb_best_results.metrics['accuracy']} and Configuration:{bohb_best_results.config} reached. Checkpoint: {bohb_best_results.checkpoint}")
                 except RuntimeError as e:
-                    r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-                    print(r)
+                    # r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+                    # print(r)
                     torch.cuda.empty_cache()
                     logger.info(f"[BOHB]Error occurred:{e}")
 
@@ -739,36 +775,31 @@ def run(lang:str, col:str):
                     ####Hyperband Optimization###
                     torch.cuda.empty_cache() 
                     hyperband_best_results = hyperband(lang, col, path,tokenized_train_test_set_fold,len_train_dl,num_samples_per_tune, num_cpu, num_gpu)
-                    best_results.append({"Trial":current_trial,"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i),"Type":"Hyperband",\
-                                        "Accuracy": hyperband_best_results.metrics['accuracy'],"PrecisionMicro":hyperband_best_results.metrics["precisionMicro"],\
-                                            "PrecisionMacro":hyperband_best_results.metrics["precisionMacro"],"F1Micro": hyperband_best_results.metrics["f1Micro"],\
-                                                "F1Macro": hyperband_best_results.metrics["f1Macro"],"Recall":hyperband_best_results.metrics['recall'],\
-                                                "MCC":hyperband_best_results.metrics["mcc"],"Configuration":hyperband_best_results.config,\
-                                                    "Log_Dir":hyperband_best_results.log_dir, "Checkpoint":hyperband_best_results.checkpoint})
+                    save_current_result(lang, col, k,i,"Hyperband", hyperband_best_results)
                     logger.info(f"[Hyperband]Best Model with Accuracy:{hyperband_best_results.metrics['accuracy']} and Configuration:{hyperband_best_results.config} reached. Checkpoint: {hyperband_best_results.checkpoint}")
                 except RuntimeError as e:
-                    r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-                    print(r)
+                    # r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+                    # print(r)
                     torch.cuda.empty_cache()
                     logger.info(f"[Hyperband]Error occurred:{e}")
     except KeyboardInterrupt:
             logger.info("KeyboardInterrupt. Session will be finished")
+    except Exception as e:
+        logger.info("Error occurred:",e)
     finally:
-        if best_results:
+        #if temporary evaluation results exists validate and save them
+        if(os.path.exists(str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\results\temp_eval_results_'+col+r'.feather')):
             logger.info("Current best model will be validated and saved (if better than existing model).")
             
-            #save evaluation data
-            best_results_df = pd.DataFrame(best_results).sort_values(by=['Accuracy'], ascending=[False])
-            save_results(lang, col, best_results_df)
-
-            #identify best model and load for valdation
+            #save evaluation data and identify best model and load for valdation
+            best_result_record = save_results(lang, col)
             model_name, model_path = get_model_path(lang, col)
-            best_result_acc = best_results_df.to_dict('records')[0]["Accuracy"]
-            best_result_config = best_results_df.to_dict('records')[0]["Configuration"]
-            logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_acc} and Configuration:{best_result_config}.")
+            lr = best_result_record["lr"]
+            epoch = best_result_record["epoch"]
+            logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_record['Accuracy']} and Configuration: batch_size = {best_result_record['batch_size']}, lr = {lr}, epoch = {epoch}.")
 
             #validate best model on validation data###
-            validate_model(col,lang, best_results_df.to_dict('records')[0], model_path, model_name)
+            validate_model(col,lang, best_result_record, model_path, model_name)
 
         ray.shutdown()
         torch.cuda.empty_cache()
@@ -817,6 +848,11 @@ run(lang ='de', col = 'TOPIC')
 #run(lang ='de', col = 'URL_TEXT')
 #run(lang ='en', col = 'URL_TEXT')
 
+# t_path = r'models\classification\pytorch_tuning_de\results\temp_eval_results_TOPIC.feather'
+# path = str(os.path.dirname(__file__)).split("src")[0]
+# df = pd.read_feather(path+t_path).to_dict('records')[0]
+# z = df["Checkpoint"]+ "\checkpoint.pt"
+# torch.load(z)
 
 # ###Test new sample sentence###
 # predict("Connectivität ist digitale Vernetzung")
