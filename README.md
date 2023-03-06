@@ -120,30 +120,24 @@ It is possible to select languages german and english. The general steps to deve
 ## Results
 Two results each are reported for labeling and classification depending on the selected texts (Topics or Continuous texts) on which the models were trained.
 ### Automated Labeling
-|Language|Text           | Parameter                       | Result | Run |
-|:------ |:-------------:|:--------------------------------| :-----:| :--:|
-|DE      |TOPIC          | Accuracy                        | 0.56   | 1   |
-|DE      |TEXTS          | Accuracy                        | 0.00   | 1   |
-|DE      |TOPIC          | Matthews Correlation Coefficent | 0.48   | 1   |
-|DE      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
+|Language|Text           | Accuracy  | Matthews Correlation Coefficent | Run |
+|:------ |:-------------:|:----------| :------------------------------:| :--:|
+|DE      |TOPIC          | 0.56      | 0.48                            | 1   |
+|DE      |TEXTS          | 0.47      | 0.35                            | 1   |
 ||||||
-|EN      |TOPIC          | Accuracy                        | 0.47   | 1   |
-|EN      |TEXTS          | Accuracy                        | 0.00   | 1   |
-|EN      |TOPIC          | Matthews Correlation Coefficent | 0.37   | 1   |
-|EN      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
+|EN      |TOPIC          | 0.47      | 0.37                            | 1   |
+|EN      |TEXTS          | 0.40      | 0.28                            | 1   |
+
 
 ### Classification
-|Language|Text           | Parameter                       | Result | Run |
-|:------ |:-------------:|:--------------------------------| :-----:| :--:|
-|DE      |TOPIC          | Accuracy                        | 0.00   | 1   |
-|DE      |TEXTS          | Accuracy                        | 0.00   | 1   |
-|DE      |TOPIC          | Matthews Correlation Coefficent | 0.00   | 1   |
-|DE      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
+|Language|Text           | Accuracy   | Matthews Correlation Coefficent  | Run |
+|:------ |:-------------:|:-----------| :-------------------------------:| :--:|
+|DE      |TOPIC          | 0.00       | 0.00                             | 1   |
+|DE      |TEXTS          | 0.00       | 0.00                             | 1   |
 ||||||
-|EN      |TOPIC          | Accuracy                        | 0.00   | 1   |
-|EN      |TEXTS          | Accuracy                        | 0.00   | 1   |
-|EN      |TOPIC          | Matthews Correlation Coefficent | 0.00   | 1   |
-|EN      |TEXTS          | Matthews Correlation Coefficent | 0.00   | 1   |
+|EN      |TOPIC          | 0.00       | 0.00                             | 1   |
+|EN      |TEXTS          | 0.00       | 0.00                             | 1   |
+
 
 ## References
 Programmatic Labeling: [https://proceedings.neurips.cc/paper/2016/file/6709e8d64a5f47269ed5cea9f625f7ab-Paper.pdf](https://proceedings.neurips.cc/paper/2016/file/6709e8d64a5f47269ed5cea9f625f7ab-Paper.pdf)<br>
