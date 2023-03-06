@@ -121,7 +121,7 @@ It is possible to select languages german and english. The general steps to deve
 Two results each are reported for labeling and classification depending on the selected texts (Topics or Continuous texts) on which the models were trained.
 ### Automated Labeling
 |Language|Text           | Accuracy  | Matthews Correlation Coefficent | Run |
-|:------ |:-------------:|:----------| :------------------------------:| :--:|
+|:------ |:-------------:|:---------:| :------------------------------:| :--:|
 |DE      |TOPIC          | 0.56      | 0.48                            | 1   |
 |DE      |TEXTS          | 0.47      | 0.35                            | 1   |
 ||||||
@@ -131,7 +131,7 @@ Two results each are reported for labeling and classification depending on the s
 
 ### Classification
 |Language|Text           | Accuracy   | Matthews Correlation Coefficent  | Run |
-|:------ |:-------------:|:-----------| :-------------------------------:| :--:|
+|:------ |:-------------:|:----------:| :-------------------------------:| :--:|
 |DE      |TOPIC          | 0.00       | 0.00                             | 1   |
 |DE      |TEXTS          | 0.00       | 0.00                             | 1   |
 ||||||
