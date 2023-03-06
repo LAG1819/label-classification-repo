@@ -811,7 +811,7 @@ class Labeler:
         self.save_data()
 
 if __name__ == "__main__":
-    for lang in ['de']:#,'de']:
+    for lang in ['en']:#,'de']:
         # topic_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC')
         text_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
    
