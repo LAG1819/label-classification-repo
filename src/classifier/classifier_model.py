@@ -151,7 +151,7 @@ def load_data(text_col:str,lang:str) -> dict:
     df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],dir)
     df = pd.read_feather(df_path)
     data = df.replace(np.nan, "",regex = False)
-    data = data[:200]
+    # data = data[:200]
     data['text'] = data[text_col]
     
     train, validate, test = np.split(data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(data)), int(.8*len(data))])
@@ -605,7 +605,7 @@ def get_model_path(lang:str, text_col:str):
     #     model_nr = str(i)+".pth"
     model_path = path_to_save_model+model_nr    
     model_name = 'trained_model_'+lang+'_'+text_col+"_"+model_nr
-    return model_name, model_path, i
+    return model_name, model_path
 
 def get_current_trial(lang:str,col:str)-> int:
     """Checks the number of trials based on evaluation data and sets trial number based on exististing number of trials.
@@ -739,7 +739,7 @@ def run(lang:str, col:str):
         #K-Fold Cross Validation
         tokenized_data = tokenized_train_test_set['train']+tokenized_train_test_set['test']
         tokenized_data = pd.DataFrame(tokenized_data)
-        for k in range(2,3):
+        for k in range(2,6):
             k_fold = KFold(n_splits = k,shuffle = True, random_state = 42)
             tokenized_train_test_set_fold = {}
             for i,split in enumerate(k_fold.split(tokenized_data)):
@@ -747,6 +747,7 @@ def run(lang:str, col:str):
                 tokenized_train_test_set_fold['train'] = tokenized_data.iloc[split[0]].to_dict('records')
                 tokenized_train_test_set_fold['test'] = tokenized_data.iloc[split[1]].to_dict('records')
                 len_train_dl = len(tokenized_train_test_set_fold['train'])
+                print(f"Size Trainingset: {len(tokenized_train_test_set_fold['train'])}, Size Testset: {len(tokenized_train_test_set_fold['test'])}")
                 
                 try:
                     ####Random Search###
