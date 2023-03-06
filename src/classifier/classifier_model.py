@@ -151,7 +151,7 @@ def load_data(text_col:str,lang:str) -> dict:
     df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],dir)
     df = pd.read_feather(df_path)
     data = df.replace(np.nan, "",regex = False)
-    data = data[:200]
+    # data = data[:200]
     data['text'] = data[text_col]
     
     train, validate, test = np.split(data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(data)), int(.8*len(data))])
