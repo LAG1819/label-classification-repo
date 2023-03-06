@@ -30,36 +30,9 @@ def load_labeled_data():
     print(labeled_de_TOPIC.shape)
     print(labeled_de_URL_TEXT.shape)
 
-def load_eval_data_automated_label_old():
-    file_en = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_en\automated_labeling_en.log"
-    file_de = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_de\automated_labeling_de.log"
-    data = []
-    with open(file_en) as f:
-        for i, line in enumerate(f):
-            # if "Automated Labeling started with Language" in line:
-            #     data.append(line)
-            if i >=1263 and i <=1292:
-                dataset = [1] + list(filter(None, line.split(" "))) 
-                data.append(dataset)
-            if i >=3828 and i <=3857: 
-                dataset = [2] + list(filter(None, line.split(" "))) 
-                data.append(dataset)
-            if i >=5877 and i <=5906:
-                dataset = [3] + list(filter(None, line.split(" "))) 
-                data.append(dataset)
-            if i >=7504 and i <=7533:
-                dataset = [4] + list(filter(None, line.split(" "))) 
-                data.append(dataset)
-    data = [d for d in data if not ("Type" in d or "Model" in d)]
-    df = pd.DataFrame(data)
-    df = df[[0,2,3,4,5,6,7,8,9,10]]
-    df = df.rename(columns={0:"Trial",2: "Type", 3:"n_epochs",4:"log_freq",5:"l2",6:"lr",7:"optimizer",8:"accuracy",9:"k-fold",10:"trainingset"})
-    df['LANG'] = 'EN' 
-    print(df)
-
 def load_eval_data_automated_label():
-    for lang in ['de']:#,'en']:
-        for text_col in ['TOPIC']:#, 'URL_TEXT']:
+    for lang in ['de','en']:
+        for text_col in ['TOPIC', 'URL_TEXT']:
             # coverage = pd.read_feather(str(os.path.dirname(__file__)).split("ml-classification-repo")[0]+r'backup\models\label\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
             coverage = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
             coverage.sort_values(by = ['TRIAL','k_fold','k_fold_split','Overlaps','Conflicts','Coverage',], ascending = [False, False, False,True,True,False], inplace = True)
@@ -130,9 +103,9 @@ def plot_coverage(df, lang, text_col):
     ax.set_xlabel(f"{df['k_fold'].tolist()[0]}-Fold {df['k_fold_split'].tolist()[0]}", fontweight='bold')
 
     # ax.margins(x = 0.5,y = 0)
-    plt.subplots_adjust(left=0.28, bottom = 0.06, top = 0.99, right = 0.97)
+    plt.subplots_adjust(left=0.28, bottom = 0.06, top = 0.99, right = 0.95)
     
-    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r'\images\label_coverage_'+lang+'_'+text_col+r'.png')#pdf
+    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r'\images\label_coverage_'+lang+'_'+text_col+r'.pdf')#pdf
     plt.close()
 
 def plot_eval_folds(df, lang, text_col,datatype):
@@ -161,18 +134,24 @@ def plot_eval_folds(df, lang, text_col,datatype):
         plt.text(i, round(df[acc].tolist()[i],2)+0.005, round(df[acc].tolist()[i],2), ha = 'center')
         plt.text(i+0.38, round(df['MCC'].tolist()[i],2)+0.005, round(df['MCC'].tolist()[i],2), ha = 'center')
     
-    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r'kfolds_'+lang+'_'+text_col+r'.png')#pdf
+    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r'kfolds_'+lang+'_'+text_col+r'.pdf')#pdf
     plt.close()
 
 def plot_eval_metrics(df,lang,text_col,col, datatype):
-    bars = ['A','MCC','PMi','PMa','FMi','FMa']
-    x_pos = np.arange(len(bars))
     if 'label' in datatype:
+        bars = ['Accuracy','MCC', 'Prec Mi', 'Prec Ma', 'F1 Mi', 'F1 Ma']
+        x_pos = np.arange(len(bars))
         height = df['accuracy'].tolist() + df['MCC'].tolist() +df['PrecisionMicro'].tolist() +df['PrecisionMacro'].tolist()+df['F1Micro'].tolist()+df['F1Macro'].tolist()
+        labels = ['Accuracy','Matthews Correlation', 'Precision Micro', 'Precision Macro', 'F1 Micro', 'F1 Macro']
+        colors = ['#2e8c37','#2e308c','#8c2e2e','#8c7b2e','#2e8c75','#8c4f2e']
     if 'classifi' in datatype:
+        bars = ['Accuracy','MCC', 'Precision Mi', 'Precision Ma', 'F1 Mi', 'F1 Ma', 'Re Ma']
+        x_pos = np.arange(len(bars))
         height = df['Accuracy'].tolist() + df['MCC'].tolist() +df['PrecisionMicro'].tolist() +df['PrecisionMacro'].tolist()+df['F1Micro'].tolist()+df['F1Macro'].tolist()+df['Recall'].tolist()
+        labels = ['Accuracy','Matthews Correlation', 'Precision Micro', 'Precision Macro', 'F1 Micro', 'F1 Macro', 'Recall Macro']
+        colors = ['#2e8c37','#2e308c','#8c2e2e','#8c7b2e','#2e8c75','#8c4f2e','#478c2e']
     # Create bars
-    plt.bar(x_pos, height, color=['#478c2e','#2e308c','#8c2e2e','#8c7b2e','#2e8c75','#8c2e62'])
+    plt.bar(x_pos, height, color=colors, label = labels)
 
     # Create names on the x-axis
     plt.xticks(x_pos, bars)
@@ -180,11 +159,12 @@ def plot_eval_metrics(df,lang,text_col,col, datatype):
     # Create legend 
     plt.xlabel(col, fontweight='bold')
     plt.ylim(0,1)
+    plt.legend()
 
     for i in range(len(bars)):
         plt.text(i, round(height[i],3)+0.01, round(height[i],3), ha = 'center')
     
-    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r"metrics_"+col+"_"+lang+'_'+text_col+r'.png')#pdf
+    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r"metrics_"+col+"_"+lang+'_'+text_col+r'.pdf')#pdf
     plt.close()
 
 
