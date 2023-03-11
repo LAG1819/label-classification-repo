@@ -254,9 +254,10 @@ class Labeler:
         self.text_col = column
         self.data = self.load_data()
         self.train_df, self.validate_df, self.test_df, self.train_test_df = self.generate_trainTestdata(lang)
-        self.evaluation_data = []
+        self.trial = self.get_trial()
 
         #Start Label Model training and application
+        logger.info(f"############################################################################ Run {self.trial} - {self.text_col} ########################################################################################")
         logger.info("Automated Labeling started with Language {l}, Text-Column: {t_col} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = s_path, tpath = t_path, t_col = self.text_col))
         self.run()
     
@@ -370,38 +371,40 @@ class Labeler:
                     self.train_model(l_train,l_test,y_test,j,i)
                     logger.info(f"{j}-Fold Cross-Validation with Trainingsplit {i} were trained.")
 
-                    result_df = pd.DataFrame(self.evaluation_data).sort_values(by=['accuracy'], ascending=[False])
+                    #read current best result saved in temp file
+                    t_path = r'models\label\model_tuning_'+self.lang+r'\results\temp_eval_results_'+self.text_col+r'.feather'
+                    path = str(os.path.dirname(__file__)).split("src")[0]
+                    result_df = pd.read_feather(path+t_path).sort_values(by=['accuracy'], ascending=[False])
                     current_best = result_df.to_dict('records')[0]
                     logger.info(f"Current best training: {current_best}")
                     i+=1
             
             ##save evaluation results##
-            final_result_df = pd.DataFrame(self.evaluation_data).sort_values(by=['accuracy'], ascending=[False])
-            self.save_results(final_result_df)
+            final_result_df = self.save_results()
 
             ##get best parameter settings and associated model##
-            final_param = final_result_df.to_dict('records')
-            final_param = final_param[0]            
+            final_param = final_result_df.to_dict('records')[0]            
             logger.info(f"Best Model with {final_param['k-fold']}-fold Cross Validation identified. \n Maximum reached accuracy: {final_param['accuracy']}. \n Path: {final_param['model']}")
 
             self.label_model = LabelModel(cardinality = 7, verbose=False)
             self.label_model.load(final_param['model'])
         except KeyboardInterrupt:
             ##save evaluation results##
-            final_result_df = pd.DataFrame(self.evaluation_data).sort_values(by=['accuracy'], ascending=[False])
-            self.save_results(final_result_df)
+            final_result_df = self.save_results()
             
             ##get best parameter settings and associated model##
-            final_param = final_result_df.to_dict('records')
-            final_param = final_param[0]
-            logger.info(f"Best Model with {final_param['k-fold']}-fold Cross Validation identified. \n Maximum reached accuracy: {final_param['accuracy']}. \n Path: {final_param['model']}")
+            if not final_result_df.empty:
+                final_param = final_result_df.to_dict('records')[0]
+                logger.info(f"Best Model with {final_param['k-fold']}-fold Cross Validation identified. \n Maximum reached accuracy: {final_param['accuracy']}. \n Path: {final_param['model']}")
 
-            self.label_model = LabelModel(cardinality = 7, verbose=False)
-            self.label_model.load(final_param['model'])
-            ##test and save model##
-            self.test_model()
-            self.save_model()
-            return
+                self.label_model = LabelModel(cardinality = 7, verbose=False)
+                self.label_model.load(final_param['model'])
+                ##test and save model##
+                self.test_model()
+                self.save_model()
+                return
+            else:
+                return
 
     def analysis_training_result(self, k, i,coverage_df):
         """Analysation of applied Labeling Functions (LF) and the polarity, coverage, conflicts and overlaps (in %) of each LF on the dataset. Save coverage in dedicated result folder.
@@ -418,18 +421,19 @@ class Labeler:
         #get current trial number
         eval_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results_'+self.text_col+r'.feather'
         path = str(os.path.dirname(__file__)).split("src")[0]
-        ##check if target_path already exists
-        if os.path.exists(path+eval_path):
-            df_all = pd.read_feather(path+eval_path)
-            trial = df_all[['Trial']].sort_values(by=['Trial'], ascending=[False]).to_dict('records')[0]['Trial']
-            trial = trial+1
-        else:
-            trial = 0
+        
+        # ##check if target_path already exists
+        # if os.path.exists(path+eval_path):
+        #     df_all = pd.read_feather(path+eval_path)
+        #     trial = df_all[['Trial']].sort_values(by=['Trial'], ascending=[False]).to_dict('records')[0]['Trial']
+        #     trial = trial+1
+        # else:
+        #     trial = 0
 
         #save coverage data next to eval data
         coverage_path = r'models\label\model_tuning_'+self.lang+r'\results\coverage_results_'+self.text_col+r'.feather'
         coverage_df['LF'] = coverage_df.index
-        coverage_df['TRIAL'] = trial
+        coverage_df['TRIAL'] = self.trial
         coverage_df['k_fold'] = k
         coverage_df['k_fold_split'] = i
         coverage_df['TEXT'] = self.text_col
@@ -514,7 +518,7 @@ class Labeler:
                                             'Coverage':label_model_metrics['coverage'],'k-fold':k,'trainingset':i})
         
         # sort results by accuracy
-        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False,False])
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False])
         best_model = df.to_dict('records')[0]
             
         # Set up model checkpoint folder and save model including log
@@ -526,11 +530,8 @@ class Labeler:
         label_model.save(model_folder+r"\label_model.pkl")
 
         # add best result to overall evaluation results
-        self.evaluation_data.append({'Type':'RandomSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],\
-                                     'optimizer':best_model['optimizer'],\
-                                        'accuracy':best_model["accuracy" ],'PrecisionMicro':best_model['PrecisionMicro'],'PrecisionMacro':best_model['PrecisionMacro'],\
-                                            'F1Micro':best_model['F1Micro'],'F1Macro':best_model['F1Macro'],'MCC':best_model['MCC'],'Coverage':best_model['Coverage'],\
-                                                'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl"})
+        self.save_current_result(k,i,'RandomSearch', best_model, model_folder)
+
 
     @loggingdecorator("label.function")
     def apply_gridSearch(self,train,test,y_test,k:int,i:int):
@@ -572,7 +573,7 @@ class Labeler:
                                             'Coverage':label_model_metrics['coverage'],'k-fold':k,'trainingset':i})
             
         # sort results by accuracy
-        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False,False])
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False])
         best_model = df.to_dict('records')[0]
 
         # Set up model checkpoint folder and save model including log
@@ -581,11 +582,7 @@ class Labeler:
         os.makedirs(model_folder)
 
         # add best result to overall evaluation results
-        self.evaluation_data.append({'Type':'GridSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],\
-                                    'optimizer':best_model['optimizer'],\
-                                        'accuracy':best_model["accuracy" ],'PrecisionMicro':best_model['PrecisionMicro'],'PrecisionMacro':best_model['PrecisionMacro'],\
-                                            'F1Micro':best_model['F1Micro'],'F1Macro':best_model['F1Macro'],'MCC':best_model['MCC'],'Coverage':best_model['Coverage'],\
-                                                'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl"})
+        self.save_current_result(k,i,'GridSearch', best_model, model_folder)
 
         label_model = LabelModel(cardinality = 7, verbose=False)
         label_model.fit(L_train=train, n_epochs=best_model['n_epochs'], seed=123, log_freq=best_model['log_freq'], l2=best_model['l2'], lr=best_model['lr'], optimizer = best_model['optimizer'])
@@ -661,7 +658,7 @@ class Labeler:
         # highest_accuracy = optimizer.max["target"]
 
         # sort results by accuracy of all internal optimization loops and takes best result
-        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False,False])
+        df = pd.DataFrame(eval_data_intern).sort_values(by=['accuracy'], ascending=[False])
         best_model = df.to_dict('records')[0]
 
         # set up model checkpoint folder to save model in
@@ -670,11 +667,7 @@ class Labeler:
         os.makedirs(model_folder)
 
         # add best result to overall global evaluation results 
-        self.evaluation_data.append({'Type':'BayesSearch','n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],\
-                                     'optimizer':best_model['optimizer'],\
-                                        'accuracy':best_model["accuracy" ],'PrecisionMicro':best_model['PrecisionMicro'],'PrecisionMacro':best_model['PrecisionMacro'],\
-                                            'F1Micro':best_model['F1Micro'],'F1Macro':best_model['F1Macro'],'MCC':best_model['MCC'],'Coverage':best_model['Coverage'],\
-                                                'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl"})
+        self.save_current_result(k,i,'BayesSearch', best_model, model_folder)
 
         # save best model of all internal optimization loops to model checkpoint folder 
         label_model = LabelModel(cardinality = 7, verbose=False)
@@ -773,33 +766,64 @@ class Labeler:
             logger.info("Data with applied labels saved!")
         else:
             logger.info("Data with applied labels not saved!")
- 
-    def save_results(self, df_new:pd.DataFrame):
-        """Saves evaluation results to dedicated result folder.
 
-        Args:
-            df_new (pd.DataFrame): DataFrame containing metrics per hyperparameter optimization technique.
+    def save_current_result(self, k,i,optim, best_model, model_folder):
+        t_path = r'models\label\model_tuning_'+self.lang+r'\results\temp_eval_results_'+self.text_col+r'.feather'
+        path = str(os.path.dirname(__file__)).split("src")[0]
+        evaluation_data = [{'Type':optim,'n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],\
+                                     'optimizer':best_model['optimizer'],\
+                                        'accuracy':best_model["accuracy" ],'PrecisionMicro':best_model['PrecisionMicro'],'PrecisionMacro':best_model['PrecisionMacro'],\
+                                            'F1Micro':best_model['F1Micro'],'F1Macro':best_model['F1Macro'],'MCC':best_model['MCC'],'Coverage':best_model['Coverage'],\
+                                                'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl", 'Trial': self.trial, 'TEXT': self.text_col}]
+        df_new = pd.DataFrame(evaluation_data)
+        
+        if os.path.exists(path+t_path):
+            df_all = pd.read_feather(path+t_path)
+            df_all_new = pd.concat([df_all,df_new])
+        else:
+            df_all_new = df_new
+        
+        df_all_new.reset_index(inplace = True, drop = True) 
+        df_all_new.to_feather(path+t_path)
+
+ 
+    def save_results(self):
+        """Saves evaluation results to dedicated result folder.
         """
+        temp_t_path = r'models\label\model_tuning_'+self.lang+r'\results\temp_eval_results_'+self.text_col+r'.feather'
+        t_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results_'+self.text_col+r'.feather'
+        path = str(os.path.dirname(__file__)).split("src")[0]
+
+        #get temp eval data
+        temp_df = pd.read_feather(path+temp_t_path)
+        
+        ##check if target_path already exists
+        if os.path.exists(path+t_path):
+            df_all = pd.read_feather(path+t_path)
+            df_all_new = pd.concat([df_all,temp_df])
+        else:
+            df_all_new = temp_df
+
+        #save temp to existing eval data and remove temp file           
+        df_all_new.reset_index(inplace = True, drop = True)
+        df_all_new.to_feather(path+t_path)
+        os.remove(path+temp_t_path)
+        
+        temp_df.sort_values(by=['accuracy'], ascending=[False], inplace=True)
+        return temp_df
+
+    def get_trial(self):
         t_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results_'+self.text_col+r'.feather'
         path = str(os.path.dirname(__file__)).split("src")[0]
         trial = 0
         ##check if target_path already exists
         if os.path.exists(path+t_path):
             df_all = pd.read_feather(path+t_path)
+            #get current number of trial
+            trial = df_all[['Trial']].sort_values(by=['Trial'], ascending=[False]).to_dict('records')[0]['Trial'] + 1
 
-            trial = df_all[['Trial']].sort_values(by=['Trial'], ascending=[False]).to_dict('records')[0]['Trial']
-            df_new['Trial'] = trial+1
-            
-            df_all_new = pd.concat([df_all,df_new])
-        else:
-            df_all_new = df_new
-            df_all_new['Trial'] = trial
- 
-        df_all_new['TEXT'] = self.text_col
-        df_all_new.reset_index(inplace = True, drop = True)
-        df_all_new.to_feather(path+t_path)
-
-            
+        return trial
+    
     def run(self):
         """Main function. Combines the training of the model with the different hyperparameter optimization techniques, 
             the validation of the best model, applies it on the data and stores everything including the evaluation results.
@@ -811,9 +835,10 @@ class Labeler:
         self.save_data()
 
 if __name__ == "__main__":
-    for lang in ['en']:#,'de']:
-        # topic_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC')
-        text_labeling = Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
+    for lang in ['de']:#,'de']:
+        for i in range(2):
+            # Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC')
+            Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
    
     ####test of model loading###
     # path =r'D:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_de\grid_search\model_10857_n_epochs_50_log_freq_10_l2_0.1_lr_0.002_optimizer_adam_2023-02-09\label_model.pkl'
