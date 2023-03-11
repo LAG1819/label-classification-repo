@@ -5,6 +5,8 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import matplotlib.transforms
 import seaborn as sns
+import time
+from datetime import datetime
 
 def load_raw_data():
     raw_en = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\01_crawl\raw_texts_en.feather")
@@ -167,9 +169,29 @@ def plot_eval_metrics(df,lang,text_col,col, datatype):
     plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r"metrics_"+col+"_"+lang+'_'+text_col+r'.pdf')#pdf
     plt.close()
 
+def calculate_runtime(start = (2023,3,1,22,18,5,2,9,0), end = (2023,3,2,15,54,29,5,2,8)):
+    start = datetime.strptime(time.asctime(start),"%a %b %d %H:%M:%S %Y")
+    end = datetime.strptime(time.asctime(end),"%a %b %d %H:%M:%S %Y")
+    dif = end - start
+    print(dif.seconds)
 
 # load_raw_data()
 # load_clean_data()
 # load_labeled_data()
 load_eval_data_automated_label()
+calculate_runtime((2023,3,4,9,11,52,8,9,5),(2023,3,4,16,17,23,1,1,1))
 
+
+
+#remove wrong results automated labeling 
+# c_path = r'models\label\model_tuning_de\results\coverage_results_TOPIC.feather'
+# temp_t_path = r'models\label\model_tuning_de\results\temp_eval_results_TOPIC.feather'
+# t_path = r'models\label\model_tuning_de\results\eval_results_TOPIC.feather'
+# path = str(os.path.dirname(__file__)).split("src")[0]
+
+# c_df = pd.read_feather(path+c_path)
+# # c_df = c_df[c_df['TRIAL'] != 1]
+# # c_df.to_feather(path+c_path)
+# df_all = pd.read_feather(path+t_path)
+# df_all = df_all[df_all['Trial'] != 1]
+# df_all.to_feather(path+t_path)
