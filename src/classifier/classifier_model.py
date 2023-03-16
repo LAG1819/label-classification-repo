@@ -1,4 +1,4 @@
-# <Text Classification bert-based of german texts. Classificator trained seperately on topics or texts for comparison.>
+# <BERT-based text classification. Classification modell is trained seperately on topics or texts in englisch or german for comparison reasons.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify
@@ -37,7 +37,6 @@ from ray import air
 from ray.tune import CLIReporter
 from ray.tune.experiment.trial import Trial
 from tqdm import tqdm
-
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 #pip install datasets transformers numpy pandas evaluate scikit-learn hpbandster "ray[default]" "ray[tune]" "ray[air]"
 #pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
@@ -301,6 +300,7 @@ def train_model(config, data):
     torch.cuda.empty_cache()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    #select bert model for dedicated language
     if config['lang'] == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
         model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=7).to(device)
@@ -309,9 +309,11 @@ def train_model(config, data):
         model = BertClassifier(checkpoint='bert-base-uncased',num_labels=7).to(device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
+    #transform loaded data
     train_dl,test_dl = transform_train_data(data, data_collator, config["batch_size"])
     num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1_mi,f1_ma,pr_mi,pr_ma,recall, mcc = set_params(model, config['lr'],config['epoch'], config['len_train_dl'])
 
+    # load last checkpoint if model training hab been interrupted
     loaded_checkpoint = session.get_checkpoint()
     if loaded_checkpoint:
         with loaded_checkpoint.as_directory() as loaded_checkpoint_dir:
@@ -320,6 +322,7 @@ def train_model(config, data):
         model.load_state_dict(model_state)
         optimizer.load_state_dict(optimizer_state)
 
+    #train and evaluation of model 
     for epoch in range(num_epochs):
         model.train()
         for batch in train_dl:
@@ -397,7 +400,7 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
     if lang == 'en':
         config_rand = {
             "lr":tune.loguniform(1e-4,1e-1),
-            "batch_size":tune.choice([2,4]),
+            "batch_size":tune.choice([2]),
             "epoch":tune.choice([1,3,5,7,10]),
             "lang":lang,
             "col":col,
@@ -450,7 +453,7 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
     if lang == 'en':
         config = {
             "lr":tune.loguniform(1e-4,1e-1),
-            "batch_size":tune.choice([2,4]),
+            "batch_size":tune.choice([2]),
             "epoch":tune.choice([1,3,5,7,10]),
             "lang":lang,
             "col":col,
@@ -513,7 +516,7 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
     if lang == 'en':
         config = {
             "lr":tune.loguniform(1e-4,1e-1),
-            "batch_size":tune.choice([2,4]),
+            "batch_size":tune.choice([2]),
             "epoch":tune.choice([1,3,5,7,10]),
             "lang":lang,
             "col":col,
@@ -628,8 +631,17 @@ def get_current_trial(lang:str,col:str)-> int:
         trial = 0
     return trial
 
-def save_current_result(lang, col, k,i,type, best_results):#df_new (pd.DataFrame): DataFrame containing metrics per hyperparameter optimization technique.
+def save_current_result(lang:str, col:str, k:int,i:int,type:str, best_results):#df_new (pd.DataFrame): DataFrame containing metrics per hyperparameter optimization technique.
+    """Saves intermediate (best) evaluation results into a temporary file.
 
+    Args:
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        k (int): k of k-fold cross validation. Defaults to 0 as input if no k-fold cross validation is applied.
+        i (int): i if split i in k-fold cross validation. Defaults to 0 as input if no k-fold cross validation is applied.
+        type (str): Type of Optimization technique. It can be differnatiated between Random Search, Hyperband or BOHB.
+        best_results (Result): Best Configuration of the Optimization.
+    """
     if not os.path.exists(str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\results'):
         os.makedirs(str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\results')
 
@@ -659,7 +671,7 @@ def save_current_result(lang, col, k,i,type, best_results):#df_new (pd.DataFrame
     df_all_new.to_feather(path+t_path)
 
 def save_results(lang:str, col:str):
-    """Saves evaluation results to dedicated result folder.
+    """Saves all generated results in temporary evaluation sheet as evaluation results to dedicated result folder.
 
     Args:
         lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
@@ -850,8 +862,8 @@ def predict(sentence:str, lang:str,text_col = 'TOPIC'):
         print(label)
 
 # print(torch.cuda.is_available())
-run(lang ='de', col = 'TOPIC')
-# run(lang ='en', col = 'TOPIC')
+#run(lang ='de', col = 'TOPIC')
+run(lang ='en', col = 'TOPIC')
 #run(lang ='de', col = 'URL_TEXT')
 #run(lang ='en', col = 'URL_TEXT')
 

@@ -64,8 +64,10 @@ class textFilter:
 
         if self.lang == 'de':
             self.nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
+        elif self.lang == 'en':
+            self.nlp = spacy.load("en_core_web_trf")
         else:
-            self.nlp = spacy.load("en_core_web_trf")        
+            self.nlp = spacy.load("de_dep_news_trf")
 
     def load_data(self, path:str, t_path:str) -> pd.DataFrame:
         """Loads raw dataset containing all data samples that not had been already cleaned.

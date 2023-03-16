@@ -346,31 +346,36 @@ class SeederSpider(CrawlSpider):
 
                         yield scrapy.Request(url=link.url, meta={'CLASS': response.meta['CLASS'], 'KEYWORD':response.meta['KEYWORD']}, callback=self.parse)
 
-def run_crawler(lang:str):
+def run_crawler_data(lang:str):
     """
-    Run method that generates 3 processes with one Scrapy Crawler each. Each process defines the ouput file to be saved.
+    Run method that generates a processes with one Scrapy Crawler each. The process defines the ouput file to be saved.
     Process 1 generates a crawler that retrieves all domain-specific urls based on the input(seed)-links/domains.
-    Process 2 generates a crawler that retrieves all urls based on the input url-links/domains, as well as domain-specific and newly found urls with other domains.
-    Process 3 generates a crawler that, based on the input url-links/domains, retrieves all domain-specific urls that contain purely information on predefined classes. 
-    The 3 crawlers run parallel to each other. 
+    Args:
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
     """
     process1 = CrawlerProcess({
         'USER_AGENT': 'Mozilla/5.0',
         'FEED_EXPORT_ENCODING': 'utf-8',
         'FEEDS': {'files/raw_texts_new.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD","DOMAIN",'URL', 'URL_TEXT']}}
         })
+      
+    process1.crawl(SeederSpider, r'files\Seed_'+lang+r'.feather', 'internal',lang)
+    process1.start()
 
+def run_crawler_centroids(lang:str):
+    """Process 2 generates a crawler that retrieves all urls based on the input url-links/domains, as well as domain-specific and newly found urls with other domains.
+    Run method that generates a processes with one Scrapy Crawler each. The process defines the ouput file to be saved.
+    Args:
+        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
+    """
     process2 =  CrawlerProcess({
     'USER_AGENT': 'Mozilla/5.0',
     'FEED_EXPORT_ENCODING': 'utf-8',
     'FEEDS': {'files/raw_classes.json': {'format': 'json','encoding': 'utf8','fields': ["CLASS", "KEYWORD",'DOMAIN','URL', 'URL_TEXT']}}
     })
 
-    
     process2.crawl(TopicSpider, r'files/raw_classes.json',lang)   
-    process2.start()   
-    process1.crawl(SeederSpider, r'files\Seed_'+lang+r'.feather', 'internal',lang)
-    process1.start()
+    process2.start()
     
 
 def union_and_save_texts(lang:str):
@@ -429,28 +434,34 @@ def union_and_save_class(lang:str):
     print("Classes crawled: ",set(df_new['CLASS'].tolist()))
     logging.info("[{log}]Crawling of topics has finished".format(log = datetime.now()))
     logging.info("[{log}]Total size of raw classes dataset:{s}, Classes crawled:{c}".format(log = datetime.now(),s = df_new.shape, c = set(df_new['CLASS'].tolist())))
-    
-# if __name__ == '__main__':
-#     """Main function. Calls run method "run_crawler" and union method "union_data"
 
-#     Args:
-#             lang (str): unicode to select texts in that language 
-#     """ 
-#     lang = 'de'
-#     filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
-#     logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
-#     try:
-#         logging.info("[{log}]Crawling has started".format(log = datetime.now()))
-#         run_crawler(lang) 
-#     except Exception as e:
-#         logging.warning('[{log}]Crawling had been interrupted by error:{error}'.format(log = datetime.now(), error = e))
-#     finally:
-#         source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_new.json'
-#         class_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_classes.json'
-#         if os.path.exists(source_path):
-#             union_and_save_texts(lang)
-#         if os.path.exists(class_path):
-#             union_and_save_class(lang)
-      
+def crawl_data(lang:str):
+    filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
+    logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
+    try:
+        logging.info("[{log}]Crawling has started".format(log = datetime.now()))
+        run_crawler_data(lang) 
+    except Exception as e:
+        logging.warning('[{log}]Crawling had been interrupted by error:{error}'.format(log = datetime.now(), error = e))
+    finally:
+        source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_new.json'
+        if os.path.exists(source_path):
+            union_and_save_texts(lang)
+
+def crawl_centroids(lang:str):
+    filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
+    logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
+    try:
+        logging.info("[{log}]Crawling has started".format(log = datetime.now()))
+        run_crawler_centroids(lang) 
+    except Exception as e:
+        logging.warning('[{log}]Crawling had been interrupted by error:{error}'.format(log = datetime.now(), error = e))
+    finally:
+        class_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_classes.json'
+        if os.path.exists(class_path):
+            union_and_save_class(lang)
     
+# for lang in ['de','en']:    
+#     crawl_centroids(lang)
+#     crawl_data(lang)   
             

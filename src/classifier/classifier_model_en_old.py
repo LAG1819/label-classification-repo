@@ -1,4 +1,4 @@
-# <Classificator that gets trained and classifies data in user defined classes.>
+# <BERT-based text classification in Keras. Classification modell is trained on topics in englisch. Deprecated due to performance issues but working layout.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify

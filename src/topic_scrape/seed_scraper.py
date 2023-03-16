@@ -79,7 +79,8 @@ class TopicScraper:
         self.options.add_argument('--headless')
         self.options.add_argument(f'user-agent={self.headers}')
         self.browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=self.options)
-        self.wait = WebDriverWait(self.browser, 20)     
+        self.wait = WebDriverWait(self.browser, 20)
+        self.run()     
 
     def load_data(self, s_path:str):
         """Call of both Seed files. TOPIC_Seed.xlsx contains keywords to crawl. URL_Seed.xlsx contains links to crawl.

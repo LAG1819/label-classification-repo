@@ -1,4 +1,4 @@
-# <Automated Labeling of german texts. Label Model trained seperately on topics or text for comparison.>
+# <Automated Labeling of texts. Label Model trained seperately on topics or text in german or english for comparison.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify
@@ -105,7 +105,7 @@ def make_cluster_lf(label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer)
     )
 
 def keyword_lookup(x:str, keywords:list, label:int)->int:
-    """Keyword Matching of an input sentence. 
+    """Keyword Matching of an input sentence. Keywords can be defined in Seed.xlsx.
 
     Args:
         x (str): String to assign keyword matching to.
@@ -121,7 +121,7 @@ def keyword_lookup(x:str, keywords:list, label:int)->int:
         return ABSTAIN
 
 def make_keyword_lf(keywords:list, label:int) -> LabelingFunction:
-    """_summary_
+    """Generate a Label Function (LF) based on keyword_lookup function. Keywords can be defined in Seed.xlsx.
 
     Args:
         keywords (list):  List of dedicated keywords associated to label.
@@ -176,7 +176,7 @@ shared_cluster_e = make_cluster_lf(label = SHARED, kmeans= kmeans_en, kmeans_vec
 class Labeler:
     """Class to train and apply a Label Model of Snorkel on data.
     """
-    def __init__(self,lang:str,s_path:str, t_path:str, column:str):
+    def __init__(self,lang:str,s_path:str, t_path:str, column:str, partial:bool):
         """Initialisation for Label Model training and application.
 
         Args:
@@ -184,6 +184,7 @@ class Labeler:
             s_path (str): source path to file containing raw texts to clean
             t_path (str): target path to save file with cleaned texts
             column (str): Selected Column on which the data get labeled on. It can be choosen between TOPIC or URL_TEXT.
+            partial (bool): Selected type of data labeling. If True a partial data labeling is applied. If False a total data labeling is applied with help of a pretrained k-Means cluster.
         """
         # Create logger and assign handler
         logger = logging.getLogger("Labeler")
@@ -208,40 +209,15 @@ class Labeler:
         logger = logging.getLogger("Labeler.bayesianOptim")
         logger.setLevel(logging.INFO)
 
-        if lang == 'de':
-            self.lfs = [
-                autonomous_cluster_d,
-                electrification_cluster_d,
-                digitalisation_cluster_d,
-                connectivity_cluster_d, 
-                sustainability_cluster_d,
-                individualisation_cluster_d, 
-                shared_cluster_d,
-                autonomous_keywords,
-                electrification_keywords,
-                digitalisation_keywords,
-                connectivity_keywords,
-                sustainability_keywords,
-                individualisation_keywords,
-                shared_keywords,
-                ]
-        if lang == 'en':
-            self.lfs = [
-                autonomous_cluster_e,
-                electrification_cluster_e, 
-                digitalisation_cluster_e, 
-                connectivity_cluster_e,
-                sustainability_cluster_e,
-                individualisation_cluster_e,
-                shared_cluster_e,
-                autonomous_keywords,
-                electrification_keywords,
-                digitalisation_keywords,
-                connectivity_keywords,
-                sustainability_keywords,
-                individualisation_keywords,
-                shared_keywords,
-                ]
+        self.lfs = [autonomous_keywords, electrification_keywords, digitalisation_keywords, connectivity_keywords, sustainability_keywords, individualisation_keywords, shared_keywords]
+        if partial == False:
+            if lang == 'de':
+                self.lfs = self.lfs + [autonomous_cluster_d, electrification_cluster_d, digitalisation_cluster_d, connectivity_cluster_d, sustainability_cluster_d, individualisation_cluster_d, \
+                                       shared_cluster_d]
+            if lang == 'en':
+                self.lfs = self.lfs + [autonomous_cluster_e, electrification_cluster_e, digitalisation_cluster_e, connectivity_cluster_e, sustainability_cluster_e, individualisation_cluster_e,\
+                                       shared_cluster_e]
+
          
         logger = logging.getLogger("Labeler")
         self.lang = lang
@@ -259,7 +235,6 @@ class Labeler:
         #Start Label Model training and application
         logger.info(f"############################################################################ Run {self.trial} - {self.text_col} ########################################################################################")
         logger.info("Automated Labeling started with Language {l}, Text-Column: {t_col} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = s_path, tpath = t_path, t_col = self.text_col))
-        self.run()
     
     def load_data(self) -> pd.DataFrame:
         """Loads cleaned dataset containing topics as well.
@@ -285,6 +260,7 @@ class Labeler:
         train_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\03_label\label_trainset_"+lang+r".feather"
         val_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\03_label\label_valset_"+lang+r".xlsx"
 
+        #check if manual labeled test and validationssets exist
         if os.path.exists(test_path):
             test = pd.read_excel(test_path, index_col = 0)
             test = test[test['LABEL']!= -2]
@@ -293,6 +269,7 @@ class Labeler:
             validate = validate[validate['LABEL']!= -2]
 
             train = pd.read_feather(train_path)     
+        #if no manual labeled test and validationssets exist assign label column with fixed number -2
         else:
             self.data['LABEL'] = -2
             #60 % trainset, 20% testset, 20% validation set
@@ -307,7 +284,7 @@ class Labeler:
             
             logger = logging.getLogger("Labeler")
             logger.info("Train, Test and Validate Dataset were generated. Please label train and validate data before further proceeding!")
-            exit("No labeled Test and Validate data exist!")
+            exit("No labeled Test and Validate data exist! Please label generated train and test data file, stored in files/03_label/")
         
         train_copy = train.copy()
         train_copy['LABEL'] = -2
@@ -337,11 +314,11 @@ class Labeler:
         #     .master("local[1]") \
         #         .config("spark.driver.bindAddress", "127.0.0.1") \
         #             .getOrCreate()
-
+        random_states = [12,56,123]
         try:
             #k_fold Cross Validation
             for j in range(2,10):
-                k_fold = KFold(n_splits = j,shuffle = True, random_state = 12)
+                k_fold = KFold(n_splits = j,shuffle = True, random_state = random_states[self.trial])
                 i = 1
                 for split in k_fold.split(self.train_test_df):
                     logger.info(f"Training of {j}-Fold Cross-Validation with Trainingsplit {i} started.")
@@ -767,7 +744,16 @@ class Labeler:
         else:
             logger.info("Data with applied labels not saved!")
 
-    def save_current_result(self, k,i,optim, best_model, model_folder):
+    def save_current_result(self, k:int,i:int,optim:str, best_model:dict, model_folder:str):
+        """Saves intermediate (best) evaluation results into a temporary file.
+
+        Args:
+            k (int): k of k-fold cross validation. Defaults to 0 as input if no k-fold cross validation is applied.
+            i (int): i if split i in k-fold cross validation. Defaults to 0 as input if no k-fold cross validation is applied.
+            optim (str): Type of Optimization technique. It can be differnatiated between Random Search, Hyperband or BOHB.
+            best_model (dict): Best Configuration of the Optimization.
+            model_folder (str): Path to trained model with best configuration.
+        """
         t_path = r'models\label\model_tuning_'+self.lang+r'\results\temp_eval_results_'+self.text_col+r'.feather'
         path = str(os.path.dirname(__file__)).split("src")[0]
         evaluation_data = [{'Type':optim,'n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],\
@@ -812,7 +798,12 @@ class Labeler:
         temp_df.sort_values(by=['accuracy'], ascending=[False], inplace=True)
         return temp_df
 
-    def get_trial(self):
+    def get_trial(self) -> int:
+        """Gets current trial of training of a Label Model.
+
+        Returns:
+            int: Returns current trial number as integer.
+        """
         t_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results_'+self.text_col+r'.feather'
         path = str(os.path.dirname(__file__)).split("src")[0]
         trial = 0
@@ -831,14 +822,17 @@ class Labeler:
         self.train_labeling_functions()
         self.test_model()
         self.save_model()
+
         self.apply_model()
         self.save_data()
 
 if __name__ == "__main__":
-    for lang in ['de']:#,'de']:
-        for i in range(2):
-            # Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC')
-            Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT')
+    lang = 'de'
+    Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', False).run()
+    # for lang in ['de']:#,'en']:
+    #     for i in range(2):
+    #         Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', True).run()
+    #         Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT',True).run()
    
     ####test of model loading###
     # path =r'D:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_de\grid_search\model_10857_n_epochs_50_log_freq_10_l2_0.1_lr_0.002_optimizer_adam_2023-02-09\label_model.pkl'

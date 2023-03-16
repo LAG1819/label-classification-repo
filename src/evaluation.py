@@ -9,18 +9,24 @@ import time
 from datetime import datetime
 
 def load_raw_data():
+    """Load raw data and print data shapes.
+    """
     raw_en = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\01_crawl\raw_texts_en.feather")
     raw_de = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\01_crawl\raw_texts_de.feather")
     print(raw_en.shape)
     print(raw_de.shape)
 
 def load_clean_data():
+    """Load clean data and print data shapes.
+    """
     clean_en = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\02_clean\topiced_texts_en.feather")
     clean_de = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\02_clean\topiced_texts_de.feather")
     print(clean_en.shape)
     print(clean_de.shape)
 
 def load_labeled_data():
+    """Load labeled data and print data shapes.
+    """
     labeled_en_TOPIC = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\04_classify\labeled_texts_en_TOPIC.feather")
     labeled_de_TOPIC = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\04_classify\labeled_texts_de_TOPIC.feather")
 
@@ -33,7 +39,9 @@ def load_labeled_data():
     print(labeled_de_URL_TEXT.shape)
 
 def load_eval_data_automated_label():
-    for lang in ['de','en']:
+    """Load results of labeled data and results of coverage of labeled data and generate graphics of each. Saves graphis in images folder.
+    """
+    for lang in ['de']:#,'en'
         for text_col in ['TOPIC', 'URL_TEXT']:
             # coverage = pd.read_feather(str(os.path.dirname(__file__)).split("ml-classification-repo")[0]+r'backup\models\label\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
             coverage = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
@@ -46,18 +54,20 @@ def load_eval_data_automated_label():
 
             eval = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label\model_tuning_'+lang+r'\results\eval_results_'+text_col+r'.feather')
             
-            eval2 = eval.sort_values(by = ['accuracy','MCC'], ascending = [False,False])
+            eval2 = eval.sort_values(by = ['accuracy'], ascending = [False])
             eval2.drop_duplicates(subset=['Type'], inplace=True, keep='first')
             eval2 = eval2[['Type',"accuracy", "PrecisionMicro", "PrecisionMacro","F1Micro","F1Macro","MCC","Coverage"]]
             for col in ['BayesSearch','RandomSearch',"GridSearch"]:
                 evalt = eval2[eval2['Type'] == col]
                 plot_eval_metrics(evalt,lang=lang, text_col=text_col, col = col, datatype = r'\images\label_')
 
-            eval.sort_values(by = ['Trial','k-fold','accuracy','MCC'], ascending = [True,True,False,False], inplace = True)
+            eval.sort_values(by = ['Trial','k-fold','accuracy'], ascending = [True,True,False], inplace = True)
             eval.drop_duplicates(subset=['k-fold'], inplace=True, keep='first')
             plot_eval_folds(eval, lang=lang, text_col=text_col, datatype = r'\images\label_')
 
 def laod_eval_data_classification():
+    """Load results of classfication data and generate graphics of each. Saves graphis in images folder.
+    """
     for lang in ['de']:#,'en']:
         for text_col in ['TOPIC']:#, 'URL_TEXT']:
             metrics = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\classification\pytorch_tuning_'+lang+r'\results\eval_results_'+text_col+r'.feather')
@@ -74,7 +84,14 @@ def laod_eval_data_classification():
             plot_eval_folds(metrics2, lang=lang, text_col=text_col, datatype = r'\images\classification_')
 
 
-def plot_coverage(df, lang, text_col):
+def plot_coverage(df:pd.DataFrame, lang:str, text_col:str):
+    """Plots Coverage of Labeling Functions of best result. Saves plot as pdf in images folder.
+
+    Args:
+        df (pd.DataFrame): Coverage dataframe containing results.
+        lang (str): Language of Coverage dataframe results are based on. Can be englisch (en) or german (de).
+        text_col (str): Columns of Coverage dataframe results are based on. Can be text (URL_TEXT) or topics (TOPIC)
+    """
     ind = np.arange(len(df['LF'].tolist()))
     width = 0.29
 
@@ -110,7 +127,16 @@ def plot_coverage(df, lang, text_col):
     plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r'\images\label_coverage_'+lang+'_'+text_col+r'.pdf')#pdf
     plt.close()
 
-def plot_eval_folds(df, lang, text_col,datatype):
+def plot_eval_folds(df: pd.DataFrame, lang:str, text_col:str,datatype:str):
+    """Plots best evaluation result of all iteration loops in optimization. Saves plot as pdf in images folder.
+
+    Args:
+        df (pd.DataFrame): Evaluation results dataframe.
+        lang (str): Language of evaluation dataframe results are based on. Can be englisch (en) or german (de).
+        text_col (str): Columns of evaluation dataframe results are based on. Can be text (URL_TEXT) or topics (TOPIC)
+        datatype (str): Folder-path to save evaluation result. Can be Automated Labeling (label) or Classification (classification).
+    """
+
     barWidth = 0.25
     label = df['k-fold'].tolist()
     if 'label' in datatype:
@@ -139,7 +165,16 @@ def plot_eval_folds(df, lang, text_col,datatype):
     plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r'kfolds_'+lang+'_'+text_col+r'.pdf')#pdf
     plt.close()
 
-def plot_eval_metrics(df,lang,text_col,col, datatype):
+def plot_eval_metrics(df:pd.DataFrame,lang:str,text_col:str,col:str, datatype:str):
+    """Plots best evaluation results of all metrics of a selected parameteroptimization techinque. Saves plot as pdf in images folder.
+
+    Args:
+        df (pd.DataFrame): Evaluation results dataframe.
+        lang (str): Language of evaluation dataframe results are based on. Can be englisch (en) or german (de).
+        text_col (str): Columns of evaluation dataframe results are based on. Can be text (URL_TEXT) or topics (TOPIC)
+        col (str): Selected hyperparameteroptimization technique, on which the best results shall be plotted with. Can be Random Search, Grid Search, Bayesian Search, Hyperband or BOHB.
+        datatype (str): Folder-path to save evaluation result. Can be Automated Labeling (label) or Classification (classification).
+    """
     if 'label' in datatype:
         bars = ['Accuracy','MCC', 'Prec Mi', 'Prec Ma', 'F1 Mi', 'F1 Ma']
         x_pos = np.arange(len(bars))
@@ -170,6 +205,12 @@ def plot_eval_metrics(df,lang,text_col,col, datatype):
     plt.close()
 
 def calculate_runtime(start = (2023,3,1,22,18,5,2,9,0), end = (2023,3,2,15,54,29,5,2,8)):
+    """Helper Function to analyze logging files. Can calculate time delta between given timestemps.
+
+    Args:
+        start (tuple, optional): timestemp of start to subtract from end timestempt. Defaults to (2023,3,1,22,18,5,2,9,0).
+        end (tuple, optional): timestempt of end where start timestemp get substracted of. Defaults to (2023,3,2,15,54,29,5,2,8).
+    """
     start = datetime.strptime(time.asctime(start),"%a %b %d %H:%M:%S %Y")
     end = datetime.strptime(time.asctime(end),"%a %b %d %H:%M:%S %Y")
     dif = end - start
@@ -179,7 +220,7 @@ def calculate_runtime(start = (2023,3,1,22,18,5,2,9,0), end = (2023,3,2,15,54,29
 # load_clean_data()
 # load_labeled_data()
 load_eval_data_automated_label()
-calculate_runtime((2023,3,4,9,11,52,8,9,5),(2023,3,4,16,17,23,1,1,1))
+# calculate_runtime((2023,3,12,2,26,46,9,8,1),(2023,3,12,20,38,32,2,7,5))
 
 
 

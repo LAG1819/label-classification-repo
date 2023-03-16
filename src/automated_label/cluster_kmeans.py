@@ -162,9 +162,8 @@ class TOPIC_KMeans:
         self.save_clusterNames()
 
 
-lang = 'en'
-kmeans = TOPIC_KMeans(lang,r"files\02_clean\topiced_classes_"+lang+r".feather",r"files\02_clean\topiced_texts_"+lang+r".feather")
-kmeans.run()
+# lang = 'en'
+# TOPIC_KMeans(lang,r"files\02_clean\topiced_classes_"+lang+r".feather",r"files\02_clean\topiced_texts_"+lang+r".feather").run()
 
 
         

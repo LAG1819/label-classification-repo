@@ -64,8 +64,7 @@ class TopicExtractor:
 
         filenames =  str(os.path.dirname(__file__)).split("src")[0] +r'files\02_clean\topic_extraction_'+lang+'.log'
         logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
-        logging.info("Topic Extraction with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = self.lang, path = self.source_path, tpath = self.target_path))
-       
+        logging.info("Topic Extraction with Language {l} and data file {path} (source) started. Target file is {tpath}".format(l = self.lang, path = self.source_path, tpath = self.target_path))       
 
     def load_data(self):
         """Read cleaned text stored in source path
@@ -234,10 +233,7 @@ class TopicExtractor:
             logging.info("[{log}]Topic extraction of data sampleset {number} with size {size} of dataframe {df} is finished.".format(log = datetime.now(), number = i,size =chunk_c.shape, df = self.data.shape))
         logging.info("[{log}]Topic extraction of dataframe {df} is finished.".format(log = datetime.now(), df = self.data.shape))
 
-# if __name__ == "__main__":
+
 #     lang = 'de'
 #     texts_topics = TopicExtractor(2,r"files\02_clean\cleaned_texts_"+lang+r".feather",r"files\02_clean\topiced_texts_"+lang+r".feather", lang)
-#     texts_topics.run() 
-#     class_topics = TopicExtractor(2,r"files\02_clean\cleaned_classes_"+lang+r".feather",r"files\02_clean\topiced_classes_"+lang+r".feather",lang,True)
-#     class_topics.run()
-    
+
