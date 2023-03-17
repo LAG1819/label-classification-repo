@@ -10,18 +10,13 @@ In this application, use-case specific keywords and URL must be selected first m
 1. Change Keywords:
    * Open Excel-File **Seed.xlsx**
    * Customize Columns:
-![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/Seed_Excel.gif)
+![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/Topic_Excel.gif)
 
 
 2. Change number google search results
    
 ### Seed-based WebCrawler
 1. Change URL
-
-| CLASS   | KEYWORD_DE   | KEYWORD_EN                      |
-|---------|--------------|---------------------------------|
-| GENERAL | Abarth       | https://www.abarth.de/          |
-| GENERAL | Alfa Romeo   | https://www.alfaromeo.de/       |
-| GENERAL | Aston Martin | https://www.astonmartin.com/de/ |
-|         |              |                                 |
-|         |              |                                 |                                
+   * Open Excel-File **Seed.xlsx**
+   * Customize Columns:
+![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/Seed_Excel.gif)
