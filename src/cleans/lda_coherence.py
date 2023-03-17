@@ -1,4 +1,4 @@
-# <one line to give the program's name and a brief idea of what it does.>
+# <Evaluate coherence of generated topics of lda model.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify
@@ -18,9 +18,12 @@ from tmtoolkit import topicmod
 import numpy as np
 from gensim.models import CoherenceModel
 from itertools import combinations
-
+"""
+This file shall help to approve the applied lda model in topic_lda.py and to evaluate the meaningfullness of the extracted topics. 
+Due to several issues and errors, this file is currently not used and still under construction.
+"""
 def get_coherence_lda_gensim(lda_model,bow_corpus,docs):
-    """Calculate coherence value of generated 
+    """Calculate coherence value of generated lda model with gensim. Deprecated version.
     Args:
         lda_model (_type_): Generated gensim LDA model 
         bow_corpus (_type_): Text corpus of type bow. Specific type of gensim.
@@ -37,11 +40,17 @@ def get_coherence_lda_gensim(lda_model,bow_corpus,docs):
     return coherence_lda_value
 
 def get_coherence_topics_gensim(topics,common_corpus,common_dictionary):
+    """Get coherence value of topics of a generated lda model with gensim. Deprecated.
+    Args:
+        topics (_type_): _description_
+        common_corpus (_type_): _description_
+        common_dictionary (_type_): _description_
+    """
     cm = CoherenceModel(topics=topics, corpus=common_corpus, dictionary=common_dictionary, coherence='u_mass')
     coherence_topic_value = cm.get_coherence()
 
 def get_coherence(lda_components,tf_matrix ,texts,tfiIdf_vectorizer_vocab):
-    """Calculation of coherence value based on a given lda model.
+    """Calculation of coherence value based on a given lda model. 
 
     Args:
         lda_components (_type_): _description_
