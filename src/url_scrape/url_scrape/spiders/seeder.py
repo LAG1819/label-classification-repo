@@ -62,19 +62,19 @@ class TopicSpider(scrapy.Spider):
             name (_type_, optional): Name of the scrapy crawler. Defaults to None.
         """
         super().__init__(name, **kwargs)
-        self.lang = lang.upper()
-        self.target_path = t_path
+        self.__lang = lang.upper()
+        self.__target_path = t_path
 
         self.headers = {'Accept-Language': 'de;q=0.7', 
             'User-agent':"Mozilla/101.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0. 5005.78 Safari/537.36 Edge/100.0.1185.39"}
 
-        self.queue = self.get_data().values.tolist()
-        #print(self.queue)
+        self.__queue = self.get_data().values.tolist()
+        
         #dynamically allow all domains occuring
-        allowed = set() 
-        for s in self.queue:
-            allowed.add(urlparse(str(s[1])).netloc)
-        self.allowed_domains = list(allowed) 
+        __allowed = set() 
+        for s in self.__queue:
+            __allowed.add(urlparse(str(s[1])).netloc)
+        self.allowed_domains = list(__allowed) 
 
     def start_requests(self):
         """Start of Retrieval of the individual input url links. Scrapy own mandatory function.
@@ -82,7 +82,7 @@ class TopicSpider(scrapy.Spider):
         Yields:
             request : calling the scrapy own request query 
         """
-        for url in self.queue:
+        for url in self.__queue:
             yield scrapy.Request(url = url[1], meta={'CLASS': url[0]},callback=self.parse)
 
     def get_data(self):
@@ -94,13 +94,13 @@ class TopicSpider(scrapy.Spider):
         package_dir = str(os.path.dirname(__file__)).split("src")[0]
         absolute_path = os.path.join(package_dir, r'files\Seed.xlsx')
         
-        if os.path.exists(package_dir+self.target_path):
-            os.remove(package_dir+self.target_path)
+        if os.path.exists(package_dir+self.__target_path):
+            os.remove(package_dir+self.__target_path)
 
         seed_df = pd.read_excel(absolute_path,header = 0)[['KMEANS_CLASS', 'KMEANS_URL', 'KMEANS_LANG']]
         seed_df = seed_df.rename(columns={"KMEANS_CLASS": "CLASS", 'KMEANS_URL':'URL','KMEANS_LANG':'LANG'})
         seed_df = seed_df[['CLASS','URL', 'LANG']].dropna()
-        seed_df = seed_df[seed_df['LANG']==self.lang]
+        seed_df = seed_df[seed_df['LANG']==self.__lang]
 
         return seed_df
 
@@ -168,32 +168,30 @@ class SeederSpider(CrawlSpider):
 
         Args:
             url_path (str): path to file containing url links to crawl
-            parse (str): type of crawling
+            parse (str): type of crawling. It cann be selected betweent 'internal' or 'external'. If 'internal' is seleceted only websites of domains included in the seed_list can be visited.
             name (_type_, optional): Name of the scrapy crawler. Defaults to None.
         """
         super().__init__(name, **kwargs)
-        self.lang = lang
-        self.data = self.get_data(url_path)
+        self.__lang = lang
+        self.__data = self.get_data(url_path)
 
         self.parse_style = parse
 
-        filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\website_scraping_'+self.lang+'.log'
+        filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\website_scraping_'+self.__lang+'.log'
         logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
 
         # add all domains of input urls to list of allowed domains to crawl
-        seed_list = self.data['URL'].tolist()
-        allowed = set() 
-        for s in seed_list:
-            allowed.add(urlparse(str(s)).netloc)
-        self.allowed_domains = list(allowed) 
+        __seed_list = self.__data['URL'].tolist()
+        __allowed = set() 
+        for s in __seed_list:
+            __allowed.add(urlparse(str(s)).netloc)
+        self.allowed_domains = list(__allowed) 
 
-        self.visited = self.get_already_visited()
-        print("ALREADY VISITED: ", len(self.visited))
+        self.__visited = self.get_already_visited()
+        print("ALREADY VISITED: ", len(self.__visited))
         
-        
-        self.queue = self.data.values.tolist()
-        # print(self.queue)
-        # print(self.visited)
+        # filters domains by black_list
+        self.__queue = self.__data.values.tolist()
         self.black_list =["wikipedia","bundesregierung","accessor","hotel","musical","boutique","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel","conditions","terms","legal","subscription","abonn","cooky","cookie","policy","rechtlich","privacy","datenschutz","suche",\
             "formular", "pdf","foerderland","umweltbundesamt","ihk","capital","marketing","billiger","instagram","spotify","deezer","shop","github",\
                 "vimeo","apple","twitter","facebook","twitch","google","whatsapp","tiktok","pinterest", "klarna", "jobs","linkedin","xing", "mozilla","youtube",\
@@ -226,9 +224,9 @@ class SeederSpider(CrawlSpider):
         """
         df_path= str(os.path.dirname(__file__)).split("src")[0]
 
-        if self.lang == 'de':
+        if self.__lang == 'de':
             file = r"files\raw_texts.parquet"
-        elif self.lang == 'en':
+        elif self.__lang == 'en':
             file = r"files\raw_texts_en.parquet"
         else:
             return []
@@ -245,7 +243,7 @@ class SeederSpider(CrawlSpider):
         Yields:
             request : calling the scrapy own request query 
         """
-        for url in self.queue:      
+        for url in self.__queue:      
             yield scrapy.Request(url = url[2], meta={'CLASS': url[0], 'KEYWORD':url[1]},callback=self.parse)
         
         
@@ -295,7 +293,7 @@ class SeederSpider(CrawlSpider):
         Yields:
             json: raw_texts_internal.json / raw_texts_external.json
         """
-        if str(response.url) not in self.visited:
+        if str(response.url) not in self.__visited:
             try:
                 reqs = requests.get(str(response.url),headers = self.headers).text
                 soup = BeautifulSoup(reqs,'lxml')
@@ -326,9 +324,9 @@ class SeederSpider(CrawlSpider):
             'URL_TEXT':text,
             }   
 
-            self.visited.append(str(response.url))             
+            self.__visited.append(str(response.url))             
         for link in self.link_extractor.extract_links(response):
-            if str(link.url) in self.visited:
+            if str(link.url) in self.__visited:
                 continue
             else:             
                 #Filter found links on website based on predfined blacklist
@@ -347,9 +345,9 @@ class SeederSpider(CrawlSpider):
                         yield scrapy.Request(url=link.url, meta={'CLASS': response.meta['CLASS'], 'KEYWORD':response.meta['KEYWORD']}, callback=self.parse)
 
 def run_crawler_data(lang:str):
-    """
-    Run method that generates a processes with one Scrapy Crawler each. The process defines the ouput file to be saved.
+    """Run method that generates a processes with one Scrapy Crawler each. The process defines the ouput file to be saved.
     Process 1 generates a crawler that retrieves all domain-specific urls based on the input(seed)-links/domains.
+    Process 1 generates raw dataset for the prototypical implementation.
     Args:
         lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
     """
@@ -363,8 +361,10 @@ def run_crawler_data(lang:str):
     process1.start()
 
 def run_crawler_centroids(lang:str):
-    """Process 2 generates a crawler that retrieves all urls based on the input url-links/domains, as well as domain-specific and newly found urls with other domains.
-    Run method that generates a processes with one Scrapy Crawler each. The process defines the ouput file to be saved.
+    """Run method that generates a processes with one Scrapy Crawler each. The process defines the ouput file to be saved.
+    Process 2 generates a crawler that retrieves all urls based on the input url-links/domains, as well as domain-specific and newly found urls with other domains.
+    Process 2 is for crawling the Zentroid data for the cluster used in total automated labeling.
+    
     Args:
         lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
     """
@@ -378,7 +378,7 @@ def run_crawler_centroids(lang:str):
     process2.start()
     
 
-def union_and_save_texts(lang:str):
+def _union_and_save_texts(lang:str):
     """Function gets called when crawling is finished or manualy interrupted. The crawled data saved in "raw_texts_internal.json" are concatenated with whole dataset 
     "raw_texts" and this new dataset is saved(overwrote) as parquet and feather file. Crawled data in "raw_texts_internal.json" are finally removed.
 
@@ -415,7 +415,7 @@ def union_and_save_texts(lang:str):
     logging.info("[{log}]Crawling of texts has finished".format(log = datetime.now()))
     logging.info("[{log}]Total size of raw dataset:{s}, Classes crawled:{c}".format(log = datetime.now(),s = dfi.shape, c = set(dfi['CLASS'].tolist())))
 
-def union_and_save_class(lang:str):
+def _union_and_save_class(lang:str):
     """Function gets called when crawling is finished or manualy interrupted. The crawled data saved in "raw_classes.json" are saved(overwrote) as feather file. 
     Crawled data in "raw_classes.json" are finally removed.
 
@@ -436,6 +436,11 @@ def union_and_save_class(lang:str):
     logging.info("[{log}]Total size of raw classes dataset:{s}, Classes crawled:{c}".format(log = datetime.now(),s = df_new.shape, c = set(df_new['CLASS'].tolist())))
 
 def crawl_data(lang:str):
+    """Execution and data saving of Process 1 on run_crawler_data().
+
+    Args:
+        lang (str): unicode to select texts in that language 
+    """
     filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
     logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
     try:
@@ -446,9 +451,14 @@ def crawl_data(lang:str):
     finally:
         source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_new.json'
         if os.path.exists(source_path):
-            union_and_save_texts(lang)
+            _union_and_save_texts(lang)
 
 def crawl_centroids(lang:str):
+    """Execution and data saving of Process 2 on run_crawler_centroids().
+
+    Args:
+        lang (str): unicode to select texts in that language
+    """
     filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
     logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
     try:
@@ -459,9 +469,5 @@ def crawl_centroids(lang:str):
     finally:
         class_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_classes.json'
         if os.path.exists(class_path):
-            union_and_save_class(lang)
+            _union_and_save_class(lang)
     
-# for lang in ['de','en']:    
-#     crawl_centroids(lang)
-#     crawl_data(lang)   
-            

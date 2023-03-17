@@ -70,9 +70,9 @@ class TopicScraper:
             ca_certs=certifi.where()
             )
 
-        self.lang = lang   
-        self.package_dir = str(os.path.dirname(__file__)).split("src")[0]
-        self.topics_df, self.url_df = self.load_data(s_path)
+        self.__lang = lang   
+        self.__package_dir = str(os.path.dirname(__file__)).split("src")[0]
+        self._topics_df, self._url_df = self.load_data(s_path)
 
         self.options = webdriver.FirefoxOptions()
         self.options.add_argument('--disable-gpu')
@@ -80,7 +80,6 @@ class TopicScraper:
         self.options.add_argument(f'user-agent={self.headers}')
         self.browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=self.options)
         self.wait = WebDriverWait(self.browser, 20)
-        self.run()     
 
     def load_data(self, s_path:str):
         """Call of both Seed files. TOPIC_Seed.xlsx contains keywords to crawl. URL_Seed.xlsx contains links to crawl.
@@ -94,35 +93,51 @@ class TopicScraper:
         absolute_path = os.path.join(self.package_dir,s_path)
         seed_data = pd.read_excel(absolute_path,header = 0) 
         
-        url_col = 'URL_'+self.lang.upper()
+        url_col = 'URL_'+self.__lang.upper()
         url_df = seed_data[['CLASS_K','KEYWORD', url_col]]
         url_df = url_df.rename(columns={url_col:'URL', 'CLASS_K':'CLASS'})
         url_df = url_df[['CLASS','KEYWORD', 'URL']].dropna()
 
-        keyword_col = "KEYWORD_"+ self.lang.upper()
+        keyword_col = "KEYWORD_"+ self.__lang.upper()
         topic_df = seed_data[['CLASS', keyword_col]]
         topic_df = topic_df.rename(columns={keyword_col:'KEYWORD'})
         topic_df = topic_df[['CLASS', 'KEYWORD']].dropna()
         
         return topic_df,url_df 
         
-    def get_url(self,q):
+    def __get_url(self,q:str) -> list:
+        """Performs a google search based on the given topic using BeautifulSoup first. If no result or an error occures a google search based on the given topic using Selenium is performed.
+
+        Args:
+            q (str): Topic to be searched using Google.
+
+        Returns:
+            list: Returns a list of the url of the top 10 Google search hits.
+        """
         try:
-            resultLinks = self.google_search(q)
+            resultLinks = self.__google_search(q)
         except Exception as e:
             resultLinks =[]
             print("BS4 Google Search went wrong: ",e)
 
         if not resultLinks:
             try:
-                resultLinks = self.google_search_selenium(q)
+                resultLinks = self.__google_search_selenium(q)
             except Exception as e:
                 resultLinks =[]
                 print("SELENIUM Google Search went wrong: ",e)
                         
         return resultLinks
 
-    def google_search(self,query):
+    def __google_search(self,query:str)-> list:
+        """Performs a google search based on the given topic using BeautifulSoup.
+
+        Args:
+            query (str): Topic to be searched using Google.
+
+        Returns:
+            list: Returns a list of the url of the top 10 Google search hits.
+        """
         params = {"q": query}
         req = requests.get('https://www.google.com/search?q=',headers = self.headers, params = params,verify= False).text
         
@@ -139,7 +154,15 @@ class TopicScraper:
 
         return filteredsearchRefs
 
-    def google_search_selenium(self,query):
+    def __google_search_selenium(self,query:str) -> list:
+        """Performs a google search based on the given topic using selenium.
+
+        Args:
+            query (str): Topic to be searched using Google.
+
+        Returns:
+            list: Returns a list of the url of the top 10 Google search hits.
+        """
         ignored_exceptions=(NoSuchElementException,StaleElementReferenceException,)
         self.browser.get('http://www.google.com')
         try: 
@@ -165,11 +188,19 @@ class TopicScraper:
             else:
                 searchResults.append(tag.get_attribute('href'))
 
-        return list(filter(self.filter_resultLinks,searchResults))
+        return list(filter(self.__filter_resultLinks,searchResults))
         
 
 
-    def filter_resultLinks(self,link):
+    def __filter_resultLinks(self,link:str):
+        """Filter a given url based on its domain. 
+
+        Args:
+            link (str): Given url to filter.
+
+        Returns:
+            str: Returns None if url contains pattern of pattern_list, else returns url. 
+        """
         if re.match(r'^(http|https)://',str(link)):
             pattern_list = ["google","googleadservices","home.mobile","autoscout24","web2.cylex","servicesinfo","11880",\
                 "wikipedia","accessor","hotel","musical","boutique","bafa","media","photo","foto","file","europa.eu","order","gewinnspiel",\
@@ -185,32 +216,22 @@ class TopicScraper:
     def save_data(self):
         """Concatenates dataframe containing all google search result website links based on keywords withdataframe containing dataframe containing website links.
         """
-        all_seed_df = pd.concat([self.url_df,self.topics_df], ignore_index= True)
+        all_seed_df = pd.concat([self._url_df,self._topics_df], ignore_index= True)
         all_seed_df = all_seed_df[all_seed_df[["CLASS","KEYWORD","URL"]].notnull()].reset_index(drop=True)
 
         print(all_seed_df.columns)
         print(all_seed_df.shape)
         # print(all_seed_df)
         
-        if os.path.exists(os.path.join(self.package_dir,r'files\Seed_'+self.lang+r'.feather')):
-            os.remove(os.path.join(self.package_dir,r'files\Seed_'+self.lang+r'.feather'))
-        all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed_'+self.lang+r'.feather'))
+        if os.path.exists(os.path.join(self.package_dir,r'files\Seed_'+self.__lang+r'.feather')):
+            os.remove(os.path.join(self.package_dir,r'files\Seed_'+self.__lang+r'.feather'))
+        all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed_'+self.__lang+r'.feather'))
 
     def run(self):
         """Run method of class. Applies rowwise google search on given keywords and saves top 10 result website links in new column "URL". 
         Saves dataframe containing all google search result website links based on keywords with other dataframe containing website links.
         """
-        self.topics_df['URL'] = self.topics_df['KEYWORD'].apply(lambda row: self.get_url(row))
-        self.topics_df = self.topics_df.explode('URL')
+        self._topics_df['URL'] = self._topics_df['KEYWORD'].apply(lambda row: self.__get_url(row))
+        self._topics_df = self._topics_df.explode('URL')
         self.save_data()
         
-
-#Main - Init a crawler with given searchlist Searchlist.xsls. Crawls and saves all information (run).
-# if __name__ == "__main__":
-#     start = time.process_time()
-#     scrape = TopicScraper("en",r'files\Seed.xlsx')
-#     scrape.run()
-#     print(time.process_time() - start)
-
-
-
