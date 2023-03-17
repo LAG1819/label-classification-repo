@@ -55,22 +55,139 @@ def loggingdecorator(name):
             return ret
         return _fn
     return _decor
-############################################################## USER DEFINED CLASSES ################################################################################## 
-#This class is obligatory, do not change or otherwise the Label Model is not working correctly!
-ABSTAIN = -1
-#Classes to define by user:
-AUTONOMOUS = 0
-CONNECTIVITY = 1
-DIGITALISATION = 2
-ELECTRIFICATION = 3
-INDIVIDUALISATION = 4
-SHARED = 5
-SUSTAINABILITY = 6
+############################################################## USER-DEFINED LABELING FUNCTIONS ######################################################################## 
+@staticmethod
+def kMeans_cluster(x:str, label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer,ABSTAIN:int) -> int:
+    """K-Means clustering with loaded and pre-trained KMeans cluster of an input sentence.
+    This function is only used if labeling of total dataset is required.
+
+    Args:
+        x (str): String to cluster.
+        label (int): Input label to compare cluster of clustered sentence with.
+        kmeans (KMeans): Pre-trained KMeans cluster.
+        kmeans_vectorizer (TfidfVectorizer): Associated TfidfVectorizer of pre-trained KMeans cluster.
+        ABSTAIN (int): Default if label can not be assigned.
+
+    Returns:
+        int: Returns -1 (ABSTAIN) if predicted cluster is not dedicated label. Otherwise returns label.
+    """
+    text = kmeans_vectorizer.transform([str(x)]).toarray()
+    cluster = kmeans.predict(text)[0]
+
+    if int(cluster) == int(label):
+        return label
+    else:
+        return ABSTAIN
+@staticmethod
+def make_cluster_lf(label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer, abstain:int) -> LabelingFunction:
+    """Generate a Label Function (LF) based on an input K-Means cluster and associated TfidfVectorizer.
+    This Labeling Function is only used if labeling of total dataset is required.
+
+    Args:
+        label (int): Selected label to which the LF should assign to.
+        kmeans (KMeans): Pre-trained KMeans cluster.
+        kmeans_vectorizer (TfidfVectorizer): Associated TfidfVectorizer of pre-trained KMeans cluster.
+        abstain (int): Default if label can not be assigned.
+
+    Returns:
+        LabelingFunction: Returns generated Labeling Function (LF).
+    """
+    return LabelingFunction(
+        name=f"cluster_{str(label)}",
+        f=kMeans_cluster,
+        resources=dict(label=label, kmeans =kmeans, kmeans_vectorizer=kmeans_vectorizer, abstain=abstain),
+    )
+@staticmethod
+def keyword_lookup(x:str, keywords:list, label:int, ABSTAIN:int)->int:
+    """Keyword Matching of an input sentence. Keywords can be defined in Seed.xlsx.
+    This function is used in both cases: if labeling of total or partial dataset is required.
+
+    Args:
+        x (str): String to assign keyword matching to.
+        keywords (list): List of dedicated keywords to match with.
+        label (int): Input label associated with the keywords.
+        ABSTAIN (int): Default if label can not be assigned.
+
+    Returns:
+        int: Returns -1 (ABSTAIN) if no matched keyword found in sentence. Otherwise returns label.
+    """
+    if any(word in x.text.lower() for word in keywords):
+        return label
+    else:
+        return ABSTAIN
+@staticmethod
+def make_keyword_lf(keywords:list, label:int, abstain:int) -> LabelingFunction:
+    """Generate a Label Function (LF) based on keyword_lookup function. Keywords can be defined in Seed.xlsx.
+    This Labeling Function is used in both cases: if labeling of total or partial dataset is required.
+
+    Args:
+        keywords (list):  List of dedicated keywords associated to label.
+        label (int): Selected label to which the LF should assign to.
+        abstain (int): Default if label can not be assigned.
+
+    Returns:
+        LabelingFunction: Returns generated Labeling Function (LF).
+    """
+    return LabelingFunction(
+        name=f"keyword_{label}",
+        f=keyword_lookup,
+        resources=dict(keywords=keywords, label=label, abstain=abstain),
+    )
 
 ############################################################## Label Model and Training ################################################################################## 
 class Labeler:
     """Class to train and apply a Label Model of Snorkel on data.
     """
+
+    #USER DEFINED CLASS-LABEL
+    #Note: Class ABSTAIN is obligatory, do not change or otherwise the Label Model is not working correctly!
+    __ABSTAIN = -1
+    AUTONOMOUS = 0
+    CONNECTIVITY = 1
+    DIGITALISATION = 2
+    ELECTRIFICATION = 3
+    INDIVIDUALISATION = 4
+    SHARED = 5
+    SUSTAINABILITY = 6
+
+    #Generation of all Labeling Functions (LF) for Keyword Matching
+    __absolute_path = str(os.path.dirname(__file__)).split("src")[0] + r"files/Seed.xlsx"
+    __seed_data = pd.read_excel(__absolute_path,header = 0) 
+    __df = __seed_data[['AUTONOMOUS','ELECTRIFICATION','CONNECTIVITY','SHARED','SUSTAINABILITY','DIGITALISATION','INDIVIDUALISATION']]
+    __autonomous_keywords = make_keyword_lf(keywords = __df['AUTONOMOUS'].dropna().tolist(), label = AUTONOMOUS, abstain = __ABSTAIN)
+    __electrification_keywords = make_keyword_lf(keywords = __df['ELECTRIFICATION'].dropna().tolist(), label = ELECTRIFICATION, abstain = __ABSTAIN)
+    __digitalisation_keywords = make_keyword_lf(keywords = __df['DIGITALISATION'].dropna().tolist(), label = DIGITALISATION, abstain = __ABSTAIN)
+    __connectivity_keywords = make_keyword_lf(keywords = __df['CONNECTIVITY'].dropna().tolist(), label = CONNECTIVITY, abstain = __ABSTAIN)
+    __sustainability_keywords = make_keyword_lf(keywords = __df['SUSTAINABILITY'].dropna().tolist(), label = SUSTAINABILITY, abstain = __ABSTAIN)
+    __individualisation_keywords = make_keyword_lf(keywords = __df['INDIVIDUALISATION'].dropna().tolist(), label = INDIVIDUALISATION, abstain = __ABSTAIN)
+    __shared_keywords = make_keyword_lf(keywords = __df['SHARED'].dropna().tolist(), label = SHARED, abstain = __ABSTAIN)
+
+    #load trained kMeans, fitted vectorizer for german kMeans
+    _kmeans_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_de.pkl", 'rb')) 
+    _kmeans_vectorizer_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_vectorizer_de.pkl", 'rb')) 
+    #Generation of german Labeling Functions (LF) for Clustering
+    __autonomous_cluster_d =  make_cluster_lf(label = AUTONOMOUS, kmeans= _kmeans_de, kmeans_vectorizer= _kmeans_vectorizer_de, abstain = __ABSTAIN)
+    __electrification_cluster_d =  make_cluster_lf(label = ELECTRIFICATION, kmeans= _kmeans_de, kmeans_vectorizer= _kmeans_vectorizer_de, abstain = __ABSTAIN)
+    __digitalisation_cluster_d =  make_cluster_lf(label = DIGITALISATION, kmeans= _kmeans_de, kmeans_vectorizer= _kmeans_vectorizer_de, abstain = __ABSTAIN)
+    __connectivity_cluster_d =  make_cluster_lf(label = CONNECTIVITY, kmeans= _kmeans_de, kmeans_vectorizer= _kmeans_vectorizer_de, abstain = __ABSTAIN)
+    __sustainability_cluster_d =  make_cluster_lf(label = SUSTAINABILITY, kmeans= _kmeans_de, kmeans_vectorizer= _kmeans_vectorizer_de, abstain = __ABSTAIN)
+    __individualisation_cluster_d = make_cluster_lf(label = INDIVIDUALISATION, kmeans= _kmeans_de, kmeans_vectorizer= _kmeans_vectorizer_de, abstain = __ABSTAIN)
+    __shared_cluster_d = make_cluster_lf(label = SHARED, kmeans= _kmeans_de, kmeans_vectorizer= _kmeans_vectorizer_de, abstain = __ABSTAIN)
+
+    #load trained kMeans, fitted vectorizer for english kMeans
+    _kmeans_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_en.pkl", 'rb')) 
+    _kmeans_vectorizer_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_vectorizer_en.pkl", 'rb'))
+    #Generation of english Labeling Functions (LF) for Clustering
+    __autonomous_cluster_e =  make_cluster_lf(label = AUTONOMOUS, kmeans= _kmeans_en, kmeans_vectorizer= _kmeans_vectorizer_en, abstain = __ABSTAIN)
+    __electrification_cluster_e =  make_cluster_lf(label = ELECTRIFICATION, kmeans= _kmeans_en, kmeans_vectorizer= _kmeans_vectorizer_en, abstain = __ABSTAIN)
+    __digitalisation_cluster_e =  make_cluster_lf(label = DIGITALISATION, kmeans= _kmeans_en, kmeans_vectorizer= _kmeans_vectorizer_en, abstain = __ABSTAIN)
+    __connectivity_cluster_e =  make_cluster_lf(label = CONNECTIVITY, kmeans= _kmeans_en, kmeans_vectorizer= _kmeans_vectorizer_en, abstain = __ABSTAIN)
+    __sustainability_cluster_e =  make_cluster_lf(label = SUSTAINABILITY, kmeans= _kmeans_en, kmeans_vectorizer= _kmeans_vectorizer_en, abstain = __ABSTAIN)
+    __individualisation_cluster_e = make_cluster_lf(label = INDIVIDUALISATION, kmeans= _kmeans_en, kmeans_vectorizer= _kmeans_vectorizer_en, abstain = __ABSTAIN)
+    __shared_cluster_e = make_cluster_lf(label = SHARED, kmeans= _kmeans_en, kmeans_vectorizer= _kmeans_vectorizer_en, abstain = __ABSTAIN)
+
+    
+
     def __init__(self,lang:str,s_path:str, t_path:str, column:str, partial:bool):
         """Initialisation for Label Model training and application.
 
@@ -104,14 +221,15 @@ class Labeler:
         logger = logging.getLogger("Labeler.bayesianOptim")
         logger.setLevel(logging.INFO)
 
-        self.lfs = [autonomous_keywords, electrification_keywords, digitalisation_keywords, connectivity_keywords, sustainability_keywords, individualisation_keywords, shared_keywords]
+        self.lfs = [self.__autonomous_keywords, self.__electrification_keywords, self.__digitalisation_keywords, self.__connectivity_keywords, self.__sustainability_keywords,\
+                    self.__individualisation_keywords, self.__shared_keywords]
         if partial == False:
             if lang == 'de':
-                self.lfs = self.lfs + [autonomous_cluster_d, electrification_cluster_d, digitalisation_cluster_d, connectivity_cluster_d, sustainability_cluster_d, individualisation_cluster_d, \
-                                       shared_cluster_d]
+                self.lfs = self.lfs + [self.__autonomous_cluster_d, self.__electrification_cluster_d, self.__digitalisation_cluster_d, self.__connectivity_cluster_d, self.__sustainability_cluster_d,\
+                                       self.__individualisation_cluster_d, self.__shared_cluster_d]
             if lang == 'en':
-                self.lfs = self.lfs + [autonomous_cluster_e, electrification_cluster_e, digitalisation_cluster_e, connectivity_cluster_e, sustainability_cluster_e, individualisation_cluster_e,\
-                                       shared_cluster_e]
+                self.lfs = self.lfs + [self.__autonomous_cluster_e, self.__electrification_cluster_e, self.__digitalisation_cluster_e, self.__connectivity_cluster_e, self.__sustainability_cluster_e,\
+                                       self.__individualisation_cluster_e, self.__shared_cluster_e]
 
          
         logger = logging.getLogger("Labeler")
@@ -126,10 +244,6 @@ class Labeler:
         self.__data = self.load_data()
         self.__train_df, self.__validate_df, self.__test_df, self.__train_test_df = self.__generate_trainTestdata(lang)
         self.__trial = self.__get_trial()
-
-        #Start Label Model training and application
-        logger.info(f"############################################################################ Run {self.__trial} - {self.__text_col} ########################################################################################")
-        logger.info("Automated Labeling started with Language {l}, Text-Column: {t_col} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = s_path, tpath = t_path, t_col = self.__text_col))
     
     def load_data(self) -> pd.DataFrame:
         """Loads cleaned dataset containing topics as well.
@@ -717,6 +831,13 @@ class Labeler:
         """Main function. Combines the training of the model with the different hyperparameter optimization techniques, 
             the validation of the best model, applies it on the data and stores everything including the evaluation results.
         """
+        #Start Label Model training and application
+        logger = logging.getLogger("Labeler")
+        logger.info(f"############################################################################ Run {self.__trial} - {self.__text_col} ########################################################################################")
+        logger.info("Automated Labeling started with Language {l}, Text-Column: {t_col} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = self.source_path,\
+                                                                                                                                                               tpath = self.__target_path,\
+                                                                                                                                                                t_col = self.__text_col))
+        
         #apply labeling functions on data splits, train model and optimize parameter
         self.__train_labeling_functions()
         #test model with best configuration on validation set
@@ -727,118 +848,6 @@ class Labeler:
         self.__apply_model()
         #save dataset with assigned labels
         self.__save_data()
-
-############################################################## USER-DEFINED LABELING FUNCTIONS ######################################################################## 
-def kMeans_cluster(x:str, label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer) -> int:
-    """K-Means clustering with loaded and pre-trained KMeans cluster of an input sentence.
-    This function is only used if labeling of total dataset is required.
-
-    Args:
-        x (str): String to cluster.
-        label (int): Input label to compare cluster of clustered sentence with.
-        kmeans (KMeans): Pre-trained KMeans cluster.
-        kmeans_vectorizer (TfidfVectorizer): Associated TfidfVectorizer of pre-trained KMeans cluster.
-
-    Returns:
-        int: Returns -1 (ABSTAIN) if predicted cluster is not dedicated label. Otherwise returns label.
-    """
-    text = kmeans_vectorizer.transform([str(x)]).toarray()
-    cluster = kmeans.predict(text)[0]
-
-    if int(cluster) == int(label):
-        return label
-    else:
-        return ABSTAIN
-
-def make_cluster_lf(label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer) -> LabelingFunction:
-    """Generate a Label Function (LF) based on an input K-Means cluster and associated TfidfVectorizer.
-    This Labeling Function is only used if labeling of total dataset is required.
-
-    Args:
-        label (int): Selected label to which the LF should assign to.
-        kmeans (KMeans): Pre-trained KMeans cluster.
-        kmeans_vectorizer (TfidfVectorizer): Associated TfidfVectorizer of pre-trained KMeans cluster.
-
-    Returns:
-        LabelingFunction: Returns generated Labeling Function (LF).
-    """
-    return LabelingFunction(
-        name=f"cluster_{str(label)}",
-        f=kMeans_cluster,
-        resources=dict(label=label, kmeans =kmeans, kmeans_vectorizer=kmeans_vectorizer),
-    )
-
-def keyword_lookup(x:str, keywords:list, label:int)->int:
-    """Keyword Matching of an input sentence. Keywords can be defined in Seed.xlsx.
-    This function is used in both cases: if labeling of total or partial dataset is required.
-
-    Args:
-        x (str): String to assign keyword matching to.
-        keywords (list): List of dedicated keywords to match with.
-        label (int): Input label associated with the keywords.
-
-    Returns:
-        int: Returns -1 (ABSTAIN) if no matched keyword found in sentence. Otherwise returns label.
-    """
-    if any(word in x.text.lower() for word in keywords):
-        return label
-    else:
-        return ABSTAIN
-
-def make_keyword_lf(keywords:list, label:int) -> LabelingFunction:
-    """Generate a Label Function (LF) based on keyword_lookup function. Keywords can be defined in Seed.xlsx.
-    This Labeling Function is used in both cases: if labeling of total or partial dataset is required.
-
-    Args:
-        keywords (list):  List of dedicated keywords associated to label.
-        label (int): Selected label to which the LF should assign to.
-
-    Returns:
-        LabelingFunction: Returns generated Labeling Function (LF).
-    """
-    return LabelingFunction(
-        name=f"keyword_{label}",
-        f=keyword_lookup,
-        resources=dict(keywords=keywords, label=label),
-    )
-
-#Generation of all Labeling Functions (LF) for Keyword Matching
-absolute_path = str(os.path.dirname(__file__)).split("src")[0] + r"files/Seed.xlsx"
-seed_data = pd.read_excel(absolute_path,header = 0) 
-df = seed_data[['AUTONOMOUS','ELECTRIFICATION','CONNECTIVITY','SHARED','SUSTAINABILITY','DIGITALISATION','INDIVIDUALISATION']]
-autonomous_keywords = make_keyword_lf(keywords = df['AUTONOMOUS'].dropna().tolist(), label = AUTONOMOUS)
-electrification_keywords = make_keyword_lf(keywords = df['ELECTRIFICATION'].dropna().tolist(), label = ELECTRIFICATION)
-digitalisation_keywords = make_keyword_lf(keywords = df['DIGITALISATION'].dropna().tolist(), label = DIGITALISATION)
-connectivity_keywords = make_keyword_lf(keywords = df['CONNECTIVITY'].dropna().tolist(), label = CONNECTIVITY)
-sustainability_keywords = make_keyword_lf(keywords = df['SUSTAINABILITY'].dropna().tolist(), label = SUSTAINABILITY)
-individualisation_keywords = make_keyword_lf(keywords = df['INDIVIDUALISATION'].dropna().tolist(), label = INDIVIDUALISATION)
-shared_keywords = make_keyword_lf(keywords = df['SHARED'].dropna().tolist(), label = SHARED)
-
-#load trained kMeans, fitted vectorizer for german kMeans
-kmeans_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_de.pkl", 'rb')) 
-kmeans_vectorizer_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_vectorizer_de.pkl", 'rb')) 
-#Generation of german Labeling Functions (LF) for Clustering
-autonomous_cluster_d =  make_cluster_lf(label = AUTONOMOUS, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-electrification_cluster_d =  make_cluster_lf(label = ELECTRIFICATION, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-digitalisation_cluster_d =  make_cluster_lf(label = DIGITALISATION, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-connectivity_cluster_d =  make_cluster_lf(label = CONNECTIVITY, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-sustainability_cluster_d =  make_cluster_lf(label = SUSTAINABILITY, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-individualisation_cluster_d = make_cluster_lf(label = INDIVIDUALISATION, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-shared_cluster_d = make_cluster_lf(label = SHARED, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-
-#load trained kMeans, fitted vectorizer for english kMeans
-kmeans_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_en.pkl", 'rb')) 
-kmeans_vectorizer_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_vectorizer_en.pkl", 'rb'))
-#Generation of english Labeling Functions (LF) for Clustering
-autonomous_cluster_e =  make_cluster_lf(label = AUTONOMOUS, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-electrification_cluster_e =  make_cluster_lf(label = ELECTRIFICATION, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-digitalisation_cluster_e =  make_cluster_lf(label = DIGITALISATION, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-connectivity_cluster_e =  make_cluster_lf(label = CONNECTIVITY, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-sustainability_cluster_e =  make_cluster_lf(label = SUSTAINABILITY, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-individualisation_cluster_e = make_cluster_lf(label = INDIVIDUALISATION, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-shared_cluster_e = make_cluster_lf(label = SHARED, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-#######################################################################################################################################################
-
 
 for lang in ['de']:#,'en']:
     for i in range(2):
