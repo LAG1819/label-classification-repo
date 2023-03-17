@@ -1,4 +1,4 @@
-# <one line to give the program's name and a brief idea of what it does.>
+# <Topic-based webcrawling with the help of Google. This is process step 0.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify
