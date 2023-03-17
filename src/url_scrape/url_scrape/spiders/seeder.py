@@ -441,16 +441,16 @@ def crawl_data(lang:str):
     Args:
         lang (str): unicode to select texts in that language 
     """
-    filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
-    logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
+    _filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
+    logging.basicConfig(filename=_filenames, encoding='utf-8', level=logging.DEBUG)
     try:
         logging.info("[{log}]Crawling has started".format(log = datetime.now()))
         run_crawler_data(lang) 
     except Exception as e:
         logging.warning('[{log}]Crawling had been interrupted by error:{error}'.format(log = datetime.now(), error = e))
     finally:
-        source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_new.json'
-        if os.path.exists(source_path):
+        _source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_new.json'
+        if os.path.exists(_source_path):
             _union_and_save_texts(lang)
 
 def crawl_centroids(lang:str):
@@ -459,15 +459,15 @@ def crawl_centroids(lang:str):
     Args:
         lang (str): unicode to select texts in that language
     """
-    filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
-    logging.basicConfig(filename=filenames, encoding='utf-8', level=logging.DEBUG)
+    _filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
+    logging.basicConfig(filename=_filenames, encoding='utf-8', level=logging.DEBUG)
     try:
         logging.info("[{log}]Crawling has started".format(log = datetime.now()))
         run_crawler_centroids(lang) 
     except Exception as e:
         logging.warning('[{log}]Crawling had been interrupted by error:{error}'.format(log = datetime.now(), error = e))
     finally:
-        class_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_classes.json'
-        if os.path.exists(class_path):
+        _class_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_classes.json'
+        if os.path.exists(_class_path):
             _union_and_save_class(lang)
     
