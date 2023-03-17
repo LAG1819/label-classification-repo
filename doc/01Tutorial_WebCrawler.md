@@ -7,16 +7,24 @@ The goal is to generate a sample dataset based on the input data using the topic
 In this application, use-case specific keywords and URL must be inserted manually at first.
 
 ### Topic-based WebCrawler
-1. Change Keywords:
+#### Change Keywords:
    * Open Excel-File [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx)
    * Customize Columns:
 ![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/Topic_Excel.gif)
+ 
 
 
-2. Change number google search results
+#### Change number google search results
    
 ### Seed-based WebCrawler
-1. Change URL
+#### Customize URL:
    * Open Excel-File [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx)
    * Customize Columns:
 ![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/Seed_Excel.gif)
+
+### Start Crawling
+* Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)
+  ```console
+   python3 ml-classification-repo
+  ```
+* Execute Process Step *(2) Execute data crawling.*
