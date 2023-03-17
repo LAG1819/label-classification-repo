@@ -8,6 +8,8 @@ In this application, use-case specific keywords and URL must be selected first m
 
 ### Topic-based WebCrawler
 1. Change Keywords
+
+![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/Seed_Excel.gif)
    
 | CLASS_K | KEYWORD      | URL_DE                          | URL_EN                          |
 |---------|--------------|---------------------------------|---------------------------------|
@@ -16,7 +18,7 @@ In this application, use-case specific keywords and URL must be selected first m
 | GENERAL | Aston Martin | https://www.astonmartin.com/de/ | https://www.astonmartin.com/en/ |
 |         |              |                                 |                                 |
 
-2. Change number google search results
+1. Change number google search results
    
 ### Seed-based WebCrawler
 1. Change URL
