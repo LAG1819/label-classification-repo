@@ -46,28 +46,30 @@ class textFilter:
         logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
 
-        filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'files\02_clean\data_cleaning_'+lang+r'.log'
-        fh = logging.FileHandler(filename=filenames)
+        __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'files\02_clean\data_cleaning_'+lang+r'.log'
+        fh = logging.FileHandler(filename=__filenames)
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
         logger.addHandler(fh)
 
-        logger.info("Data Preprocessing and Cleaning with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = self.lang, path = s_path, tpath = self.target_path))
+        logger.info("Data Preprocessing and Cleaning with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = self.__lang, path = s_path, tpath = self.__target_path))
         
         self.text_col = 'URL_TEXT'
         self.url_col = 'URL'
-        self.lang = lang
-        self.target_path = t_path
+        self.__lang = lang
+        self.__target_path = t_path
+        self.all_stopwords = []
+        self.pattern_list = []
         
-        self.data = self.load_data(s_path, t_path)
+        self.__data = self.load_data(s_path, t_path)
         #self.cities = self.load_cities()
 
-        if self.lang == 'de':
-            self.nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
-        elif self.lang == 'en':
-            self.nlp = spacy.load("en_core_web_trf")
+        if self.__lang == 'de':
+            self.__nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
+        elif self.__lang == 'en':
+            self.__nlp = spacy.load("en_core_web_trf")
         else:
-            self.nlp = spacy.load("de_dep_news_trf")
+            self.__nlp = spacy.load("de_dep_news_trf")
 
     def load_data(self, path:str, t_path:str) -> pd.DataFrame:
         """Loads raw dataset containing all data samples that not had been already cleaned.
@@ -138,8 +140,8 @@ class textFilter:
         try:
             #04:57,'07-05-2018'
             for sentence in row.split("|"):
-                pattern_list = xml+html+[r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707', r'\xe2',r'\x80',r"\x8b", r"{{\.*}}", r"\x9d", r"\u200b"]# only digits: r'\b[0-9]+\b\s*'
-                for pattern in pattern_list:
+                self.pattern_list += xml+html+[r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707', r'\xe2',r'\x80',r"\x8b", r"{{\.*}}", r"\x9d", r"\u200b"]# only digits: r'\b[0-9]+\b\s*'
+                for pattern in self.pattern_list:
                     sentence = re.sub(pattern,'',sentence)
                 #remove any word shorter than 3 characters
                 out = re.sub(r'^\w{0,3}$','',sentence)
@@ -190,12 +192,12 @@ class textFilter:
         numbers_only = ["^\\d+$","^\s?[0-9]+(\s+[0-9]+)*\s?$", "\(.*\)","\[.*\]", "^\d+.\d+"," \\d+ "]
         special_characters = ['[^äöüßA-Za-z0-9 ]+']#['[\(,.:\);^]']
         short_words = ['^\w{0,3}$', '^\s+']
-        all_stopwords = url+email+zip+phone+dates+numbers_only+special_characters+website_stopwords+domain_stopwords+short_words
+        self.all_stopwords += url+email+zip+phone+dates+numbers_only+special_characters+website_stopwords+domain_stopwords+short_words
         
         for sentence in row.split("|"):
             out_sentence = []
             for word in sentence.split(" "):
-                for pattern in all_stopwords:
+                for pattern in self.all_stopwords:
                     word = re.sub(pattern,'',word.lower())
                     # if re.search(pattern, str(sentence).lower()):
                 out_sentence.append(word.lstrip())
@@ -204,7 +206,7 @@ class textFilter:
                 output_sentence.append(" ".join(out_sentence))
         return " ".join(output_sentence)
     
-    def remove_nonText(self, input_data:pd.DataFrame) -> pd.DataFrame:
+    def __remove_nonText(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Apply rowwise basic text cleaning with regex_remove() on raw texts.
 
         Args:
@@ -217,7 +219,7 @@ class textFilter:
         data[self.text_col] = data[self.text_col].apply(lambda row: self.regex_remove(row))
         return data
 
-    def remove_domainStopwords(self, input_data:pd.DataFrame) -> pd.DataFrame:
+    def __remove_domainStopwords(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Apply rowwise advanced text cleaning with stopword_remove() on pre cleaned texts.
 
         Args:
@@ -230,7 +232,7 @@ class textFilter:
         data[self.text_col] = data[self.text_col].apply(lambda row: self.stopword_remove(row))
         return data
 
-    def flag_lang(self, input_data:pd.DataFrame) -> pd.DataFrame:
+    def __flag_lang(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Detect Language of each sample (row) containing text of one crawled website. 
 
         Args:
@@ -256,12 +258,12 @@ class textFilter:
         
         data = input_data.copy()
         data["LANG"]= data[self.text_col].apply(lambda row: detect_language(row))
-        if self.lang != None:
-            data = data[data["LANG"] == self.lang]
+        if self.__lang != None:
+            data = data[data["LANG"] == self.__lang]
         data = data.reset_index(drop = True)
         return data
 
-    def lemmatize_text(self, input_data:pd.DataFrame) -> pd.DataFrame:
+    def __lemmatize_text(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Lemmatize text with help of spacy
 
         Args:
@@ -271,10 +273,10 @@ class textFilter:
             pd.DataFrame: DataFrame with edited chunk of samples. 
         """
         data = input_data.copy()
-        data[self.text_col] = data[self.text_col].apply(lambda row: " ".join([token.lemma_ for token in self.nlp(row)]))
+        data[self.text_col] = data[self.text_col].apply(lambda row: " ".join([token.lemma_ for token in self.__nlp(row)]))
         return data
 
-    def remove_cityNames(self, input_data:pd.DataFrame) -> pd.DataFrame:
+    def __remove_cityNames(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Removes all city names in text
 
         Args:
@@ -298,9 +300,9 @@ class textFilter:
             list: Returns a list of DataFrames each containting a sampleset of 300 samples. All DataFrames in list result in the total dataset.
         """
         chunks = list()
-        num_chunks = math.ceil(len(self.data) / chunk_size)
+        num_chunks = math.ceil(len(self.__data) / chunk_size)
         for i in range(num_chunks):
-            chunks.append(self.data[i*chunk_size:(i+1)*chunk_size])
+            chunks.append(self.__data[i*chunk_size:(i+1)*chunk_size])
         return chunks
 
     def save_data(self, cleaned_chunk:pd.DataFrame):
@@ -309,7 +311,7 @@ class textFilter:
         Args:
             cleaned_chunk (pd.DataFrame): Chunk of 300 (by default) cleaned samples of data.
         """
-        df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.__target_path
         if os.path.exists(df_t_path):
             cleaned_data = pd.read_feather(df_t_path).drop_duplicates(subset = 'URL', keep = 'first').reset_index(drop=True)
         else:
@@ -327,22 +329,22 @@ class textFilter:
         """
         logger = logging.getLogger("Cleaining")
         df_chunks = self.split_dataframe()
-        print("Size of full dataset: {dataset}. Number of chunks: {chunks}".format(dataset = self.data.shape[0], chunks = len(df_chunks)))
+        print("Size of full dataset: {dataset}. Number of chunks: {chunks}".format(dataset = self.__data.shape[0], chunks = len(df_chunks)))
         logger.info("Data cleaning started")
         for i,chunk in enumerate(df_chunks):
             try:
                 logger.info("New chunk starts cleaning. Total cleaned:",i*chunk.shape[0])
-                chunk_text = self.remove_nonText(chunk)
-                chunk_stopwords = self.remove_domainStopwords(chunk_text)
+                chunk_text = self.__remove_nonText(chunk)
+                chunk_stopwords = self.__remove_domainStopwords(chunk_text)
                 logger.info("Non textual elements and stopwords had been removed.")
-                chunk_lang = self.flag_lang(chunk_stopwords)
+                chunk_lang = self.__flag_lang(chunk_stopwords)
                 logger.info("Languages had been detected and filtered.")
-                chunk_lem = self.lemmatize_text(chunk_lang)
+                chunk_lem = self.__lemmatize_text(chunk_lang)
                 logger.info("Text had been lemmatized.")
                 #chunk_cit = self.remove_cityNames(chunk_lem)
                 #print("City names had been removed.")
                 self.save_data(chunk_lem)
-                logger.info("Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape = self.data.shape[0]))
+                logger.info("Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape = self.__data.shape[0]))
             except KeyboardInterrupt:
                 print(KeyboardInterrupt)
                 logger.warning('Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.')
@@ -351,17 +353,4 @@ class textFilter:
                 print(e)
                 logger.warning('Something with data cleaning of a chunk of samples went wrong: {error}.'.format(error =e))
                 return
-        logger.info("Done cleaning of whole dataset!")
-                
-            
-        
-
-# if __name__ == "__main__":
-#     lang = 'de'
-#     class_filter = textFilter(lang,r"files\01_crawl\raw_classes_"+lang+r".feather",r"files\02_clean\cleaned_classes_"+lang+r".feather")
-#     class_filter.run()
-#     text_filter = textFilter(lang,r"files\01_crawl\raw_texts_"+lang+r".feather",r"files\02_clean\cleaned_texts_"+lang+r".feather")
-#     text_filter.run()
-   
-
-    
+        logger.info("Done cleaning of whole dataset!")    
