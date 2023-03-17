@@ -1,3 +1,19 @@
+# <Evaluation of results of Automated Labeling and Textclassification (Process steps 4 and 5).>
+# Copyright (C) 2023  Luisa-Sophie Gloger
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import pandas as pd
 import os
 import numpy as np
@@ -7,6 +23,7 @@ import matplotlib.transforms
 import seaborn as sns
 import time
 from datetime import datetime
+import tarfile
 
 def load_raw_data():
     """Load raw data and print data shapes.
@@ -205,7 +222,7 @@ def plot_eval_metrics(df:pd.DataFrame,lang:str,text_col:str,col:str, datatype:st
     plt.close()
 
 def calculate_runtime(start = (2023,3,1,22,18,5,2,9,0), end = (2023,3,2,15,54,29,5,2,8)):
-    """Helper Function to analyze logging files. Can calculate time delta between given timestemps.
+    """Helper Function to analyze logging files. Can calculate time delta between two given timestemps.
 
     Args:
         start (tuple, optional): timestemp of start to subtract from end timestempt. Defaults to (2023,3,1,22,18,5,2,9,0).
@@ -216,11 +233,22 @@ def calculate_runtime(start = (2023,3,1,22,18,5,2,9,0), end = (2023,3,2,15,54,29
     dif = end - start
     print(dif.seconds)
 
+def make_tarfile(output_filename:str, source_dir:str):
+    """Compress a given folder as tar.gz file.
+
+    Args:
+        output_filename (str): File name of the compressed tar.gz.
+        source_dir (str): Folder name of the folder to be compressed.
+    """
+    with tarfile.open(output_filename, "w:gz") as tar:
+        tar.add(source_dir, arcname=os.path.basename(source_dir))
+
 # load_raw_data()
 # load_clean_data()
 # load_labeled_data()
-load_eval_data_automated_label()
+# load_eval_data_automated_label()
 # calculate_runtime((2023,3,12,2,26,46,9,8,1),(2023,3,12,20,38,32,2,7,5))
+make_tarfile("compressed_ml-classification-repo","ml-classification-repo")
 
 
 
