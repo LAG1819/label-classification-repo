@@ -1,12 +1,13 @@
 # BERT-based text classification framework for the german industry.
 A text classificatior of industry-specific texts based on automated labeling and tranfsormers.
 
-This repository was generated and developed as part of the master thesis "Development and analysis of a framework for the classification of German industry-specific texts using Deep learning and Automated Labeling for the application in the German industry using the example of the automotive industry."
-In the context of this work, a Automated Labeling model and a BERT-based text classification model is trained and developed. In combination e.g. topics and trends of a predefined industry can be identified and classified.
 <!-- "Analysis and automated labeling of topics and trends in the German
 automotive industry using Deep Learning and Natural Language Processing based on of industry-specific website content.". -->
 
 ## Motivation
+This repository was generated and developed as part of the master thesis "Development and analysis of a framework for the classification of German industry-specific texts using Deep learning and Automated Labeling for the application in the German industry using the example of the automotive industry."
+In the context of this work, a Automated Labeling model and a BERT-based text classification model is trained and developed. 
+In combination e.g. topics and trends of a predefined industry can be identified and classified.
 
 ## Install
 [0] Install [Python](https://www.python.org/downloads/release/python-3111/) or [Anaconda](https://www.anaconda.com/products/distribution).
@@ -66,10 +67,20 @@ predicted_topic = classifier.predict(example_text)
 ## Description
 It is possible to select languages german and english. The general steps to develop the classifier are as follows:
 
-   1. [Text mining and crawling of website text content using seed url list and seed keywords.](#text-mining-and-crawling-of-website-text-content)
-   2. [Data cleansing and topic extraction of website text content.](#data-cleansing-and-topic-extraction)
-   3. [Automated labeling of cleaned website text content and of topics.](#automated-labeling)
-   4. [Train Classification model (BERT-based).](#classification-model)
+- [BERT-based text classification framework for the german industry.](#bert-based-text-classification-framework-for-the-german-industry)
+  - [Motivation](#motivation)
+  - [Install](#install)
+  - [Usage](#usage)
+  - [Description](#description)
+      - [Text Mining and Crawling](#text-mining-and-crawling)
+      - [Data Cleansing and Topic Extraction](#data-cleansing-and-topic-extraction)
+      - [Automated Labeling](#automated-labeling)
+      - [Classification Model](#classification-model)
+  - [Results](#results)
+    - [Automated Labeling](#automated-labeling-1)
+    - [Classification](#classification)
+  - [References](#references)
+  - [Licence](#licence)
 
 ***
 #### Text Mining and Crawling 
