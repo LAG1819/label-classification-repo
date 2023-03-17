@@ -1,4 +1,4 @@
-# <Automated Labeling of texts. Label Model trained seperately on topics or text in german or english for comparison.>
+# <Automated Labeling of texts. Label Model trained seperately on topics or text in german or english for comparison. This is process step 4.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify
@@ -35,17 +35,6 @@ import bayes_opt
 from sklearn.model_selection import KFold
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
-
-##############################################################CLASSES################################################################################## 
-ABSTAIN = -1
-AUTONOMOUS = 0
-CONNECTIVITY = 1
-DIGITALISATION = 2
-ELECTRIFICATION = 3
-INDIVIDUALISATION = 4
-SHARED = 5
-SUSTAINABILITY = 6
-#######################################################################################################################################################
 def loggingdecorator(name):
     """Helper function for logging. Used to make logging in a lucid way.
 
@@ -66,113 +55,19 @@ def loggingdecorator(name):
             return ret
         return _fn
     return _decor
-##############################################################LABELING FUNCTIONS######################################################################## 
-def kMeans_cluster(x:str, label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer) -> int:
-    """K-Means clustering with loaded and pre-trained KMeans cluster of an input sentence.
+############################################################## USER DEFINED CLASSES ################################################################################## 
+#This class is obligatory, do not change or otherwise the Label Model is not working correctly!
+ABSTAIN = -1
+#Classes to define by user:
+AUTONOMOUS = 0
+CONNECTIVITY = 1
+DIGITALISATION = 2
+ELECTRIFICATION = 3
+INDIVIDUALISATION = 4
+SHARED = 5
+SUSTAINABILITY = 6
 
-    Args:
-        x (str): String to cluster.
-        label (int): Input label to compare cluster of clustered sentence with.
-        kmeans (KMeans): Pre-trained KMeans cluster.
-        kmeans_vectorizer (TfidfVectorizer): Associated TfidfVectorizer of pre-trained KMeans cluster.
-
-    Returns:
-        int: Returns -1 (ABSTAIN) if predicted cluster is not dedicated label. Otherwise returns label.
-    """
-    text = kmeans_vectorizer.transform([str(x)]).toarray()
-    cluster = kmeans.predict(text)[0]
-
-    if int(cluster) == int(label):
-        return label
-    else:
-        return ABSTAIN
-
-def make_cluster_lf(label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer) -> LabelingFunction:
-    """Generate a Label Function (LF) based on an input K-Means cluster and associated TfidfVectorizer.
-
-    Args:
-        label (int): Selected label to which the LF should assign to.
-        kmeans (KMeans): Pre-trained KMeans cluster.
-        kmeans_vectorizer (TfidfVectorizer): Associated TfidfVectorizer of pre-trained KMeans cluster.
-
-    Returns:
-        LabelingFunction: Returns generated Labeling Function (LF).
-    """
-    return LabelingFunction(
-        name=f"cluster_{str(label)}",
-        f=kMeans_cluster,
-        resources=dict(label=label, kmeans =kmeans, kmeans_vectorizer=kmeans_vectorizer),
-    )
-
-def keyword_lookup(x:str, keywords:list, label:int)->int:
-    """Keyword Matching of an input sentence. Keywords can be defined in Seed.xlsx.
-
-    Args:
-        x (str): String to assign keyword matching to.
-        keywords (list): List of dedicated keywords to match with.
-        label (int): Input label associated with the keywords.
-
-    Returns:
-        int: Returns -1 (ABSTAIN) if no matched keyword found in sentence. Otherwise returns label.
-    """
-    if any(word in x.text.lower() for word in keywords):
-        return label
-    else:
-        return ABSTAIN
-
-def make_keyword_lf(keywords:list, label:int) -> LabelingFunction:
-    """Generate a Label Function (LF) based on keyword_lookup function. Keywords can be defined in Seed.xlsx.
-
-    Args:
-        keywords (list):  List of dedicated keywords associated to label.
-        label (int): Selected label to which the LF should assign to.
-
-    Returns:
-        LabelingFunction: Returns generated Labeling Function (LF).
-    """
-    return LabelingFunction(
-        name=f"keyword_{label}",
-        f=keyword_lookup,
-        resources=dict(keywords=keywords, label=label),
-    )
-
-#Set keyword Labeling Functions (LF)
-absolute_path = str(os.path.dirname(__file__)).split("src")[0] + r"files/Seed.xlsx"
-seed_data = pd.read_excel(absolute_path,header = 0) 
-df = seed_data[['AUTONOMOUS','ELECTRIFICATION','CONNECTIVITY','SHARED','SUSTAINABILITY','DIGITALISATION','INDIVIDUALISATION']]
-autonomous_keywords = make_keyword_lf(keywords = df['AUTONOMOUS'].dropna().tolist(), label = AUTONOMOUS)
-electrification_keywords = make_keyword_lf(keywords = df['ELECTRIFICATION'].dropna().tolist(), label = ELECTRIFICATION)
-digitalisation_keywords = make_keyword_lf(keywords = df['DIGITALISATION'].dropna().tolist(), label = DIGITALISATION)
-connectivity_keywords = make_keyword_lf(keywords = df['CONNECTIVITY'].dropna().tolist(), label = CONNECTIVITY)
-sustainability_keywords = make_keyword_lf(keywords = df['SUSTAINABILITY'].dropna().tolist(), label = SUSTAINABILITY)
-individualisation_keywords = make_keyword_lf(keywords = df['INDIVIDUALISATION'].dropna().tolist(), label = INDIVIDUALISATION)
-shared_keywords = make_keyword_lf(keywords = df['SHARED'].dropna().tolist(), label = SHARED)
-
-#load trained kMeans, fitted vectorizer for german kMeans
-kmeans_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_de.pkl", 'rb')) 
-kmeans_vectorizer_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_vectorizer_de.pkl", 'rb')) 
-#Set cluster Labeling Functions (LF) german
-autonomous_cluster_d =  make_cluster_lf(label = AUTONOMOUS, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-electrification_cluster_d =  make_cluster_lf(label = ELECTRIFICATION, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-digitalisation_cluster_d =  make_cluster_lf(label = DIGITALISATION, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-connectivity_cluster_d =  make_cluster_lf(label = CONNECTIVITY, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-sustainability_cluster_d =  make_cluster_lf(label = SUSTAINABILITY, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-individualisation_cluster_d = make_cluster_lf(label = INDIVIDUALISATION, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-shared_cluster_d = make_cluster_lf(label = SHARED, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
-
-#load trained kMeans, fitted vectorizer for english kMeans
-kmeans_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_en.pkl", 'rb')) 
-kmeans_vectorizer_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_vectorizer_en.pkl", 'rb'))
-#Set cluster Labeling Functions (LF) english 
-autonomous_cluster_e =  make_cluster_lf(label = AUTONOMOUS, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-electrification_cluster_e =  make_cluster_lf(label = ELECTRIFICATION, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-digitalisation_cluster_e =  make_cluster_lf(label = DIGITALISATION, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-connectivity_cluster_e =  make_cluster_lf(label = CONNECTIVITY, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-sustainability_cluster_e =  make_cluster_lf(label = SUSTAINABILITY, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-individualisation_cluster_e = make_cluster_lf(label = INDIVIDUALISATION, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-shared_cluster_e = make_cluster_lf(label = SHARED, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
-#######################################################################################################################################################
-
+############################################################## Label Model and Training ################################################################################## 
 class Labeler:
     """Class to train and apply a Label Model of Snorkel on data.
     """
@@ -196,8 +91,8 @@ class Labeler:
         logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
 
-        filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\label\model_tuning_'+lang+r'\automated_labeling_'+lang+r'.log'
-        fh = logging.FileHandler(filename=filenames)
+        __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\label\model_tuning_'+lang+r'\automated_labeling_'+lang+r'.log'
+        fh = logging.FileHandler(filename=__filenames)
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
         logger.addHandler(fh)
@@ -220,21 +115,21 @@ class Labeler:
 
          
         logger = logging.getLogger("Labeler")
-        self.lang = lang
-        self.update_data = True
-        self.update_model = False
-        self.L_train = None
-        self.label_model = None
+        self.__lang = lang
+        self.__update_data = True
+        self.__update_model = False
+        # self.L_train = None
+        self.__label_model = None
         self.source_path = s_path
-        self.target_path = t_path
-        self.text_col = column
-        self.data = self.load_data()
-        self.train_df, self.validate_df, self.test_df, self.train_test_df = self.generate_trainTestdata(lang)
-        self.trial = self.get_trial()
+        self.__target_path = t_path
+        self.__text_col = column
+        self.__data = self.load_data()
+        self.__train_df, self.__validate_df, self.__test_df, self.__train_test_df = self.__generate_trainTestdata(lang)
+        self.__trial = self.__get_trial()
 
         #Start Label Model training and application
-        logger.info(f"############################################################################ Run {self.trial} - {self.text_col} ########################################################################################")
-        logger.info("Automated Labeling started with Language {l}, Text-Column: {t_col} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = s_path, tpath = t_path, t_col = self.text_col))
+        logger.info(f"############################################################################ Run {self.__trial} - {self.__text_col} ########################################################################################")
+        logger.info("Automated Labeling started with Language {l}, Text-Column: {t_col} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = s_path, tpath = t_path, t_col = self.__text_col))
     
     def load_data(self) -> pd.DataFrame:
         """Loads cleaned dataset containing topics as well.
@@ -246,7 +141,7 @@ class Labeler:
         df = pd.read_feather(df_path)
         return df.replace(np.nan, "",regex = False)
 
-    def generate_trainTestdata(self, lang:str) -> pd.DataFrame:
+    def __generate_trainTestdata(self, lang:str) -> pd.DataFrame:
         """Loading the training, test and validation data set if they already exist. 
         Otherwise the total dataset will be split into training, test and validation datasets. The generated test and validation dataset must then first be labeled by a domain expert!
 
@@ -271,9 +166,9 @@ class Labeler:
             train = pd.read_feather(train_path)     
         #if no manual labeled test and validationssets exist assign label column with fixed number -2
         else:
-            self.data['LABEL'] = -2
+            self.__data['LABEL'] = -2
             #60 % trainset, 20% testset, 20% validation set
-            train, validate, test = np.split(self.data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(self.data)), int(.8*len(self.data))])
+            train, validate, test = np.split(self.__data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(self.__data)), int(.8*len(self.__data))])
             
             dfs = [train, test, validate]
             dfs = [df.reset_index(drop = True, inplace = True) for df in dfs]
@@ -291,14 +186,14 @@ class Labeler:
         train_test = pd.concat([train_copy,test])
         train_test.reset_index(inplace = True)
         
-        dfs = [train, test, validate, train_test,self.data]
-        dfs = [df.rename(columns = {self.text_col : 'text'},inplace=True) for df in dfs]
+        dfs = [train, test, validate, train_test,self.__data]
+        dfs = [df.rename(columns = {self.__text_col : 'text'},inplace=True) for df in dfs]
 
         print(train.shape,test.shape,validate.shape)
 
         return train, validate, test, train_test
 
-    def train_labeling_functions(self):
+    def __train_labeling_functions(self):
         """Overall Train function of model containing k-Fold Cross Validation. Labeling Functions (LF) are applied to k-fold training and testset.
         If process got interrupted by user the best model including the evaluation results of the training up to this point will be saved anyway 
         as well as the labeling of the whole data set with the best model at that point will be applied and saved.
@@ -307,51 +202,54 @@ class Labeler:
         logger.info("Application of Labeling Functions: {f}".format(f = self.lfs))
         self.applier = PandasLFApplier(lfs=self.lfs)
         
-        #Alternative approach of LF application with Snorkel SparkLFApplier for a faster application. Due to various error issues on the part of Snorkel no further no further utilization of this variant.
+        """Alternative approach of LF application with Snorkel SparkLFApplier for a faster application. 
+        Due to various error issues on the part of Snorkel no further utilization of this variant."""
         # self.applier2 = SparkLFApplier(lfs=self.lfs)
         # spark = SparkSession.builder\
         # .appName("Test application")\
         #     .master("local[1]") \
         #         .config("spark.driver.bindAddress", "127.0.0.1") \
         #             .getOrCreate()
+        
+        #set random state to different but fixed value per trial
         random_states = [12,56,123]
         try:
             #k_fold Cross Validation
             for j in range(2,10):
-                k_fold = KFold(n_splits = j,shuffle = True, random_state = random_states[self.trial])
+                k_fold = KFold(n_splits = j,shuffle = True, random_state = random_states[self.__trial])
                 i = 1
-                for split in k_fold.split(self.train_test_df):
+                for split in k_fold.split(self.__train_test_df):
                     logger.info(f"Training of {j}-Fold Cross-Validation with Trainingsplit {i} started.")
-                    fold_train_df = self.train_test_df.iloc[split[0]]
+                    fold_train_df = self.__train_test_df.iloc[split[0]]
                     
-                    fold_test_df = self.train_test_df.iloc[split[1]]
+                    fold_test_df = self.__train_test_df.iloc[split[1]]
                     fold_test_df = fold_test_df[fold_test_df['LABEL']!= -2]
                     y_test = fold_test_df['LABEL'].to_numpy()
 
+                    # apply labeling fdunctions on train and testset of k-fold split i
                     l_train = self.applier.apply(df=fold_train_df)
                     l_test = self.applier.apply(df=fold_test_df)
 
-                    #Alternative approach of LF application with Snorkel SparkLFApplier for a faster application. Due to various error issues on the part of Snorkel no further utilization of this variant.
-
+                    """Alternative approach of LF application with Snorkel SparkLFApplier for a faster application. 
+                    Due to various error issues on the part of Snorkel no further utilization of this variant."""
                     # train = spark.createDataFrame(fold_train_df)
                     # l_train2 = self.applier2.apply(train.rdd)
-                    
                     # test = spark.createDataFrame(fold_test_df)
                     # l_test2 = self.applier2.apply(test.rdd)
                     
-
+                    #analyse coverage, overlaps and conflicts of current k-fold split i
                     L_analyis = LFAnalysis(L=l_train, lfs=self.lfs)
-
+                    self.__analysis_training_result(j,i,L_analyis.lf_summary())
                     logger.info(f"Training set coverage of {j}-Fold Cross Validation with Trainingset {i}: {100 * L_analyis.label_coverage(): 0.1f}%")
-                    self.analysis_training_result(j,i,L_analyis.lf_summary())
 
+                    # optimization loop with random search, grid search and bayesian optimization
                     self.train_model(l_train,l_test,y_test,j,i)
                     logger.info(f"{j}-Fold Cross-Validation with Trainingsplit {i} were trained.")
 
                     #read current best result saved in temp file
-                    t_path = r'models\label\model_tuning_'+self.lang+r'\results\temp_eval_results_'+self.text_col+r'.feather'
+                    __t_path = r'models\label\model_tuning_'+self.__lang+r'\results\temp_eval_results_'+self.__text_col+r'.feather'
                     path = str(os.path.dirname(__file__)).split("src")[0]
-                    result_df = pd.read_feather(path+t_path).sort_values(by=['accuracy'], ascending=[False])
+                    result_df = pd.read_feather(path+__t_path).sort_values(by=['accuracy'], ascending=[False])
                     current_best = result_df.to_dict('records')[0]
                     logger.info(f"Current best training: {current_best}")
                     i+=1
@@ -363,8 +261,8 @@ class Labeler:
             final_param = final_result_df.to_dict('records')[0]            
             logger.info(f"Best Model with {final_param['k-fold']}-fold Cross Validation identified. \n Maximum reached accuracy: {final_param['accuracy']}. \n Path: {final_param['model']}")
 
-            self.label_model = LabelModel(cardinality = 7, verbose=False)
-            self.label_model.load(final_param['model'])
+            self.__label_model = LabelModel(cardinality = 7, verbose=False)
+            self.__label_model.load(final_param['model'])
         except KeyboardInterrupt:
             ##save evaluation results##
             final_result_df = self.save_results()
@@ -374,47 +272,40 @@ class Labeler:
                 final_param = final_result_df.to_dict('records')[0]
                 logger.info(f"Best Model with {final_param['k-fold']}-fold Cross Validation identified. \n Maximum reached accuracy: {final_param['accuracy']}. \n Path: {final_param['model']}")
 
-                self.label_model = LabelModel(cardinality = 7, verbose=False)
-                self.label_model.load(final_param['model'])
+                self.__label_model = LabelModel(cardinality = 7, verbose=False)
+                self.__label_model.load(final_param['model'])
                 ##test and save model##
-                self.test_model()
-                self.save_model()
+                self.__test_model()
+                self.__save_model()
                 return
             else:
                 return
 
-    def analysis_training_result(self, k, i,coverage_df):
+    def __analysis_training_result(self, k, i,coverage_df):
         """Analysation of applied Labeling Functions (LF) and the polarity, coverage, conflicts and overlaps (in %) of each LF on the dataset. Save coverage in dedicated result folder.
             polarity = The set of unique labels this LF outputs (excluding abstains)
             coverage = percentage of objects the LF labels
             overlap  = percentage of objects with more than one label. 
             conflict = percentage of objects with conflicting labels.
         """
-        if not os.path.exists(str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\results"):
-            os.makedirs(str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\results")
+        if not os.path.exists(str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.__lang+r"\results"):
+            os.makedirs(str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.__lang+r"\results")
         logger = logging.getLogger("Labeler")
         logger.info(f"Validate metrics of {k}-fold Cross Validation with Trainingset {i}")
         
         #get current trial number
-        eval_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results_'+self.text_col+r'.feather'
+        eval_path = r'models\label\model_tuning_'+self.__lang+r'\results\eval_results_'+self.__text_col+r'.feather'
         path = str(os.path.dirname(__file__)).split("src")[0]
         
-        # ##check if target_path already exists
-        # if os.path.exists(path+eval_path):
-        #     df_all = pd.read_feather(path+eval_path)
-        #     trial = df_all[['Trial']].sort_values(by=['Trial'], ascending=[False]).to_dict('records')[0]['Trial']
-        #     trial = trial+1
-        # else:
-        #     trial = 0
-
         #save coverage data next to eval data
-        coverage_path = r'models\label\model_tuning_'+self.lang+r'\results\coverage_results_'+self.text_col+r'.feather'
+        coverage_path = r'models\label\model_tuning_'+self.__lang+r'\results\coverage_results_'+self.__text_col+r'.feather'
         coverage_df['LF'] = coverage_df.index
-        coverage_df['TRIAL'] = self.trial
+        coverage_df['TRIAL'] = self.__trial
         coverage_df['k_fold'] = k
         coverage_df['k_fold_split'] = i
-        coverage_df['TEXT'] = self.text_col
+        coverage_df['TEXT'] = self.__text_col
         
+        #save current coverage data to existing coverage data
         if os.path.exists(path+coverage_path):
             all_coverage_df = pd.read_feather(path+coverage_path)
             coverage_df_all = pd.concat([all_coverage_df,coverage_df])
@@ -424,19 +315,18 @@ class Labeler:
             coverage_df.reset_index(inplace=True, drop = True)
             coverage_df.to_feather(path+coverage_path)
 
-    def train_model(self,l_train,l_test,y_test,j,i):
+    def train_model(self,l_train,l_test,y_test,j,u):
         """Train function of model. Follows the usual procedure consisting (Hyper-)parameter Tuning.
         Selected optimizer are: Grid Search, Random Search and Bayesian Optimization. 
         """    
-        L_train_fold, L_test_fold,Y_test,k,i = l_train,l_test,y_test,j,i
+        _L_train_fold, _L_test_fold, _Y_test, _k, _i = l_train,l_test,y_test,j,u
         logger = logging.getLogger("Labeler")
-        logger.info(f"Training and Evaluation of best Model with {k}-fold Cross Validation with Trainingset {i}")
-
+        logger.info(f"Training and Evaluation of best Model with {_k}-fold Cross Validation with Trainingset {_i}")
 
         #random search
         loggerr = logging.getLogger("Labeler.randomSearch")
         try:
-            self.apply_randomSearch(L_train_fold,L_test_fold,Y_test,k,i)
+            self.__apply_randomSearch(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
         except Exception as e:
             loggerr.warning("Error occurred: ", e)
             pass
@@ -444,7 +334,7 @@ class Labeler:
         #grid search
         loggerg = logging.getLogger("Labeler.gridSearch")
         try:
-            self.apply_gridSearch(L_train_fold,L_test_fold,Y_test,k,i)
+            self.__apply_gridSearch(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
         except Exception as e:
             loggerg.warning("Error occurred: ", e)
             pass
@@ -452,13 +342,13 @@ class Labeler:
         #bayesian search
         loggerb = logging.getLogger("Labeler.bayesianOptim")
         try:
-            self.apply_bayesianOptimization(L_train_fold,L_test_fold,Y_test,k,i)
+            self.__apply_bayesianOptimization(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
         except Exception as e:
             loggerb.warning("Error occurred: ", e)
             pass
 
     @loggingdecorator("label.function")
-    def apply_randomSearch(self,train,test,y_test,k:int,i:int, max_evals = 40):
+    def __apply_randomSearch(self,train,test,y_test,k:int,i:int, max_evals = 40):
         """Hyperparameter Optimization techinique of Random Search Optimization.
         Save model checpoint in specific path and saves model parameter and metrics globally.
 
@@ -472,9 +362,9 @@ class Labeler:
         """
         
         # Set up random search checkpoint folder
-        eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\random_search_"+self.text_col
+        eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.__lang+r"\random_search_"+self.__text_col
         
-        #  Choose random hyperparameters until reach max evaluations
+        #  Choose random hyperparameters until reach max evaluations of configuration space
         eval_data_intern = []
         n_epochs = [random.randint(10,800) for _ in range(max_evals)]
         log_freq = [random.randint(10,200) for _ in range(max_evals)]
@@ -507,11 +397,11 @@ class Labeler:
         label_model.save(model_folder+r"\label_model.pkl")
 
         # add best result to overall evaluation results
-        self.save_current_result(k,i,'RandomSearch', best_model, model_folder)
+        self.__save_current_result(k,i,'RandomSearch', best_model, model_folder)
 
 
     @loggingdecorator("label.function")
-    def apply_gridSearch(self,train,test,y_test,k:int,i:int):
+    def __apply_gridSearch(self,train,test,y_test,k:int,i:int):
         """Hyperparameter Optimization techinique of Grid Search Optimization.
         Save model checpoint in specific path and saves model parameter and metrics globally.
 
@@ -524,8 +414,9 @@ class Labeler:
         """
 
         # Set up grid search checkpoint folder
-        eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\grid_search_"+self.text_col
+        eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.__lang+r"\grid_search_"+self.__text_col
         
+        #set configuration space
         hyperparameter_space ={
             'n_epochs':[10,30,50,100],
             'log_freq':[30,90,170],
@@ -559,7 +450,7 @@ class Labeler:
         os.makedirs(model_folder)
 
         # add best result to overall evaluation results
-        self.save_current_result(k,i,'GridSearch', best_model, model_folder)
+        self.__save_current_result(k,i,'GridSearch', best_model, model_folder)
 
         label_model = LabelModel(cardinality = 7, verbose=False)
         label_model.fit(L_train=train, n_epochs=best_model['n_epochs'], seed=123, log_freq=best_model['log_freq'], l2=best_model['l2'], lr=best_model['lr'], optimizer = best_model['optimizer'])
@@ -567,7 +458,7 @@ class Labeler:
 
 
     @loggingdecorator("label.function")
-    def apply_bayesianOptimization(self,train,test,y_test,k:int,i:int, max_evals = 40):
+    def __apply_bayesianOptimization(self,train,test,y_test,k:int,i:int, max_evals = 40):
         """Hyperparameter Optimization techinique of Bayesian Optimization using bayes_opt. 
         Save model checpoint in specific path and saves model parameter and metrics globally.
 
@@ -581,8 +472,9 @@ class Labeler:
 
         """
         # Set up bayesian optimization search checkpoint folder
-        eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\bayes_search_"+self.text_col
+        eval_folder = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.__lang+r"\bayes_search_"+self.__text_col
 
+        #configuration space
         hyperparameter_space ={
             'n_epochs':[10,150],
             'log_freq':[10,200],
@@ -591,6 +483,7 @@ class Labeler:
             'optimizer':[0,2]
         }
         eval_data_intern = []
+
         def model_train(n_epochs,log_freq,l2,lr, optimizer):
             """Internal bayes_opt target function.
 
@@ -644,7 +537,7 @@ class Labeler:
         os.makedirs(model_folder)
 
         # add best result to overall global evaluation results 
-        self.save_current_result(k,i,'BayesSearch', best_model, model_folder)
+        self.__save_current_result(k,i,'BayesSearch', best_model, model_folder)
 
         # save best model of all internal optimization loops to model checkpoint folder 
         label_model = LabelModel(cardinality = 7, verbose=False)
@@ -652,99 +545,104 @@ class Labeler:
         label_model.save(model_folder+r"\label_model.pkl")
         
         
-    def test_model(self):
+    def __test_model(self):
         """Validation function of model. Follows the usual procedure consisting testing of the optimized trained model with validation set. 
         If an trained model already exists on dedicated path the new trained model will be compared with existing model.
         New model will be saved and applied on whole data set if higher accuracy reached on validation set.
         """
         logger = logging.getLogger("Labeler")
-        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(self.lang)+"_"+self.text_col+r".pkl"
+        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(self.__lang)+"_"+self.__text_col+r".pkl"
         
-        Y_val = self.validate_df['LABEL'].to_numpy()
-        L_val = self.applier.apply(df=self.validate_df)
-        preds_val_label = self.label_model.predict(L=L_val)
+        # apply labeling functions on previously untouched validation data
+        Y_val = self.__validate_df['LABEL'].to_numpy()
+        L_val = self.applier.apply(df=self.__validate_df)
+        preds_val_label = self.__label_model.predict(L=L_val)
         
-        validate_acc = self.label_model.score(L=L_val, Y=Y_val, tie_break_policy="random")["accuracy"]
+        # apply model with best configurateion
+        validate_acc = self.__label_model.score(L=L_val, Y=Y_val, tie_break_policy="random")["accuracy"]
         logger.info(f"Accuracy on Validation set: {validate_acc}")
+
+        # load existing model for comarison reasons
         if os.path.exists(path):
             old_label_model = LabelModel(cardinality = 7, verbose=False)            
             old_label_model.load(path)
             old_model_acc = old_label_model.score(L=L_val, Y=Y_val, tie_break_policy="random")["accuracy"] 
-
+            
+            # save model if its best one in comparison to existing saved model
             if validate_acc > old_model_acc:
-                self.update_model = True
-                self.update_data = True
+                self.__update_model = True
+                self.__update_data = True
                 logger.info(f"New model accuracy: {validate_acc}. Saved model accuracy: {old_model_acc} (Applied on Validation Set)\nModel will be overwritten.")
             else:
-                self.update_model = False
-                self.update_data = False
+                self.__update_model = False
+                self.__update_data = False
                 logger.info(f"New model accuracy: {validate_acc}. Saved model accuracy: {old_model_acc} (Applied on Validation Set)\nModel will not be overwritten.")
         else:
-            self.update_model = True
-            self.update_data = True            
+            self.__update_model = True
+            self.__update_data = True            
             logger.info(f"Model accuracy: {validate_acc}. No existing Model. Model will be saved.")
         
-        validation_df = self.validate_df
+        validation_df = self.__validate_df
         validation_df['LABEL'] = preds_val_label
 
-        #save validation set for evaluation
-        if self.update_data:
-            validation_df.to_feather(str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.lang+r"\results\validation_set_"+self.text_col+r".feather")
-        
-        before_val_shape = self.validate_df.shape
+        # save labeled validation data for further manual check
+        if self.__update_data:
+            validation_df.to_feather(str(os.path.dirname(__file__)).split("src")[0] + r"models\label\model_tuning_"+self.__lang+r"\results\validation_set_"+self.__text_col+r".feather")
+
+        before_val_shape = self.__validate_df.shape
         validation_df = validation_df[validation_df['LABEL'] != -1]
         after_val_shape = validation_df.shape
         print(f"Shape of Validationset before: {before_val_shape} and after: {after_val_shape}")
     
-    def save_model(self):
+    def __save_model(self):
         """Saving of trained Label model as pickle file with optimized parameter.
         """
         logger = logging.getLogger("Labeler")
-        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(self.lang)+"_"+self.text_col+r".pkl"
+        path = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(self.__lang)+"_"+self.__text_col+r".pkl"
 
-        if self.update_model:
-            self.label_model.save(path)
+        if self.__update_model:
+            self.__label_model.save(path)
             logger.info("Model saved!")
         else:
             logger.info(f"Model not saved!")
-            self.update_data = False
+            self.__update_data = False
 
-    def apply_model(self):
-        """Apply trained model on whole dataset and saves datasets if better than existing model.
+    def __apply_model(self):
+        """Apply trained model with best configuration on whole dataset and saves datasets if better than existing model.
         """
         logger = logging.getLogger("Labeler")
-        if self.update_data:
+        if self.__update_data:
             
-            logger.info(f"Language:{self.lang}. Applying trained model with best parameters on whole data set.")
+            logger.info(f"Language:{self.__lang}. Applying trained model with best parameters on whole data set.")
 
-            self.L_data = self.applier.apply(df= self.data)
-            label = self.label_model.predict(L=self.L_data)
+            self.L_data = self.applier.apply(df= self.__data)
+            label = self.__label_model.predict(L=self.L_data)
 
-            self.data['LABEL'] = label
-            before_data_shape = self.data.shape
-            self.data = self.data[self.data['LABEL'] != -1]
-            after_data_shape = self.data.shape
+            self.__data['LABEL'] = label
+            before_data_shape = self.__data.shape
+            self.__data = self.__data[self.__data['LABEL'] != -1]
+            after_data_shape = self.__data.shape
             
             logger.info(f"Shape of Dataset before: {before_data_shape} and after: {after_data_shape}")
         else:
-            logger.info(f"Language:{self.lang}. NOT Applying trained model with best parameters and trainset on whole data set due to worse model accuracy.")
+            logger.info(f"Language:{self.__lang}. NOT Applying trained model with best parameters and trainset on whole data set due to worse model accuracy.")
 
-    def save_data(self):
+    def __save_data(self):
         """Saves labeled data as feather into files folder.
         """
-        path = str(os.path.dirname(__file__)).split("src")[0] + self.target_path
+        path = str(os.path.dirname(__file__)).split("src")[0] + self.__target_path
         logger = logging.getLogger("Labeler")
         
-        self.data.reset_index(inplace=True)
-        self.data.rename(columns = {'text':self.text_col},inplace=True)
+        self.__data.reset_index(inplace=True)
+        self.__data.rename(columns = {'text':self.__text_col},inplace=True)
 
-        if self.update_data:
-            self.data.to_feather(path)
+        if self.__update_data:
+            self.__data.to_feather(path)
             logger.info("Data with applied labels saved!")
         else:
             logger.info("Data with applied labels not saved!")
 
-    def save_current_result(self, k:int,i:int,optim:str, best_model:dict, model_folder:str):
+    def __save_current_result(self, k:int,i:int,optim:str, best_model:dict, model_folder:str):
         """Saves intermediate (best) evaluation results into a temporary file.
 
         Args:
@@ -754,13 +652,13 @@ class Labeler:
             best_model (dict): Best Configuration of the Optimization.
             model_folder (str): Path to trained model with best configuration.
         """
-        t_path = r'models\label\model_tuning_'+self.lang+r'\results\temp_eval_results_'+self.text_col+r'.feather'
+        t_path = r'models\label\model_tuning_'+self.__lang+r'\results\temp_eval_results_'+self.__text_col+r'.feather'
         path = str(os.path.dirname(__file__)).split("src")[0]
         evaluation_data = [{'Type':optim,'n_epochs':best_model['n_epochs'],'log_freq':best_model['log_freq'],'l2':best_model['l2'],'lr':best_model['lr'],\
                                      'optimizer':best_model['optimizer'],\
                                         'accuracy':best_model["accuracy" ],'PrecisionMicro':best_model['PrecisionMicro'],'PrecisionMacro':best_model['PrecisionMacro'],\
                                             'F1Micro':best_model['F1Micro'],'F1Macro':best_model['F1Macro'],'MCC':best_model['MCC'],'Coverage':best_model['Coverage'],\
-                                                'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl", 'Trial': self.trial, 'TEXT': self.text_col}]
+                                                'k-fold':k,'trainingset':i, 'model':model_folder+r"\label_model.pkl", 'Trial': self.__trial, 'TEXT': self.__text_col}]
         df_new = pd.DataFrame(evaluation_data)
         
         if os.path.exists(path+t_path):
@@ -776,35 +674,35 @@ class Labeler:
     def save_results(self):
         """Saves evaluation results to dedicated result folder.
         """
-        temp_t_path = r'models\label\model_tuning_'+self.lang+r'\results\temp_eval_results_'+self.text_col+r'.feather'
-        t_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results_'+self.text_col+r'.feather'
-        path = str(os.path.dirname(__file__)).split("src")[0]
+        _path = str(os.path.dirname(__file__)).split("src")[0]
+        _temp_t_path = r'models\label\model_tuning_'+self.__lang+r'\results\temp_eval_results_'+self.__text_col+r'.feather'
+        t_path = r'models\label\model_tuning_'+self.__lang+r'\results\eval_results_'+self.__text_col+r'.feather'
 
         #get temp eval data
-        temp_df = pd.read_feather(path+temp_t_path)
+        temp_df = pd.read_feather(_path+_temp_t_path)
         
         ##check if target_path already exists
-        if os.path.exists(path+t_path):
-            df_all = pd.read_feather(path+t_path)
+        if os.path.exists(_path+t_path):
+            df_all = pd.read_feather(_path+t_path)
             df_all_new = pd.concat([df_all,temp_df])
         else:
             df_all_new = temp_df
 
         #save temp to existing eval data and remove temp file           
         df_all_new.reset_index(inplace = True, drop = True)
-        df_all_new.to_feather(path+t_path)
-        os.remove(path+temp_t_path)
+        df_all_new.to_feather(_path+t_path)
+        os.remove(_path+_temp_t_path)
         
         temp_df.sort_values(by=['accuracy'], ascending=[False], inplace=True)
         return temp_df
 
-    def get_trial(self) -> int:
+    def __get_trial(self) -> int:
         """Gets current trial of training of a Label Model.
 
         Returns:
             int: Returns current trial number as integer.
         """
-        t_path = r'models\label\model_tuning_'+self.lang+r'\results\eval_results_'+self.text_col+r'.feather'
+        t_path = r'models\label\model_tuning_'+self.__lang+r'\results\eval_results_'+self.__text_col+r'.feather'
         path = str(os.path.dirname(__file__)).split("src")[0]
         trial = 0
         ##check if target_path already exists
@@ -819,20 +717,134 @@ class Labeler:
         """Main function. Combines the training of the model with the different hyperparameter optimization techniques, 
             the validation of the best model, applies it on the data and stores everything including the evaluation results.
         """
-        self.train_labeling_functions()
-        self.test_model()
-        self.save_model()
+        #apply labeling functions on data splits, train model and optimize parameter
+        self.__train_labeling_functions()
+        #test model with best configuration on validation set
+        self.__test_model()
+        #save best model
+        self.__save_model()
+        #apply best model on whole dataset 
+        self.__apply_model()
+        #save dataset with assigned labels
+        self.__save_data()
 
-        self.apply_model()
-        self.save_data()
+############################################################## USER-DEFINED LABELING FUNCTIONS ######################################################################## 
+def kMeans_cluster(x:str, label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer) -> int:
+    """K-Means clustering with loaded and pre-trained KMeans cluster of an input sentence.
+    This function is only used if labeling of total dataset is required.
 
-if __name__ == "__main__":
-    lang = 'de'
-    Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', False).run()
-    # for lang in ['de']:#,'en']:
-    #     for i in range(2):
-    #         Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', True).run()
-    #         Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT',True).run()
+    Args:
+        x (str): String to cluster.
+        label (int): Input label to compare cluster of clustered sentence with.
+        kmeans (KMeans): Pre-trained KMeans cluster.
+        kmeans_vectorizer (TfidfVectorizer): Associated TfidfVectorizer of pre-trained KMeans cluster.
+
+    Returns:
+        int: Returns -1 (ABSTAIN) if predicted cluster is not dedicated label. Otherwise returns label.
+    """
+    text = kmeans_vectorizer.transform([str(x)]).toarray()
+    cluster = kmeans.predict(text)[0]
+
+    if int(cluster) == int(label):
+        return label
+    else:
+        return ABSTAIN
+
+def make_cluster_lf(label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer) -> LabelingFunction:
+    """Generate a Label Function (LF) based on an input K-Means cluster and associated TfidfVectorizer.
+    This Labeling Function is only used if labeling of total dataset is required.
+
+    Args:
+        label (int): Selected label to which the LF should assign to.
+        kmeans (KMeans): Pre-trained KMeans cluster.
+        kmeans_vectorizer (TfidfVectorizer): Associated TfidfVectorizer of pre-trained KMeans cluster.
+
+    Returns:
+        LabelingFunction: Returns generated Labeling Function (LF).
+    """
+    return LabelingFunction(
+        name=f"cluster_{str(label)}",
+        f=kMeans_cluster,
+        resources=dict(label=label, kmeans =kmeans, kmeans_vectorizer=kmeans_vectorizer),
+    )
+
+def keyword_lookup(x:str, keywords:list, label:int)->int:
+    """Keyword Matching of an input sentence. Keywords can be defined in Seed.xlsx.
+    This function is used in both cases: if labeling of total or partial dataset is required.
+
+    Args:
+        x (str): String to assign keyword matching to.
+        keywords (list): List of dedicated keywords to match with.
+        label (int): Input label associated with the keywords.
+
+    Returns:
+        int: Returns -1 (ABSTAIN) if no matched keyword found in sentence. Otherwise returns label.
+    """
+    if any(word in x.text.lower() for word in keywords):
+        return label
+    else:
+        return ABSTAIN
+
+def make_keyword_lf(keywords:list, label:int) -> LabelingFunction:
+    """Generate a Label Function (LF) based on keyword_lookup function. Keywords can be defined in Seed.xlsx.
+    This Labeling Function is used in both cases: if labeling of total or partial dataset is required.
+
+    Args:
+        keywords (list):  List of dedicated keywords associated to label.
+        label (int): Selected label to which the LF should assign to.
+
+    Returns:
+        LabelingFunction: Returns generated Labeling Function (LF).
+    """
+    return LabelingFunction(
+        name=f"keyword_{label}",
+        f=keyword_lookup,
+        resources=dict(keywords=keywords, label=label),
+    )
+
+#Generation of all Labeling Functions (LF) for Keyword Matching
+absolute_path = str(os.path.dirname(__file__)).split("src")[0] + r"files/Seed.xlsx"
+seed_data = pd.read_excel(absolute_path,header = 0) 
+df = seed_data[['AUTONOMOUS','ELECTRIFICATION','CONNECTIVITY','SHARED','SUSTAINABILITY','DIGITALISATION','INDIVIDUALISATION']]
+autonomous_keywords = make_keyword_lf(keywords = df['AUTONOMOUS'].dropna().tolist(), label = AUTONOMOUS)
+electrification_keywords = make_keyword_lf(keywords = df['ELECTRIFICATION'].dropna().tolist(), label = ELECTRIFICATION)
+digitalisation_keywords = make_keyword_lf(keywords = df['DIGITALISATION'].dropna().tolist(), label = DIGITALISATION)
+connectivity_keywords = make_keyword_lf(keywords = df['CONNECTIVITY'].dropna().tolist(), label = CONNECTIVITY)
+sustainability_keywords = make_keyword_lf(keywords = df['SUSTAINABILITY'].dropna().tolist(), label = SUSTAINABILITY)
+individualisation_keywords = make_keyword_lf(keywords = df['INDIVIDUALISATION'].dropna().tolist(), label = INDIVIDUALISATION)
+shared_keywords = make_keyword_lf(keywords = df['SHARED'].dropna().tolist(), label = SHARED)
+
+#load trained kMeans, fitted vectorizer for german kMeans
+kmeans_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_de.pkl", 'rb')) 
+kmeans_vectorizer_de = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_vectorizer_de.pkl", 'rb')) 
+#Generation of german Labeling Functions (LF) for Clustering
+autonomous_cluster_d =  make_cluster_lf(label = AUTONOMOUS, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
+electrification_cluster_d =  make_cluster_lf(label = ELECTRIFICATION, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
+digitalisation_cluster_d =  make_cluster_lf(label = DIGITALISATION, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
+connectivity_cluster_d =  make_cluster_lf(label = CONNECTIVITY, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
+sustainability_cluster_d =  make_cluster_lf(label = SUSTAINABILITY, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
+individualisation_cluster_d = make_cluster_lf(label = INDIVIDUALISATION, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
+shared_cluster_d = make_cluster_lf(label = SHARED, kmeans= kmeans_de, kmeans_vectorizer= kmeans_vectorizer_de)
+
+#load trained kMeans, fitted vectorizer for english kMeans
+kmeans_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_en.pkl", 'rb')) 
+kmeans_vectorizer_en = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/label/k_Means/kmeans_vectorizer_en.pkl", 'rb'))
+#Generation of english Labeling Functions (LF) for Clustering
+autonomous_cluster_e =  make_cluster_lf(label = AUTONOMOUS, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
+electrification_cluster_e =  make_cluster_lf(label = ELECTRIFICATION, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
+digitalisation_cluster_e =  make_cluster_lf(label = DIGITALISATION, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
+connectivity_cluster_e =  make_cluster_lf(label = CONNECTIVITY, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
+sustainability_cluster_e =  make_cluster_lf(label = SUSTAINABILITY, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
+individualisation_cluster_e = make_cluster_lf(label = INDIVIDUALISATION, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
+shared_cluster_e = make_cluster_lf(label = SHARED, kmeans= kmeans_en, kmeans_vectorizer= kmeans_vectorizer_en)
+#######################################################################################################################################################
+
+
+for lang in ['de']:#,'en']:
+    for i in range(2):
+        Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', True).run()
+    for i in range(3):
+        Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT',True).run()
    
     ####test of model loading###
     # path =r'D:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_de\grid_search\model_10857_n_epochs_50_log_freq_10_l2_0.1_lr_0.002_optimizer_adam_2023-02-09\label_model.pkl'

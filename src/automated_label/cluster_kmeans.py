@@ -1,4 +1,4 @@
-# <one line to give the program's name and a brief idea of what it does.>
+# <Pretraining a k-Means Cluster based of user-defined classes for Automated Labeling. This is a optional preprocessing step for step 4.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ class TOPIC_KMeans:
     """Class to predict predefined clusters (topics/classes) with kMeans Algorithm based on predefined fixed centroids.
     The centroids are based on TOPIC_Classes.xlsx with cleaned and generated topics in topiced_classes.feather 
     """
-    def __init__(self,lang:str ,topics_path:str,data_path:str):
+    def __init__(self,lang:str ,topics_path:str,data_path:str, nbr_clusters = 7):
         """Initialisation of a cluster generator object. Loads predefined clusters and cleaned texts to predict clusters on.
 
         Args:
@@ -37,11 +37,12 @@ class TOPIC_KMeans:
             topics_path (str): Path to predefined cluster data.
             data_path (str): Source path to file containing cleaned texts and generated topics to predict cluster.
         """
-        self.topics = self.load_centroids(topics_path)
-        self.raw_data = self.load_data(data_path)
-        self.lang = lang
+        self.__topics = self.__load_centroids(topics_path)
+        self.__raw_data = self.__load_data(data_path)
+        self.__lang = lang
+        self.__number_clusters = nbr_clusters
 
-    def load_centroids(self,source_path:str) -> pd.DataFrame:
+    def __load_centroids(self,source_path:str) -> pd.DataFrame:
         """Load data containing predefined clusters. The data contain the Cluster (CLASS), the url link (DOMAIN), 
         the url link (URL), the cleaned texts(URL_TEXT), the language of text (LANG) and the identfied topics (TOPIC).
         The CLASSES with related TOPICs form the fix centroids of the fitted model.
@@ -58,7 +59,7 @@ class TOPIC_KMeans:
         df.reset_index(drop=True, inplace=True)
         return df
 
-    def load_data(self,source_path:str) -> pd.DataFrame:
+    def __load_data(self,source_path:str) -> pd.DataFrame:
         """Load data containing data for which clusters are to be predicted. The data contain the domain of url link (DOMAIN), 
         the url link (URL), the cleaned texts(URL_TEXT), the language of text (LANG) and the identfied topics (TOPIC).
         The cluster will be predicted based on the TOPICs.
@@ -73,7 +74,7 @@ class TOPIC_KMeans:
         df_path = str(os.path.dirname(__file__)).split("src")[0] + source_path
         return pd.read_feather(df_path)
 
-    def generate_TfIdf(self,text:list):
+    def __generate_TfIdf(self,text:list):
         """Generation of Tfidf-Vector and fit to all topics (TOPIC) which the clusters are to be predicted and the topics (TOPIC) of the data containing predefined clusters.
 
         Args:
@@ -83,9 +84,9 @@ class TOPIC_KMeans:
             TfidfVectorizer: Returns Tfifd Vectorizer fitted to all topics of data for which clusters are to be predicted and all topics of data containing predefined clusters.
         """
         tokenizer = RegexpTokenizer(r'\w+')
-        if self.lang == 'de':
+        if self.__lang == 'de':
             stopwords_l = stopwords.words('german')
-        if self.lang == 'en':
+        if self.__lang == 'en':
             stopwords_l = stopwords.words('english')
 
         tfidf_v = TfidfVectorizer(lowercase=True,
@@ -97,29 +98,29 @@ class TOPIC_KMeans:
 
         return tfidf_v
 
-    def apply_kMeans(self,centroids: np.array, vectorizer:TfidfVectorizer):
+    def __apply_kMeans(self,centroids: np.array, vectorizer:TfidfVectorizer):
         """Generation and fit of KMeans Model and saving of fitted Model.
 
         Args:
             centroids (np.array): Fix defined centroids based on TOPICs of data containing predefined clusters.
         """
-        kmeans = KMeans(init = centroids, n_clusters=7, random_state=1, n_init = 1)
+        kmeans = KMeans(init = centroids, n_clusters=self.__number_clusters, random_state=1, n_init = 1)
         kmeans.fit(centroids)
         #print(kmeans.labels_)
         cluster_centers = kmeans.cluster_centers_
         # print(cluster_centers)
 
-        self.save_model(kmeans,vectorizer)
+        self.__save_model(kmeans,vectorizer)
         
 
-    def save_model(self,model:KMeans, vectorizer:TfidfVectorizer):
+    def __save_model(self,model:KMeans, vectorizer:TfidfVectorizer):
         """Saving of given KMeans model as pickle file and the fitted tfidf vectorizer.
 
         Args:
             model (KMeans): Fitted KMeans model.
         """
-        path_m = str(os.path.dirname(__file__)).split("src")[0] + "models\label\k_Means\kmeans_"+str(self.lang)+".pkl"
-        path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\label\k_Means\kmeans_vectorizer_"+str(self.lang)+".pkl"
+        path_m = str(os.path.dirname(__file__)).split("src")[0] + "models\label\k_Means\kmeans_"+str(self.__lang)+".pkl"
+        path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\label\k_Means\kmeans_vectorizer_"+str(self.__lang)+".pkl"
 
         if os.path.exists(path_m):
             os.remove(path_m)
@@ -132,34 +133,36 @@ class TOPIC_KMeans:
         with open(path_v, 'wb') as fin:
             pickle.dump(vectorizer, fin)
 
-    def save_clusterNames(self):
+    def __save_clusterNames(self):
+        """The function stores the different clusters and the corresponding cluster names in a feather file.
+        This function is a helper function if it is necessary to evaluate whether the clusters and their names match the classes and names in Automated Labeling.
+        """
         dic = {}
-        for i, t in enumerate (self.topics['CLASS'].tolist()): 
+        for i, t in enumerate (self.__topics['CLASS'].tolist()): 
             print(i,t)
             dic[str(i)] = [t]
         #save cluster dictionary
-        cluster_names =  pd.DataFrame.from_dict(dic)
-        #print(dic)
+        _cluster_names =  pd.DataFrame.from_dict(dic)
 
-        path = str(os.path.dirname(__file__)).split("src")[0] +r"files\03_label\k_Means\kMeans_cluster_"+str(self.lang)+".feather"
-        if os.path.exists(path):
-            os.remove(path)
-        cluster_names.to_feather(path)
+        _path = str(os.path.dirname(__file__)).split("src")[0] +r"files\03_label\k_Means\kMeans_cluster_"+str(self.__lang)+".feather"
+        _cluster_names.to_feather(_path)
 
     def run(self):
         """Run function of TOPIC_KMeans class. After data and centroids are seperately loaded the topics of the data to be predicted and the topics of the predefined clusters 
         are merged. This text corpus is used to fit and transform a KMeans model which is than saved.
         """
-        raw_centroids = self.topics['TOPIC'].tolist()
-        all_texts = raw_centroids + self.raw_data['TOPIC'].tolist()
+        #load centroids and dataset and concatenate to one large text document
+        raw_centroids = self.__topics['TOPIC'].tolist()
+        all_texts = raw_centroids + self.__raw_data['TOPIC'].tolist()
 
-        tfidf = self.generate_TfIdf(all_texts)
-        text = tfidf.transform(self.raw_data['TOPIC'].tolist())
+        #generate TF-IDF Vectorizer and centroids based on generated large text document
+        tfidf = self.__generate_TfIdf(all_texts)
+        text = tfidf.transform(self.__raw_data['TOPIC'].tolist())
         centroids = tfidf.transform(raw_centroids)
-        #print(centroids.shape)
 
-        self.apply_kMeans(centroids.toarray(), tfidf)
-        self.save_clusterNames()
+        #generate preset k-means cluster and save it as well as TF-IDF Vectorizer
+        self.__apply_kMeans(centroids.toarray(), tfidf)
+        self.__save_clusterNames()
 
 
 # lang = 'en'
