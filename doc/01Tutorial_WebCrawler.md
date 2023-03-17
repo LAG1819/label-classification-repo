@@ -7,18 +7,13 @@ The goal is to generate a sample dataset based on the input data using the topic
 In this application, use-case specific keywords and URL must be selected first manually.
 
 ### Topic-based WebCrawler
-1. Change Keywords
-
+1. Change Keywords:
+   * Open Excel-File **Seed.xlsx**
+   * Customize Columns:
 ![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/Seed_Excel.gif)
-   
-| CLASS_K | KEYWORD      | URL_DE                          | URL_EN                          |
-|---------|--------------|---------------------------------|---------------------------------|
-| GENERAL | Abarth       | https://www.abarth.de/          | https://www.abarth.com/         |
-| GENERAL | Alfa Romeo   | https://www.alfaromeo.de/       | https://www.alfaromeo.com/      |
-| GENERAL | Aston Martin | https://www.astonmartin.com/de/ | https://www.astonmartin.com/en/ |
-|         |              |                                 |                                 |
 
-1. Change number google search results
+
+2. Change number google search results
    
 ### Seed-based WebCrawler
 1. Change URL
