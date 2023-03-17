@@ -1,6 +1,6 @@
 # Intro Tutorial: Topic- and Seedbased WebCrawling
 
-In this tutorial you will find a short introduction on how to use WebCrawling with these frameworks. 
+In this tutorial you will find a short introduction on how to use WebCrawling with these frameworks.  
 **Note: The input data used here are sample data.**
 
 The goal is to generate a sample dataset based on the input data using the topic- and seed-based WebCrawler.
