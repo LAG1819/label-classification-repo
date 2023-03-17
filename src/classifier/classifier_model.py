@@ -1,4 +1,4 @@
-# <BERT-based text classification. Classification modell is trained seperately on topics or texts in englisch or german for comparison reasons.>
+# <BERT-based text classification. Classification modell is trained seperately on topics or texts in englisch or german for comparison reasons. This is process step 5.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify
@@ -134,7 +134,7 @@ class TrialTerminationReporter(CLIReporter):
         return self.num_terminated > old_num_terminated
 
 
-def load_data(text_col:str,lang:str) -> dict:
+def _load_data(text_col:str,dir = r"files\04_classify\labeled_texts_de_TOPIC.feather") -> dict:
     """Loads labeled dataset from files/04_classify
 
     Args:
@@ -146,24 +146,23 @@ def load_data(text_col:str,lang:str) -> dict:
     Returns:
         dict: Returns dictionary containing three datasets: 60% training, 20% testing and 20% validation dataset generated from the whole dataset. 
     """
-    dir = r"files\04_classify\labeled_texts_"+lang+"_"+text_col+r".feather"
-    df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],dir)
-    df = pd.read_feather(df_path)
-    data = df.replace(np.nan, "",regex = False)
+    _df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],dir)
+    _df = pd.read_feather(_df_path)
+    _data = _df.replace(np.nan, "",regex = False)
     # data = data[:100]
-    data['text'] = data[text_col]
+    _data['text'] = _data[text_col]
     
-    train, validate, test = np.split(data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(data)), int(.8*len(data))])
+    _train, _validate, _test = np.split(_data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(_data)), int(.8*len(_data))])
 
-    dataset = {}
+    _dataset = {}
 
-    dataset['train'] = train[['LABEL','text']].to_dict('records')#.to_records(index=False)
-    dataset['test'] = test[['LABEL','text']].to_dict('records')
-    dataset['val'] = validate[['LABEL','text']].to_dict('records')
+    _dataset['train'] = _train[['LABEL','text']].to_dict('records')#.to_records(index=False)
+    _dataset['test'] = _test[['LABEL','text']].to_dict('records')
+    _dataset['val'] = _validate[['LABEL','text']].to_dict('records')
     
-    return dataset
+    return _dataset
 
-def preprocess_data(data:dict, tokenizer) -> dict:
+def _preprocess_data(data:dict, tokenizer) -> dict:
     """Prepares data for text classification:
             texts will be tokenized with corresponding tokenizer of loaded pytorch model.
             labels will be specifically set as key,value pair based on given label per sample.
@@ -175,16 +174,16 @@ def preprocess_data(data:dict, tokenizer) -> dict:
         dict: Returns dictionary containing preprocessd train,test and validation data. 
         Contains trainset,label, input_ids, attention_mask and testset,label, input_ids, attention_mask and validationset,label, input_ids, attention_mask as key, value pair.
     """
-    tokenized_data = {'train':[],'test':[],'val':[]}
+    _tokenized_data = {'train':[],'test':[],'val':[]}
     for set in data:
-        for sample in data[str(set)]:
-            tokenized_sent = tokenizer(sample["text"], truncation=True, max_length = 512)
-            tokenized_sent.pop('token_type_ids')
-            tokenized_sent['label'] = [sample["LABEL"]]
-            tokenized_data[str(set)].append(tokenized_sent)
-    return tokenized_data
+        for _sample in data[str(set)]:
+            _tokenized_sent = tokenizer(_sample["text"], truncation=True, max_length = 512)
+            _tokenized_sent.pop('token_type_ids')
+            _tokenized_sent['label'] = [_sample["LABEL"]]
+            _tokenized_data[str(set)].append(_tokenized_sent)
+    return _tokenized_data
 
-def transform_train_data(tokenized_data:dict, data_collator:DataCollatorWithPadding, config_batch_size:int):
+def _transform_train_data(tokenized_data:dict, data_collator:DataCollatorWithPadding, config_batch_size:int):
     """Transforms preprocessed trainset and testset with pytorch DataLoader. Adds weighting to data with WeightedRandomSampler to neutrolize unbalanced classes.
 
     Args:
@@ -196,37 +195,37 @@ def transform_train_data(tokenized_data:dict, data_collator:DataCollatorWithPadd
     Returns:
         DataLoader: Transofrmed train- and testset, ready to apply on model.
     """
-    data = DatasetDict({
+    _data = DatasetDict({
     'train': Dataset.from_list(tokenized_data['train']),
     'test': Dataset.from_list(tokenized_data['test'])
     })
-    data.set_format('torch', columns = ['input_ids', 'attention_mask', 'label'])
+    _data.set_format('torch', columns = ['input_ids', 'attention_mask', 'label'])
     
     #Weight Classes trainset
-    train_labels_unique, counts = np.unique(data['train']['label'], return_counts= True)
-    train_weights_per_class = {}#[sum(counts) / cl for cl in counts]
-    for f,cl in enumerate(counts):
-        train_weights_per_class[train_labels_unique[f]] = sum(counts) / cl
-    train_weights = [train_weights_per_class[l.item()] for l in data['train']['label']]
-    train_sampler = WeightedRandomSampler(train_weights, len(data['train']['label']))
+    _train_labels_unique, _counts = np.unique(_data['train']['label'], return_counts= True)
+    _train_weights_per_class = {}#[sum(counts) / cl for cl in counts]
+    for f,cl in enumerate(_counts):
+        _train_weights_per_class[_train_labels_unique[f]] = sum(_counts) / cl
+    _train_weights = [_train_weights_per_class[l.item()] for l in _data['train']['label']]
+    _train_sampler = WeightedRandomSampler(_train_weights, len(_data['train']['label']))
 
     ##Weight Classes testset
-    test_labels_unique, counts = np.unique(data['test']['label'], return_counts= True)
-    test_weights_per_class = {} #[sum(counts) / cl for cl in counts]
-    for p,cl in enumerate(counts):
-        test_weights_per_class[test_labels_unique[p]] = sum(counts) / cl
-    test_weights = [test_weights_per_class[l.item()] for l in data['test']['label']]
-    test_sampler = WeightedRandomSampler(test_weights, len(data['test']['label']))
+    _test_labels_unique, _counts = np.unique(_data['test']['label'], return_counts= True)
+    _test_weights_per_class = {} #[sum(counts) / cl for cl in counts]
+    for p,cl in enumerate(_counts):
+        _test_weights_per_class[_test_labels_unique[p]] = sum(_counts) / cl
+    _test_weights = [_test_weights_per_class[l.item()] for l in _data['test']['label']]
+    _test_sampler = WeightedRandomSampler(_test_weights, len(_data['test']['label']))
 
-    train_dataloader = DataLoader(
-        data["train"], sampler = train_sampler, batch_size=config_batch_size, collate_fn=data_collator
+    _train_dataloader = DataLoader(
+        _data["train"], sampler = _train_sampler, batch_size=config_batch_size, collate_fn=data_collator
     )
-    test_dataloader = DataLoader(
-        data["test"], sampler = test_sampler, batch_size=config_batch_size, collate_fn=data_collator
+    _test_dataloader = DataLoader(
+        _data["test"], sampler = _test_sampler, batch_size=config_batch_size, collate_fn=data_collator
     )
-    return train_dataloader, test_dataloader
+    return _train_dataloader, _test_dataloader
 
-def transform_eval_data(tokenized_data:dict,data_collator:DataCollatorWithPadding,batch_size:int):
+def _transform_eval_data(tokenized_data:dict,data_collator:DataCollatorWithPadding,batch_size:int):
     """Transforms preprocessed validationset with pytorch DataLoader. Adds weighting to data with WeightedRandomSampler to neutrolize unbalanced classes.
 
     Args:
@@ -238,25 +237,25 @@ def transform_eval_data(tokenized_data:dict,data_collator:DataCollatorWithPaddin
     Returns:
         DataLoader: Transofrmed validationset, ready to apply on trained model.
     """
-    data = DatasetDict({
+    _data = DatasetDict({
     'val': Dataset.from_list(tokenized_data['val'])
     })
-    data.set_format('torch', columns = ['input_ids', 'attention_mask', 'label'])
+    _data.set_format('torch', columns = ['input_ids', 'attention_mask', 'label'])
 
     ##Weight Classes valtset
-    val_labels_unique, counts = np.unique(data['val']['label'], return_counts= True)
-    val_weights_per_class = {}#[sum(counts) / cl for cl in counts]
-    for p,cl in enumerate(counts):
-        val_weights_per_class[val_labels_unique[p]] = sum(counts) / cl
-    val_weights = [val_weights_per_class[l.item()] for l in data['val']['label']]
-    val_sampler = WeightedRandomSampler(val_weights, len(data['val']['label']))
+    _val_labels_unique, _counts = np.unique(_data['val']['label'], return_counts= True)
+    _val_weights_per_class = {}#[sum(counts) / cl for cl in counts]
+    for p,cl in enumerate(_counts):
+        _val_weights_per_class[_val_labels_unique[p]] = sum(_counts) / cl
+    _val_weights = [_val_weights_per_class[l.item()] for l in _data['val']['label']]
+    _val_sampler = WeightedRandomSampler(_val_weights, len(_data['val']['label']))
     
-    eval_dataloader = DataLoader(
-        data["val"], batch_size=batch_size, collate_fn=data_collator
+    _eval_dataloader = DataLoader(
+        _data["val"], batch_size=batch_size, collate_fn=data_collator
     )
-    return eval_dataloader
+    return _eval_dataloader
 
-def set_params(model:BertClassifier, config_lr:float, config_epoch:int,len_train_data:int):
+def _set_params(model:BertClassifier, config_lr:float, config_epoch:int,len_train_data:int):
     """Generate parameters and metrics for model training and evaluation.
 
     Args:
@@ -269,13 +268,13 @@ def set_params(model:BertClassifier, config_lr:float, config_epoch:int,len_train
         parameters: Returns generated parameters and dedicted metrics for evaluation.
     """
     optimizer = AdamW(model.parameters(), lr=config_lr)
-    num_epochs = config_epoch
-    num_training_steps = num_epochs * len_train_data
+    _num_epochs = config_epoch
+    _num_training_steps = _num_epochs * len_train_data
     lr_scheduler = get_scheduler(
         "linear",
         optimizer=optimizer,
         num_warmup_steps=0,
-        num_training_steps=num_training_steps,
+        num_training_steps=_num_training_steps,
     )
 
     #load metrics from hugging face evaluate
@@ -288,9 +287,9 @@ def set_params(model:BertClassifier, config_lr:float, config_epoch:int,len_train
     # roc_auc = evaluate.load("roc_auc","multiclass")
     mcc = evaluate.load("matthews_correlation")
 
-    return num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1_mi,f1_ma,precision_mi,precision_ma,recall, mcc
+    return _num_training_steps,_num_epochs, optimizer, lr_scheduler,accuracy,f1_mi,f1_ma,precision_mi,precision_ma,recall, mcc
 
-def train_model(config, data):
+def _train_model(config, data):
     """Training function of model. Follows the usual procedure consisting training and evaluation of the model with training and testing set.
 
     Args:
@@ -298,20 +297,20 @@ def train_model(config, data):
         data (_type_): train and testset for training the model.
     """
     torch.cuda.empty_cache()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    _device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     #select bert model for dedicated language
     if config['lang'] == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
-        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=7).to(device)
+        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=config['n_class']).to(_device)
     elif config['lang'] == 'en':
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=7).to(device)
+        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=config['n_class']).to(_device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     #transform loaded data
-    train_dl,test_dl = transform_train_data(data, data_collator, config["batch_size"])
-    num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1_mi,f1_ma,pr_mi,pr_ma,recall, mcc = set_params(model, config['lr'],config['epoch'], config['len_train_dl'])
+    train_dl,test_dl = _transform_train_data(data, data_collator, config["batch_size"])
+    num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1_mi,f1_ma,pr_mi,pr_ma,recall, mcc = _set_params(model, config['lr'],config['epoch'], config['len_train_dl'])
 
     # load last checkpoint if model training hab been interrupted
     loaded_checkpoint = session.get_checkpoint()
@@ -326,7 +325,7 @@ def train_model(config, data):
     for epoch in range(num_epochs):
         model.train()
         for batch in train_dl:
-            batch = {k: v.to(device) for k, v in batch.items()}
+            batch = {k: v.to(_device) for k, v in batch.items()}
             outputs = model(**batch)
             loss = outputs.loss
             loss.backward()
@@ -337,7 +336,7 @@ def train_model(config, data):
         
         model.eval()
         for batch in test_dl:
-            batch = {k: v.to(device) for k, v in batch.items()}
+            batch = {k: v.to(_device) for k, v in batch.items()}
             with torch.no_grad():
                 outputs = model(**batch)
 
@@ -372,7 +371,7 @@ def train_model(config, data):
                         "f1Micro": f1_metric_micro['f1'],"f1Macro": f1_metric_macro['f1'],"recall":recall_metric['recall'],\
                               "mcc":mcc_metrics['matthews_correlation']}, checkpoint=checkpoint)
 
-def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_train_dl,num_samples = 1, num_cpu=2, num_gpu=1,  num_training_iter = 5):
+def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_train_dl,num_samples = 1, num_cpu=2, num_gpu=1,  num_training_iter = 5,nbr_class=7):
     """Hyperparameter Optimization techinique of Random Search using ray.tune. 
 
     Args:
@@ -395,7 +394,8 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
             "epoch":tune.choice([1,3,5,7,10]),
             "lang":lang,
             "col":col,
-            'len_train_dl': len_train_dl
+            'len_train_dl': len_train_dl,
+            'n_class':nbr_class
         }
     if lang == 'en':
         config_rand = {
@@ -404,11 +404,12 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
             "epoch":tune.choice([1,3,5,7,10]),
             "lang":lang,
             "col":col,
-            'len_train_dl': len_train_dl
+            'len_train_dl': len_train_dl,
+            'n_class':nbr_class
         } 
     tuner_random = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(train_model, data = tokenized_train_test_set_fold),
+            tune.with_parameters(_train_model, data = tokenized_train_test_set_fold),
             resources={"cpu": num_cpu, "gpu":num_gpu}
         ),
         tune_config=tune.TuneConfig(
@@ -425,7 +426,7 @@ def random_search(lang:str, col:str, path:str,tokenized_train_test_set_fold,len_
     # print("[RAND]Best trial final validation accuracy: {}".format(best_results_rand.metrics["accuracy"]))
     return best_results_rand
 
-def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,num_samples=1, num_cpu=2, num_gpu=1,  num_training_iter = 5):
+def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,num_samples=1, num_cpu=2, num_gpu=1,  num_training_iter = 5,nbr_class = 7):
     """Hyperparameter Optimization techinique of combination of Bayesian optimization (BO) and Hyperband (HB) using ray.tune. 
 
     Args:
@@ -448,7 +449,8 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
             "epoch":tune.choice([1,3,5,7,10]),
             "lang":lang,
             "col":col,
-            'len_train_dl': len_train_dl
+            'len_train_dl': len_train_dl,
+            'n_class':nbr_class
         }
     if lang == 'en':
         config = {
@@ -457,7 +459,8 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
             "epoch":tune.choice([1,3,5,7,10]),
             "lang":lang,
             "col":col,
-            'len_train_dl': len_train_dl
+            'len_train_dl': len_train_dl,
+            'n_class':nbr_class
         } 
     bohb = HyperBandForBOHB(
         time_attr="training_iteration",
@@ -468,7 +471,7 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
     bohb_search = tune.search.ConcurrencyLimiter(bohb_search, max_concurrent=2)
     tuner_bayes = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(train_model, data = tokenized_train_test_set_fold),
+            tune.with_parameters(_train_model, data = tokenized_train_test_set_fold),
             resources={"cpu": num_cpu, "gpu":num_gpu}
         ),
         tune_config=tune.TuneConfig(
@@ -488,7 +491,7 @@ def bohb(lang:str,col:str,path:str,tokenized_train_test_set_fold,len_train_dl,nu
     # print("[BOHB]Best trial final validation accuracy: {}".format(best_results_bayes.metrics["accuracy"]))
     return best_results_bayes
 
-def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_train_dl,num_samples=1, num_cpu=2, num_gpu=1, num_training_iter = 5):
+def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_train_dl,num_samples=1, num_cpu=2, num_gpu=1, num_training_iter = 5,nbr_class=7):
     """Hyperparameter Optimization techinique of Hyperband (HB) using ray.tune. 
 
     Args:
@@ -511,7 +514,8 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
             "epoch":tune.choice([1,3,5,7,10]),
             "lang":lang,
             "col":col,
-            'len_train_dl': len_train_dl
+            'len_train_dl': len_train_dl,
+            'n_class':nbr_class
         }
     if lang == 'en':
         config = {
@@ -520,12 +524,13 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
             "epoch":tune.choice([1,3,5,7,10]),
             "lang":lang,
             "col":col,
-            'len_train_dl': len_train_dl
+            'len_train_dl': len_train_dl,
+            'n_class':nbr_class
         } 
     hyperband = HyperBandScheduler(metric = "accuracy", mode = "max")
     tuner_hyper = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(train_model, data = tokenized_train_test_set_fold),
+            tune.with_parameters(_train_model, data = tokenized_train_test_set_fold),
             resources={"cpu": num_cpu, "gpu":num_gpu}
         ),
         tune_config = tune.TuneConfig(
@@ -544,7 +549,7 @@ def hyperband(lang:str, col:str, path:str, tokenized_train_test_set_fold,len_tra
     return best_results
     
     
-def validate_model(text_col:str,lang:str, best_result, model_path:str, model_name:str):
+def _validate_model(text_col:str,lang:str, best_result, model_path:str, model_name:str, n_class:int):
     """Validation function of model. Follows the usual procedure consisting testing of the optimized trained model with validation set.
 
     Args:
@@ -560,19 +565,19 @@ def validate_model(text_col:str,lang:str, best_result, model_path:str, model_nam
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if lang == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
-        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=7).to(device)
+        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=n_class).to(device)
     elif lang == 'en':
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=7).to(device)
+        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=n_class).to(device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     checkpoint_path = best_result["Checkpoint"]+ "\checkpoint.pt"
     model_state, optimizer_state = torch.load(checkpoint_path)
     model.load_state_dict(model_state)
     
-    train_test_val_set = load_data(text_col, lang)
-    tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
-    eval_dl = transform_eval_data(tokenized_train_test_set,data_collator,best_result["batch_size"])
+    train_test_val_set = _load_data(text_col)
+    tokenized_train_test_set = _preprocess_data(train_test_val_set, tokenizer)
+    eval_dl = _transform_eval_data(tokenized_train_test_set,data_collator,best_result["batch_size"])
 
     metric = evaluate.load("accuracy")
 
@@ -590,7 +595,7 @@ def validate_model(text_col:str,lang:str, best_result, model_path:str, model_nam
     torch.save(model, model_path)
     logger.info(f"[Model {model_name}]Accuracy on validation set:{acc}. Saved to {model_path}")     
   
-def get_model_path(lang:str, text_col:str):
+def _get_model_path(lang:str, text_col:str):
     """Get path of best trained model and model name to save best model to specfic path for loading.
 
     Args:
@@ -600,7 +605,7 @@ def get_model_path(lang:str, text_col:str):
     Returns:
         _type_: Returns model_name and model path as str.
     """
-    i = get_current_trial(lang,text_col)
+    i = _get_current_trial(lang,text_col)
     path_to_save_model = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+'_'+text_col+"_"
     model_nr = str(i)+".pth"
     # while os.path.exists(path_to_save_model+model_nr):
@@ -610,7 +615,7 @@ def get_model_path(lang:str, text_col:str):
     model_name = 'trained_model_'+lang+'_'+text_col+"_"+model_nr
     return model_name, model_path
 
-def get_current_trial(lang:str,col:str)-> int:
+def _get_current_trial(lang:str,col:str)-> int:
     """Checks the number of trials based on evaluation data and sets trial number based on exististing number of trials.
 
     Args:
@@ -631,7 +636,7 @@ def get_current_trial(lang:str,col:str)-> int:
         trial = 0
     return trial
 
-def save_current_result(lang:str, col:str, k:int,i:int,type:str, best_results):#df_new (pd.DataFrame): DataFrame containing metrics per hyperparameter optimization technique.
+def _save_current_result(lang:str, col:str, k:int,i:int,type:str, best_results):#df_new (pd.DataFrame): DataFrame containing metrics per hyperparameter optimization technique.
     """Saves intermediate (best) evaluation results into a temporary file.
 
     Args:
@@ -649,7 +654,7 @@ def save_current_result(lang:str, col:str, k:int,i:int,type:str, best_results):#
     # path = best_results.log_dir.__str__()
     checkpoint = best_results.checkpoint._local_path
 
-    current_trial = get_current_trial(lang,col)
+    current_trial = _get_current_trial(lang,col)
     best_results_list = [{"Trial":current_trial,"Language":lang,"Text":col,"K-Fold":str(k),"Split":str(i), "Type":type,\
                                         "Accuracy": best_results.metrics['accuracy'],"PrecisionMicro":best_results.metrics["precisionMicro"],\
                                             "PrecisionMacro":best_results.metrics["precisionMacro"],"F1Micro": best_results.metrics["f1Micro"],\
@@ -670,7 +675,7 @@ def save_current_result(lang:str, col:str, k:int,i:int,type:str, best_results):#
     df_all_new.reset_index(inplace = True, drop = True) 
     df_all_new.to_feather(path+t_path)
 
-def save_results(lang:str, col:str):
+def _save_results(lang:str, col:str):
     """Saves all generated results in temporary evaluation sheet as evaluation results to dedicated result folder.
 
     Args:
@@ -702,7 +707,7 @@ def save_results(lang:str, col:str):
 
     return best_results_df.to_dict('records')[0]
 
-def run(lang:str, col:str):
+def run(lang:str, col:str, nbr_class = 7, num_cpu = 4, num_gpu = 1, num_samples_per_tune = 5, num_training_iter = 3):
     """Main function. Combines the training of the model with the different hyperparameter optimization techniques, 
     the validation of the best model and stores them including the evaluation results. Whole Run based on specified language and column
 
@@ -723,8 +728,8 @@ def run(lang:str, col:str):
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
 
-    filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\classifier_training_'+lang+r'.log'
-    fh = logging.FileHandler(filename=filenames)
+    __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\classifier_training_'+lang+r'.log'
+    fh = logging.FileHandler(filename=__filenames)
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
     logger.addHandler(fh)
@@ -736,23 +741,24 @@ def run(lang:str, col:str):
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     
     #load and preprocess data 
-    train_test_val_set = load_data(col,lang)
-    tokenized_train_test_set = preprocess_data(train_test_val_set, tokenizer)
+    train_test_val_set = _load_data(col)
+    tokenized_train_test_set = _preprocess_data(train_test_val_set, tokenizer)
     len_train_dl = len(tokenized_train_test_set['train'])
 
-    #set meta-parameters
+    #generate training path if it does not exists
     path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_"+lang
-    num_samples_per_tune = 5
-    num_training_iter = 3
-    num_cpu = 4
-    num_gpu = 1
-    k = 0
-    i = 0
+    if not os.path.exists(path):
+        os.makedirs(path)
+    
 
     logger.info(f"Classification tuning started with Language {lang}, Text-Column: {col} and Data source file: 'files\04_classify\labeled_texts_{lang}_{col}.feather'.")
     
     try: 
-        #K-Fold Cross Validation
+        """K-fold-Cross Validation can be added as long as the computational power and time constraints allow it.
+        Otherwise variabale k and i are set to 0 by default.
+        """
+        k = 0
+        i = 0
         # tokenized_data = tokenized_train_test_set['train']+tokenized_train_test_set['test']
         # tokenized_data = pd.DataFrame(tokenized_data)
         # for k in range(2,6):
@@ -768,35 +774,35 @@ def run(lang:str, col:str):
         try:
             ####Random Search###
             torch.cuda.empty_cache() 
-            rand_best_results = random_search(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu, num_training_iter)
-            save_current_result(lang, col, k,i,"RandomSearch", rand_best_results)
+            rand_best_results = random_search(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu, num_training_iter,nbr_class)
+            _save_current_result(lang, col, k,i,"RandomSearch", rand_best_results)
             logger.info(f"[Random Search]Best Model with Accuracy: {rand_best_results.metrics['accuracy']} and Configuration:{rand_best_results.config} reached. Checkpoint: {rand_best_results.checkpoint}")
         except RuntimeError as e:
-            # r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-            # print(r)
+            r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+            print(r)
             torch.cuda.empty_cache()
             logger.info(f"[Random Search]Error occurred:{e}")
         try:
             ###Hyberpban Bayesian Optimization###
             torch.cuda.empty_cache() 
-            bohb_best_results = bohb(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu, num_training_iter)
-            save_current_result(lang, col, k,i,"BOHB", bohb_best_results)
+            bohb_best_results = bohb(lang,col,path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu, num_training_iter,nbr_class)
+            _save_current_result(lang, col, k,i,"BOHB", bohb_best_results)
             logger.info(f"[BOHB]Best Model with Accuracy: {bohb_best_results.metrics['accuracy']} and Configuration:{bohb_best_results.config} reached. Checkpoint: {bohb_best_results.checkpoint}")
         except RuntimeError as e:
-            # r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-            # print(r)
+            r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+            print(r)
             torch.cuda.empty_cache()
             logger.info(f"[BOHB]Error occurred:{e}")
 
         try:
             ####Hyperband Optimization###
             torch.cuda.empty_cache() 
-            hyperband_best_results = hyperband(lang, col, path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu, num_training_iter)
-            save_current_result(lang, col, k,i,"Hyperband", hyperband_best_results)
+            hyperband_best_results = hyperband(lang, col, path,tokenized_train_test_set,len_train_dl,num_samples_per_tune, num_cpu, num_gpu, num_training_iter,nbr_class)
+            _save_current_result(lang, col, k,i,"Hyperband", hyperband_best_results)
             logger.info(f"[Hyperband]Best Model with Accuracy:{hyperband_best_results.metrics['accuracy']} and Configuration:{hyperband_best_results.config} reached. Checkpoint: {hyperband_best_results.checkpoint}")
         except RuntimeError as e:
-            # r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
-            # print(r)
+            r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+            print(r)
             torch.cuda.empty_cache()
             logger.info(f"[Hyperband]Error occurred:{e}")
     except KeyboardInterrupt:
@@ -810,14 +816,14 @@ def run(lang:str, col:str):
             logger.info("Current best model will be validated and saved (if better than existing model).")
             
             #save evaluation data and identify best model and load for valdation
-            model_name, model_path = get_model_path(lang, col)
-            best_result_record = save_results(lang, col)
+            model_name, model_path = _get_model_path(lang, col)
+            best_result_record = _save_results(lang, col)
             lr = best_result_record["lr"]
             epoch = best_result_record["epoch"]
             logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_record['Accuracy']} and Configuration: batch_size = {best_result_record['batch_size']}, lr = {lr}, epoch = {epoch}.")
 
             #validate best model on validation data###
-            validate_model(col,lang, best_result_record, model_path, model_name)
+            _validate_model(col,lang, best_result_record, model_path, model_name, nbr_class)
 
         ray.shutdown()
         torch.cuda.empty_cache()
@@ -846,7 +852,7 @@ def predict(sentence:str, lang:str,text_col = 'TOPIC'):
     tokenized_sent.pop('token_type_ids')
     tokenized_sent['label'] = 0
     tokenized_data = {'val':[tokenized_sent]}
-    train_dl = transform_eval_data(tokenized_data,data_collator,batch_size)
+    train_dl = _transform_eval_data(tokenized_data,data_collator,batch_size)
 
     ag_labels = {0:"AUTONOMOUS",1:"CONNECTIVITY",2:"DIGITALISATION",3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"}
     
