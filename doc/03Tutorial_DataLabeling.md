@@ -5,3 +5,10 @@ Additionaly it will be shown how to generate and add new Labeling Functions.
 
 To learn more about Snorkel visit [🚀 Snorkel.org](https://snorkel.org) or check out the [Snorkel API documentation](https://snorkel.readthedocs.io/).
 **Note: The input data used here are sample data.**
+
+### Add or Change Classes
+
+### Add Labeling Function
+
+### Add or Change Hyperparameteroptimizationtechniques
+
