@@ -25,7 +25,7 @@ The keywords/topics and url can be customized in [**Seed.xlsx**](https://github.
 
 ### Change the path to a custom seed.xlsx file
 To use a different file for crawling keywords, an alternative path can be specified. There are three ways to perform this:  
-1. Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)
+**1. Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)**
 * Start main in terminal and the main menu will show up.
   ```console
    python3 ml-classification-repo
@@ -49,7 +49,7 @@ To use a different file for crawling keywords, an alternative path can be specif
       (7) Execute classification: Train and Apply Classification Modell.
    2
    ```
-* **Select custom database - supported types are .feather, .xlsx or .csv.:**
+* Select custom database - supported types are .feather, .xlsx or .csv.:
    ```Python3
       Take custom data? (y/n)
       y
@@ -63,7 +63,7 @@ b.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change th
       adjusted_path = r"my\desired\path\file.xlsx"
       crawl_data(lang, custom_seed = adjusted_path)
    ``` -->
-2. Create a TopicScraper instance and pass to it the adjusted path. This approach is recommended if only a keyword search is to be performed in a dedicated manner: 
+**2. Create a TopicScraper instance and pass to it the adjusted path. This approach is recommended if only a keyword search is to be performed in a dedicated manner:**
    ```Python3
       language = 'de'
       adjusted_path = r"my\desired\path\file.xlsx"
@@ -81,12 +81,12 @@ b.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change th
 
 #### Change number google search results
 Let's say one wants to get only the first three Google search hits for a keyword. There are two ways to perform this:
-1. Open the top-level [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the desired number in the main_menu(). This approach is recommended when a holistic web crawling is to be performed and the number of search results needs to be adjusted in the process.
+**1. Open the top-level [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the desired number in the main_menu(). This approach is recommended when a holistic web crawling is to be performed and the number of search results needs to be adjusted in the process.**
    ```Python3
       desired_number_google_search_results = 3
       crawl_data(lang, desired_number_google_search_results)
    ```
-2. Create a TopicScraper instance and pass to it the desired number. This approach is recommended if only a keyword search is to be performed in a dedicated manner: 
+**2. Create a TopicScraper instance and pass to it the desired number. This approach is recommended if only a keyword search is to be performed in a dedicated manner:** 
    ```Python3
       language = 'de'
       desired_number_google_search_results = 3
