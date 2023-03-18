@@ -26,7 +26,7 @@ The keywords/topics and url can be customized in [**Seed.xlsx**](https://github.
 ### Change the path to a custom seed.xlsx file
 To use a different file for crawling keywords, an alternative path can be specified. There are three ways to perform this:  
 1. Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)
-* Execute project and the main menu will show up.
+* Start main in terminal and the main menu will show up.
   ```console
    python3 ml-classification-repo
   ```
