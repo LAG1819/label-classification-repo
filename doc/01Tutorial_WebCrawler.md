@@ -63,12 +63,18 @@ b.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change th
       adjusted_path = r"my\desired\path\file.xlsx"
       crawl_data(lang, custom_seed = adjusted_path)
    ``` -->
-**2. Create a TopicScraper instance and pass to it the adjusted path. This approach is recommended if only a keyword search is to be performed in a dedicated manner:**
+**2. Create a TopicScraper instance and pass to it the adjusted path. In advance add the seeder.crawl_data() to start the seed_crawling subsequently:**
    ```Python3
+      from src.topic_scrape.seed_scraper import *
+      from src.url_scrape.url_scrape.spiders import seeder
+      
       language = 'de'
       adjusted_path = r"my\desired\path\file.xlsx"
+
       keyword_scraper = TopicScraper(language, s_path = adjusted_path)
       keyword_scraper.run()
+
+      seeder.crawl_data(language)
    ```
 *Note: The custom seed.xlsx file must have the same column names as the original framework seed file for any kind of web crawling. Otherwise it will not work.*
 
