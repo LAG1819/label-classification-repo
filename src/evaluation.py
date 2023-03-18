@@ -58,29 +58,30 @@ def load_labeled_data():
 def load_eval_data_automated_label():
     """Load results of labeled data and results of coverage of labeled data and generate graphics of each. Saves graphis in images folder.
     """
-    for lang in ['de']:#,'en'
-        for text_col in ['TOPIC', 'URL_TEXT']:
-            # coverage = pd.read_feather(str(os.path.dirname(__file__)).split("ml-classification-repo")[0]+r'backup\models\label\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
-            coverage = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
-            coverage.sort_values(by = ['TRIAL','k_fold','k_fold_split','Overlaps','Conflicts','Coverage',], ascending = [False, False, False,True,True,False], inplace = True)
-            coverage.drop_duplicates(subset=['LF'], inplace=True, keep='first')
-            coverage['Polarity'] = coverage['Polarity'].replace({0:'AUTONOMOUS', 1:'CONNECTIVITY',2:'DIGITALISATION',3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"})
-            coverage["LF"] = coverage['Polarity'] +"_"+coverage["LF"].str.split("_", n = 1, expand = True)[0] 
-            plot_coverage(coverage, lang=lang, text_col=text_col)
+    for experiment in ['\Experiment1']:#, '\Experiment2']:
+        for lang in ['de','en']:
+            for text_col in ['TOPIC', 'URL_TEXT']:
+                # coverage = pd.read_feather(str(os.path.dirname(__file__)).split("ml-classification-repo")[0]+r'backup\models\label\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
+                coverage = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label'+experiment+r'\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
+                coverage.sort_values(by = ['TRIAL','k_fold','k_fold_split','Overlaps','Conflicts','Coverage'], ascending = [False, False, False,True,True,False], inplace = True)
+                coverage.drop_duplicates(subset=['LF'], inplace=True, keep='first')
+                coverage['Polarity'] = coverage['Polarity'].replace({0:'AUTONOMOUS', 1:'CONNECTIVITY',2:'DIGITALISATION',3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"})
+                coverage["LF"] = coverage['Polarity'] +"_"+coverage["LF"].str.split("_", n = 1, expand = True)[0] 
+                plot_coverage(coverage, lang=lang, text_col=text_col, datatype = r'\images\label'+experiment)
 
 
-            eval = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label\model_tuning_'+lang+r'\results\eval_results_'+text_col+r'.feather')
-            
-            eval2 = eval.sort_values(by = ['accuracy'], ascending = [False])
-            eval2.drop_duplicates(subset=['Type'], inplace=True, keep='first')
-            eval2 = eval2[['Type',"accuracy", "PrecisionMicro", "PrecisionMacro","F1Micro","F1Macro","MCC","Coverage"]]
-            for col in ['BayesSearch','RandomSearch',"GridSearch"]:
-                evalt = eval2[eval2['Type'] == col]
-                plot_eval_metrics(evalt,lang=lang, text_col=text_col, col = col, datatype = r'\images\label_')
+                eval = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label'+experiment+r'\model_tuning_'+lang+r'\results\eval_results_'+text_col+r'.feather')
+                
+                eval2 = eval.sort_values(by = ['accuracy'], ascending = [False])
+                eval2.drop_duplicates(subset=['Type'], inplace=True, keep='first')
+                eval2 = eval2[['Type',"accuracy", "PrecisionMicro", "PrecisionMacro","F1Micro","F1Macro","MCC","Coverage"]]
+                for col in ['BayesSearch','RandomSearch',"GridSearch"]:
+                    evalt = eval2[eval2['Type'] == col]
+                    plot_eval_metrics(evalt,lang=lang, text_col=text_col, col = col, datatype = r'\images\label'+experiment)
 
-            eval.sort_values(by = ['Trial','k-fold','accuracy'], ascending = [True,True,False], inplace = True)
-            eval.drop_duplicates(subset=['k-fold'], inplace=True, keep='first')
-            plot_eval_folds(eval, lang=lang, text_col=text_col, datatype = r'\images\label_')
+                eval.sort_values(by = ['Trial','k-fold','accuracy'], ascending = [True,True,False], inplace = True)
+                eval.drop_duplicates(subset=['k-fold'], inplace=True, keep='first')
+                plot_eval_folds(eval, lang=lang, text_col=text_col, datatype = r'\images\label'+experiment)
 
 def laod_eval_data_classification():
     """Load results of classfication data and generate graphics of each. Saves graphis in images folder.
@@ -101,7 +102,7 @@ def laod_eval_data_classification():
             plot_eval_folds(metrics2, lang=lang, text_col=text_col, datatype = r'\images\classification_')
 
 
-def plot_coverage(df:pd.DataFrame, lang:str, text_col:str):
+def plot_coverage(df:pd.DataFrame, lang:str, text_col:str,datatype:str):
     """Plots Coverage of Labeling Functions of best result. Saves plot as pdf in images folder.
 
     Args:
@@ -141,7 +142,10 @@ def plot_coverage(df:pd.DataFrame, lang:str, text_col:str):
     # ax.margins(x = 0.5,y = 0)
     plt.subplots_adjust(left=0.28, bottom = 0.06, top = 0.99, right = 0.95)
     
-    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r'\images\label_coverage_'+lang+'_'+text_col+r'.pdf')#pdf
+    if not os.path.exists(str(os.path.dirname(__file__)).split("src")[0]+datatype):
+        os.makedirs(str(os.path.dirname(__file__)).split("src")[0]+datatype)
+        
+    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+'\label_coverage_'+lang+'_'+text_col+r'.pdf')
     plt.close()
 
 def plot_eval_folds(df: pd.DataFrame, lang:str, text_col:str,datatype:str):
@@ -179,7 +183,7 @@ def plot_eval_folds(df: pd.DataFrame, lang:str, text_col:str,datatype:str):
         plt.text(i, round(df[acc].tolist()[i],2)+0.005, round(df[acc].tolist()[i],2), ha = 'center')
         plt.text(i+0.38, round(df['MCC'].tolist()[i],2)+0.005, round(df['MCC'].tolist()[i],2), ha = 'center')
     
-    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r'kfolds_'+lang+'_'+text_col+r'.pdf')#pdf
+    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r'\kfolds_'+lang+'_'+text_col+r'.pdf')
     plt.close()
 
 def plot_eval_metrics(df:pd.DataFrame,lang:str,text_col:str,col:str, datatype:str):
@@ -218,7 +222,7 @@ def plot_eval_metrics(df:pd.DataFrame,lang:str,text_col:str,col:str, datatype:st
     for i in range(len(bars)):
         plt.text(i, round(height[i],3)+0.01, round(height[i],3), ha = 'center')
     
-    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r"metrics_"+col+"_"+lang+'_'+text_col+r'.pdf')#pdf
+    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r"\metrics_"+col+"_"+lang+'_'+text_col+r'.pdf')#pdf
     plt.close()
 
 def calculate_runtime(start = (2023,3,1,22,18,5,2,9,0), end = (2023,3,2,15,54,29,5,2,8)):
@@ -246,9 +250,9 @@ def make_tarfile(output_filename:str, source_dir:str):
 # load_raw_data()
 # load_clean_data()
 # load_labeled_data()
-# load_eval_data_automated_label()
+load_eval_data_automated_label()
 # calculate_runtime((2023,3,12,2,26,46,9,8,1),(2023,3,12,20,38,32,2,7,5))
-make_tarfile("compressed_ml-classification-repo","ml-classification-repo")
+# make_tarfile("compressed_ml-classification-repo","ml-classification-repo")
 
 
 
