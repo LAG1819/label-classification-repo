@@ -8,11 +8,11 @@ In this application, use-case specific keywords and URL must be inserted manuall
 # Table of Contents
 1. [Start a complete WebCrawling](#start-crawling)
 2. [Change path to a customized seed.xlsx](#change-the-path-to-a-custom-seedxlsx-file)
-3. [Topic-based WebCrawling](#topic-based-webcrawler)
+3. [Topic-based WebCrawling](#topic-based-webcrawler)  
   1. [Customize Keywords](#change-keywords)
   2. [Customize number of Google search results per keyword](#change-number-google-search-results)
-4. [Seed-based WebCrawler](#seed-based-webcrawler)
-  1.[Customize url](#customize-url)
+4. [Seed-based WebCrawler](#seed-based-webcrawler)  
+  1. [Customize url](#customize-url)
 
 ### Start Crawling
 * Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)
