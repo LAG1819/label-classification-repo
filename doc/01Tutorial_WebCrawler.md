@@ -132,7 +132,7 @@ Let's say one wants to get only the first three Google search hits for a keyword
 
 
 ## Seed-based WebCrawler
-#### Customize URL:
+### Customize URL:
    * Open Excel-File [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx)
    * Customize Columns:
 ![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/Seed_Excel.gif)
