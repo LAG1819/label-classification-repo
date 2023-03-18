@@ -6,6 +6,15 @@ In this tutorial you will find a short introduction on how to use WebCrawling wi
 The goal is to generate a sample dataset based on the input data using the topic- and seed-based WebCrawler.
 In this application, use-case specific keywords and URL must be inserted manually at first.
 
+### Start Crawling
+* Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)
+  ```console
+   python3 ml-classification-repo
+  ```
+* Select language: de or en.
+* Select custom database (if requested): .feather, .xlsx or .csv.
+* Execute data crawling.
+
 ### Change the path to a custom seed.xlsx file
 To use a different file for crawling keywords, an alternative path can be specified. There are two ways to perform this:  
 1. Open the top-level [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the path in the main_menu(). This approach is recommended when a holistic web crawling is to be performed and the path of the seed needs to be adjusted in the process.
@@ -50,9 +59,3 @@ Let's say one wants to get only the first three Google search hits for a keyword
    * Customize Columns:
 ![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/Seed_Excel.gif)
 
-### Start Crawling
-* Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)
-  ```console
-   python3 ml-classification-repo
-  ```
-* Execute Process Step *(2) Execute data crawling.*
