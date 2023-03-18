@@ -50,6 +50,12 @@ To use a different file for crawling keywords, an alternative path can be specif
    2
    ```
 * **Select custom database : Supported types are .feather, .xlsx or .csv.**
+   ```Python3
+      Take custom data? (y/n)
+      y
+      Please insert absolute path (str) to custom data. Supported extensions right now are (.feather, .xlsx, .csv):
+      r"my\desired\path\file.xlsx"
+   ```
 
 <!-- 2. Open the top-level [main](https://githu
 b.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the path in the main_menu(). This approach is not generally recommended as recomandation 1.
