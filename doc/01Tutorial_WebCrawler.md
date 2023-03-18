@@ -25,12 +25,30 @@ The keywords/topics and url can be customized in [**Seed.xlsx**](https://github.
 
 ### Change the path to a custom seed.xlsx file
 To use a different file for crawling keywords, an alternative path can be specified. There are three ways to perform this:  
-1. * Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)
+1. Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)
+* Execute project and the main menu will show up.
   ```console
    python3 ml-classification-repo
   ```
 * Select language: de or en.
+   ```Python3
+         Please select Language.
+         1: German 
+         2: English
+   ```
 * Execute data crawling.
+   ```Python3
+         Please select an Option:
+         (0) End session.
+         (1) Execute full process.
+         (2) Execute data crawling.
+         (3) Execute data cleaning.
+         (4) Execute topic extraction.
+         (5) Execute automated labeling: k-Means. 
+         (6) Execute automated labeling: Train and Apply Label Modell.
+         (7) Execute classification: Train and Apply Classification Modell.
+   2
+   ```
 * **Select custom database : Supported types are .feather, .xlsx or .csv.**
 
 <!-- 2. Open the top-level [main](https://githu
