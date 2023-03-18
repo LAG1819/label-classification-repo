@@ -15,18 +15,19 @@ In this application, use-case specific keywords and URL must be inserted manuall
 
 #### Change number google search results
 Let's say one wants to get only the first three Google search hits for a keyword. There are two ways to perform this:
-1. Create a TopicScraper instance and pass to it the desired number. This approach is recommended if only a keyword search is to be performed in a dedicated manner: 
-  ```Python3
-   language = 'de'
-   desired_number_google_search_results = 3
-   keyword_scraper = TopicScraper(language,r'files\Seed.xlsx', desired_number_google_search_results = 3)
-   keyword_scraper.run()
-  ```
-2. Open the top-level [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the desired number in the main_menu(). This approach is recommended when a holistic web crawling is to be performed and the number of search results needs to be adjusted in the process.
- ```Python3
-   desired_number_google_search_results = 3
-   crawl_data(lang, desired_number_google_search_results)
-  ```
+1. Open the top-level [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the desired number in the main_menu(). This approach is recommended when a holistic web crawling is to be performed and the number of search results needs to be adjusted in the process.
+   ```Python3
+      desired_number_google_search_results = 3
+      crawl_data(lang, desired_number_google_search_results)
+   ```
+2. Create a TopicScraper instance and pass to it the desired number. This approach is recommended if only a keyword search is to be performed in a dedicated manner: 
+   ```Python3
+      language = 'de'
+      desired_number_google_search_results = 3
+      keyword_scraper = TopicScraper(language,r'files\Seed.xlsx', desired_number_google_search_results)
+      keyword_scraper.run()
+   ```
+
    
 ### Seed-based WebCrawler
 #### Customize URL:
