@@ -57,7 +57,7 @@ class TopicScraper:
     """
     __package_dir = str(os.path.dirname(__file__)).split("src")[0]
   
-    def __init__(self, lang:str, s_path:str, n_results:int):
+    def __init__(self, lang:str, n_results:int, s_path=r'files\Seed.xlsx'):
         """Initialisation of Topic Crawler. Sets Selenium Browser and calls load_data. 
 
         Args:
@@ -93,7 +93,7 @@ class TopicScraper:
         Returns:
             DataFrame: Return loaded predefined topic(keywords) and url links each as pandas DataFrame.  
         """
-        absolute_path = os.path.join(self.package_dir,s_path)
+        absolute_path = os.path.join(self.__package_dir,s_path)
         seed_data = pd.read_excel(absolute_path,header = 0) 
         
         url_col = 'URL_'+self.__lang.upper()
@@ -231,9 +231,9 @@ class TopicScraper:
         print(all_seed_df.shape)
         # print(all_seed_df)
         
-        if os.path.exists(os.path.join(self.package_dir,r'files\Seed_'+self.__lang+r'.feather')):
-            os.remove(os.path.join(self.package_dir,r'files\Seed_'+self.__lang+r'.feather'))
-        all_seed_df.to_feather(os.path.join(self.package_dir,r'files\Seed_'+self.__lang+r'.feather'))
+        if os.path.exists(os.path.join(self.__package_dir,r'files\Seed_'+self.__lang+r'.feather')):
+            os.remove(os.path.join(self.__package_dir,r'files\Seed_'+self.__lang+r'.feather'))
+        all_seed_df.to_feather(os.path.join(self.__package_dir,r'files\Seed_'+self.__lang+r'.feather'))
 
     def run(self):
         """Run method of class. Applies rowwise google search on given keywords and saves top 10 result website links in new column "URL". 

@@ -119,7 +119,7 @@ def execute_full_process(lang:str):
     label_data(lang)
     classify_data(lang)
 
-def crawl_data(lang:str, number = 0):
+def crawl_data(lang:str, number = 0, custom_seed = r'files\Seed.xlsx'):
     """Runs a combination of two WebCrawlers to crawl web pages. The seed of the WebCrawlers is defined in Seed.xlsx.
 
     Args:
@@ -127,7 +127,7 @@ def crawl_data(lang:str, number = 0):
         number(int): Selected Number of first Google search hits for a keyword. 
     """
      ###Get Top 10 Search Results per Keyword -> Save url in Seed.feather###
-    TopicScraper(lang,r'files\Seed.xlsx', number).run()
+    TopicScraper(lang,number, custom_seed).run()
 
     ###Crawl data of given Seed###
     seeder.crawl_data(lang)
