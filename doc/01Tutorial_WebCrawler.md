@@ -88,7 +88,8 @@ b.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change th
    *Note: To get a good coverage of each suspected class, one should set up at least one keyword per suspected class. The rule is: the more keywords per class, the better the data coverage achieved is likely to be.*
 
 #### Change number google search results
-Let's say one wants to get only the first three Google search hits for a keyword. There are two ways to perform this:
+Let's say one wants to get only the first three Google search hits for a keyword. There are two ways to perform this:  
+
 **1. Open the top-level [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the desired number in the main_menu(). This approach is recommended when a holistic web crawling is to be performed and the number of search results needs to be adjusted in the process.**
    ```Python3
       desired_number_google_search_results = 3
