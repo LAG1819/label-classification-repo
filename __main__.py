@@ -50,47 +50,41 @@ def select_language() -> str:
     return lang
 
 def select_database() -> str:
-    print("Do you want to perform process on custom data?(y/n)")
-    wrongInput = True
-    while wrongInput:
-        wrongInput = False
-        selection = input()
-        if selection != "y" or selection != "n":
-            wrongInput=True
-    if selection == "y":
-        "Please insert absolute path (str) to custom data. Supported extensions right now are (.feather, .xlsx, .csv):"
-        wrongPath = True
-        df = None
-        while wrongPath:
-            wrongPath = False
-            path = str(input())
-            if not os.path.exists(path):
-                wrongInput=True
-                print("Path could not be found. Please retry!")
-            else:
-                try:        
-                    if path.lower().endswith(('.feather')):
-                        df = pd.read_feather(path)
-                    if path.lower().endswith(('.xlsx')):
-                        df = pd.read_excel(path, header = 0)
-                    if path.lower().endswith(('.csv')):
-                        df = pd.read_csv(path, header = 0)
-                    path_to_save = str(os.path.dirname(__file__)) + r"files\custom_data.feather"
-                    df.to_feather(path_to_save)
-                    return path_to_save
-                except Exception as e:
-                    print("Something went wrong while reading custom file", e)
-                    print("Do you still want to perform process on custom data?(y/n)")
-                    wrongInput = True
-                    while wrongInput:
-                        wrongInput = False
-                        selection = input()
-                        if selection != "y" or selection != "n":
-                            wrongInput=True
-                            print("Do you still want to perform process on custom data?(y/n)")
-                    if selection == "n":
-                        return
-                    wrongPath = True
+    print("Please insert absolute path (str) to custom data. Supported extensions right now are (.feather, .xlsx, .csv):")
+    wrongPath = True
+    df = None
+    while wrongPath:
+        wrongPath = False
+        path = str(input())
+        if not os.path.exists(path):
+            wrongPath = True
+            print("Path could not be found. Please retry!")
+        else:
+            try:        
+                if path.lower().endswith(('.feather')):
+                    df = pd.read_feather(path)
+                if path.lower().endswith(('.xlsx')):
+                    df = pd.read_excel(path, header = 0)
+                if path.lower().endswith(('.csv')):
+                    df = pd.read_csv(path, header = 0)
+                path_to_save = str(os.path.dirname(__file__)) + r"files\custom_data.feather"
+                df.to_feather(path_to_save)
+                return path_to_save
+            except Exception as e:
+                print("Something went wrong while reading custom file", e)
+                
+                print("Do you still want to perform process on custom data?(y/n)")
+                wrongInput = True
+                while wrongInput:
+                    wrongInput = False
+                    selection = input()
+                    if selection != "y" or selection != "n":
+                        wrongInput=True
+                        print("Do you still want to perform process on custom data?(y/n)")
+                
+                if selection == "n":
+                    return
+                wrongPath = True
            
 
 def end_session():
@@ -119,15 +113,16 @@ def execute_full_process(lang:str):
     label_data(lang)
     classify_data(lang)
 
-def crawl_data(lang:str, number = 0, custom_seed = r'files\Seed.xlsx'):
+def crawl_data(lang:str, number = 0, data_path = r'files\Seed.xlsx'):
     """Runs a combination of two WebCrawlers to crawl web pages. The seed of the WebCrawlers is defined in Seed.xlsx.
 
     Args:
         lang (str): unicode of language specification for text processing, labeling and classification
-        number(int): Selected Number of first Google search hits for a keyword. 
+        number(int): Selected Number of first Google search hits for a keyword.
+        data_path(str): Selected path to the data to be used. 
     """
      ###Get Top 10 Search Results per Keyword -> Save url in Seed.feather###
-    TopicScraper(lang,number, custom_seed).run()
+    TopicScraper(lang,number, data_path).run()
 
     ###Crawl data of given Seed###
     seeder.crawl_data(lang)
@@ -137,37 +132,48 @@ def clean_data(lang:str, data_path:str):
 
     Args:
         lang (str): unicode of language specification for text processing, labeling and classification
+        data_path(str): Selected path to the data to be used.
     """
     if os.path.exists(data_path):
         textFilter(lang,data_path,r"files\cleaned_texts_"+lang+r".feather").run()
     else:
         textFilter(lang,r"files\raw_texts_"+lang+r".feather",r"files\cleaned_texts_"+lang+r".feather").run()
     
-def extract_topics(lang:str, qty_topics =2):
+def extract_topics(lang:str, data_path:str, qty_topics =2):
     """Performs the extraction of topics based on the Latent Dirichlet Allocation algorithm
 
     Args:
         lang (str): unicode of language specification for text processing, labeling and classification
+        data_path(str): Selected path to the data to be used.
     """
-    TopicExtractor(qty_topics,r"files\cleaned_texts_"+lang+r".feather",r"files\topiced_texts_"+lang+r".feather", lang).run()
+    if os.path.exists(data_path):
+        TopicExtractor(qty_topics,data_path,r"files\topiced_texts_"+lang+r".feather", lang).run()
+    else:
+        TopicExtractor(qty_topics,r"files\cleaned_texts_"+lang+r".feather",r"files\topiced_texts_"+lang+r".feather", lang).run()
       
-def generate_kMeans(lang:str):
+def generate_kMeans(lang:str, data_path:str):
     """Trains a k-Means cluster with k=number of classes (user defined). The centroids are fixed points. The data basis of the centroids can be customized in Seed.xlsx.
 
     Args:
         lang (str): unicode of language specification for text processing, labeling and classification
+        data_path(str): Selected path to the data to be used.
     """
-    seeder.crawl_centroids(lang)
-    textFilter(lang,r"files\raw_classes_"+lang+r".feather",r"files\cleaned_classes_"+lang+r".feather").run()
+    if os.path.exists(data_path):
+        textFilter(lang,data_path,r"files\cleaned_classes_"+lang+r".feather").run()
+    else:
+        seeder.crawl_centroids(lang)
+        textFilter(lang,r"files\raw_classes_"+lang+r".feather",r"files\cleaned_classes_"+lang+r".feather").run() 
+
     TopicExtractor(2,r"files\cleaned_classes_"+lang+r".feather",r"files\topiced_classes_"+lang+r".feather",lang,True).run()
     TOPIC_KMeans(lang,r"files\topiced_classes_"+lang+r".feather",r"files\topiced_texts_"+lang+r".feather").run()
 
 
-def label_data(lang:str):
+def label_data(lang:str, data_path:str):
     """Performs labeling of input data and development of a label model based on the input data.
 
     Args:
         lang (str): unicode of language specification for text processing, labeling and classification
+        data_path(str): Selected path to the data to be used.
     """
     wrongNumber = True
     while wrongNumber:
@@ -179,12 +185,20 @@ def label_data(lang:str):
         if number != 1 or number != 2:
             wrongNumber = True
     if number == 1:
-        Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', False)
-        Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT', False)
+        if os.path.exists(data_path):
+            Labeler(lang,data_path,r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', False).run()
+            Labeler(lang,data_path,r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT', False).run()
+        else:
+            Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', False).run()
+            Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT', False).run()
     elif number == 2:
         generate_kMeans(lang)
-        Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', True)
-        Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT', True)
+        if os.path.exists(data_path):
+            Labeler(lang,data_path,r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', True).run()
+            Labeler(lang,data_path,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT', True).run()
+        else:
+            Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', True).run()
+            Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT', True).run()
 
 
 def classify_data(lang:str):
@@ -192,15 +206,15 @@ def classify_data(lang:str):
 
     Args:
         lang (str): unicode of language specification for text processing, labeling and classification
+        data_path(str): Selected path to the data to be used.
     """
     classifier_model.run(lang, col = 'TOPIC')
 
-def main_menu(lang:str, data_path:str):
+def main_menu(lang:str):
     """Main Menu defined for external user.
 
     Args:
         lang (str): unicode of language to do apply whole process with
-        data_path (str): path to custom database.
     """
     print("\n \
            ###################################################################################### \n \
@@ -246,23 +260,75 @@ def main_menu(lang:str, data_path:str):
             main_menu(lang)
 
     elif selected_execution == 2:
-        crawl_data(lang, data_path)
+        data_path = None
+        print("Take custom data? (y/n)")
+        wrongAnswer = True
+        while wrongAnswer:
+            decision = str(input())
+            if decision == "y":
+                data_path = select_database()
+                wrongAnswer = False
+        if data_path:
+            crawl_data(lang, data_path=data_path)
+        else:
+            crawl_data(lang)
+            
     elif selected_execution == 3:
-        clean_data(lang, data_path)
+        data_path = None
+        print("Take custom data? (y/n)")
+        wrongAnswer = True
+        while wrongAnswer:
+            decision = str(input())
+            if decision == "y":
+                data_path = select_database()
+                wrongAnswer = False
+        clean_data(lang,data_path=data_path)
+
     elif selected_execution == 4:
-        extract_topics(lang, data_path)
+        data_path = None
+        print("Take custom data? (y/n)")
+        wrongAnswer = True
+        while wrongAnswer:
+            decision = str(input())
+            if decision == "y":
+                data_path = select_database()
+                wrongAnswer = False
+        extract_topics(lang, data_path=data_path)
+
     elif selected_execution == 5:
-        generate_kMeans(lang)
+        data_path = None
+        print("Take custom data? (y/n)")
+        wrongAnswer = True
+        while wrongAnswer:
+            decision = str(input())
+            if decision == "y":
+                data_path = select_database()
+                wrongAnswer = False
+        generate_kMeans(lang, data_path=data_path)
+        
     elif selected_execution == 6:
-        label_data(lang, data_path)
+        data_path = None
+        print("Take custom data? (y/n)")
+        wrongAnswer = True
+        while wrongAnswer:
+            decision = str(input())
+            if decision == "y":
+                data_path = select_database()
+                wrongAnswer = False
+        label_data(lang,data_path=data_path)
+
     elif selected_execution == 7:
-        classify_data(lang, data_path)
+        data_path = None
+        print("Take custom data? (y/n)")
+        wrongAnswer = True
+        while wrongAnswer:
+            decision = str(input())
+            if decision == "y":
+                data_path = select_database()
+                wrongAnswer = False
+        classify_data(lang,data_path=data_path)
 
 
 if __name__ == "__main__":
     lang = select_language()
-    data_path = select_database()  
-    main_menu(lang, data_path)
-   
-    # start = time.process_time()
-    # print(time.process_time() - start)
+    main_menu(lang)
