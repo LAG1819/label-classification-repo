@@ -44,7 +44,7 @@ To use a different file for crawling keywords, an alternative path can be specif
    * Open Excel-File [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx)
    * Customize Columns:
 ![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/Topic_Excel.gif)
-   * Note: To get a good coverage of each suspected class, one should set up at least one keyword per suspected class. The rule is: the more keywords per class, the better the data coverage achieved is likely to be.
+   *Note: To get a good coverage of each suspected class, one should set up at least one keyword per suspected class. The rule is: the more keywords per class, the better the data coverage achieved is likely to be.*
 
 #### Change number google search results
 Let's say one wants to get only the first three Google search hits for a keyword. There are two ways to perform this:
