@@ -30,16 +30,16 @@ To use a different file for crawling keywords, an alternative path can be specif
    python3 ml-classification-repo
   ```
 * Select language: de or en.
-* **Select custom database : Supported types are .feather, .xlsx or .csv.**
 * Execute data crawling.
+* **Select custom database : Supported types are .feather, .xlsx or .csv.**
 
-2. Open the top-level [main](https://githu
-b.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the path in the main_menu(). This approach is recommended when a holistic web crawling is to be performed and the path of the seed needs to be adjusted in the process.
+<!-- 2. Open the top-level [main](https://githu
+b.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the path in the main_menu(). This approach is not generally recommended as recomandation 1.
    ```Python3
       adjusted_path = r"my\desired\path\file.xlsx"
       crawl_data(lang, custom_seed = adjusted_path)
-   ```
-3. Create a TopicScraper instance and pass to it the adjusted path. This approach is recommended if only a keyword search is to be performed in a dedicated manner: 
+   ``` -->
+2. Create a TopicScraper instance and pass to it the adjusted path. This approach is recommended if only a keyword search is to be performed in a dedicated manner: 
    ```Python3
       language = 'de'
       adjusted_path = r"my\desired\path\file.xlsx"
