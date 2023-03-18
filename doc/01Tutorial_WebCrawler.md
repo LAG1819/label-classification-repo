@@ -59,3 +59,5 @@ Let's say one wants to get only the first three Google search hits for a keyword
    * Customize Columns:
 ![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/Seed_Excel.gif)
 
+*Note: If a selected url cannot be clearly assigned to a suspected class, GENERAL can be chosen as the class name in CLASS_K.* 
+
