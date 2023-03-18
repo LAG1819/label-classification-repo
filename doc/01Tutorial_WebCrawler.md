@@ -63,11 +63,11 @@ b.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change th
       adjusted_path = r"my\desired\path\file.xlsx"
       crawl_data(lang, custom_seed = adjusted_path)
    ``` -->
-**2. Create a TopicScraper instance and pass to it the adjusted path. In advance add the seeder.crawl_data() to start the seed_crawling subsequently:**
+**2. Create a TopicScraper instance and pass to it the adjusted path. Add the seeder.crawl_data() to start the seed_crawling subsequently:**
    ```Python3
       from src.topic_scrape.seed_scraper import *
       from src.url_scrape.url_scrape.spiders import seeder
-      
+
       language = 'de'
       adjusted_path = r"my\desired\path\file.xlsx"
 
@@ -92,14 +92,14 @@ Let's say one wants to get only the first three Google search hits for a keyword
       desired_number_google_search_results = 3
       crawl_data(lang, desired_number_google_search_results)
    ```
-**2. Create a TopicScraper instance and pass to it the desired number. In advance add the seeder.crawl_data() to start the seed_crawling subsequently:** 
+**2. Create a TopicScraper instance and pass to it the desired number. Add the seeder.crawl_data() to start the seed_crawling subsequently:** 
    ```Python3
       from src.topic_scrape.seed_scraper import *
       from src.url_scrape.url_scrape.spiders import seeder
 
       language = 'de'
       desired_number_google_search_results = 3
-      keyword_scraper = TopicScraper(language, desired_number_google_search_results)
+      keyword_scraper = TopicScraper(language, n_results = desired_number_google_search_results)
       keyword_scraper.run()
 
       seeder.crawl_data(language)
