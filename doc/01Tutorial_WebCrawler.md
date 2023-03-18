@@ -3,8 +3,8 @@
 In this tutorial you will find a short introduction on how to use WebCrawling with these frameworks.  
 **Note: The input data used here are sample data.**
 
-The goal is to generate a sample dataset based on the input data using the topic- and seed-based WebCrawler.
-In this application, use-case specific keywords and URL must be inserted manually at first.
+The goal is to generate a sample dataset based on a customizable list of keywords/topics and url used by the topic- and seed-based WebCrawler.
+The keywords/topics and url can be customized in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx). Please check further information in the sections below.
 # Table of Contents
 1. [Start a complete WebCrawling](#start-crawling)
 2. [Change path to a customized seed.xlsx](#change-the-path-to-a-custom-seedxlsx-file)
