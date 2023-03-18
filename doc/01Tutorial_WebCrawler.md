@@ -115,7 +115,7 @@ Let's say one wants to get only the first three Google search hits for a keyword
 #### 1. Open the top-level [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the desired number in the main_menu().
    ```Python3
       desired_number_google_search_results = 3
-      crawl_data(lang, desired_number_google_search_results)
+      crawl_data(lang, number = desired_number_google_search_results)
    ```
 #### 2. Create a TopicScraper instance and pass to it the desired number. Add the seeder.crawl_data() to start the seed_crawling subsequently:
    ```Python3
