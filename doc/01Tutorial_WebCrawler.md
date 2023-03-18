@@ -1,4 +1,4 @@
-# Intro Tutorial: Topic- and Seedbased WebCrawling
+# Tutorial 01: Topic- and Seedbased WebCrawling
 
 In this tutorial you will find a short introduction on how to perform web crawling within this frameworks.  
 **Note: The input data used here are sample data.**
