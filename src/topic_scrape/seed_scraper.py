@@ -55,13 +55,15 @@ class TopicScraper:
         The result urls are saved together with all found urls in URL_Seed.xlsx as Seed.feather.
         Seed.feather contains the initial set of url links that form the basis (seed) for the overall dataset.
     """
+    __package_dir = str(os.path.dirname(__file__)).split("src")[0]
   
-    def __init__(self, lang:str, s_path:str):
+    def __init__(self, lang:str, s_path:str, n_results:int):
         """Initialisation of Topic Crawler. Sets Selenium Browser and calls load_data. 
 
         Args:
             lang (str): unicode of language to select column with keywords only in that language.
             s_path (str): Source Path of file to be loaded as seed file. 
+            n_result (int): Selected Number of first Google search hits for a keyword. 
         """
         self.headers = {'Accept-Langugage':'de;q=0.7',
                    'User-agent':"Mozilla/101.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0. 5005.78 Edge/100.01185.39"}
@@ -71,8 +73,8 @@ class TopicScraper:
             )
 
         self.__lang = lang   
-        self.__package_dir = str(os.path.dirname(__file__)).split("src")[0]
         self._topics_df, self._url_df = self.load_data(s_path)
+        self.__n = n_results
 
         self.options = webdriver.FirefoxOptions()
         self.options.add_argument('--disable-gpu')
@@ -128,8 +130,10 @@ class TopicScraper:
             except Exception as e:
                 resultLinks =[]
                 print("SELENIUM Google Search went wrong: ",e)
-                        
-        return resultLinks
+        if self.__n > 0:
+            return resultLinks[:self.__n]
+        else:                         
+            return resultLinks
 
     @classmethod
     def __google_search(self,query:str)-> list:
@@ -192,7 +196,7 @@ class TopicScraper:
             else:
                 searchResults.append(tag.get_attribute('href'))
 
-        return list(filter(self.__filter_resultLinks,searchResults)) 
+        return list(filter(self.__filter_resultLinks,searchResults))
 
     @classmethod    
     def __filter_resultLinks(self,link:str):
