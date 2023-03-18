@@ -20,17 +20,26 @@ The keywords/topics and url can be customized in [**Seed.xlsx**](https://github.
    python3 ml-classification-repo
   ```
 * Select language: de or en.
-* Select custom database (if requested): .feather, .xlsx or .csv.
+* Select custom database (if requested): Supported types are .feather, .xlsx or .csv.
 * Execute data crawling.
 
 ### Change the path to a custom seed.xlsx file
-To use a different file for crawling keywords, an alternative path can be specified. There are two ways to perform this:  
-1. Open the top-level [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the path in the main_menu(). This approach is recommended when a holistic web crawling is to be performed and the path of the seed needs to be adjusted in the process.
+To use a different file for crawling keywords, an alternative path can be specified. There are three ways to perform this:  
+1. * Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)
+  ```console
+   python3 ml-classification-repo
+  ```
+* Select language: de or en.
+* **Select custom database : Supported types are .feather, .xlsx or .csv.**
+* Execute data crawling.
+
+2. Open the top-level [main](https://githu
+b.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change the path in the main_menu(). This approach is recommended when a holistic web crawling is to be performed and the path of the seed needs to be adjusted in the process.
    ```Python3
       adjusted_path = r"my\desired\path\file.xlsx"
       crawl_data(lang, custom_seed = adjusted_path)
    ```
-2. Create a TopicScraper instance and pass to it the adjusted path. This approach is recommended if only a keyword search is to be performed in a dedicated manner: 
+3. Create a TopicScraper instance and pass to it the adjusted path. This approach is recommended if only a keyword search is to be performed in a dedicated manner: 
    ```Python3
       language = 'de'
       adjusted_path = r"my\desired\path\file.xlsx"

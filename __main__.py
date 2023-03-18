@@ -246,7 +246,7 @@ def main_menu(lang:str, data_path:str):
             main_menu(lang)
 
     elif selected_execution == 2:
-        crawl_data(lang)
+        crawl_data(lang, data_path)
     elif selected_execution == 3:
         clean_data(lang, data_path)
     elif selected_execution == 4:
