@@ -71,6 +71,7 @@ class textFilter:
         else:
             self.__nlp = spacy.load("de_dep_news_trf")
 
+    @classmethod
     def load_data(self, path:str, t_path:str) -> pd.DataFrame:
         """Loads raw dataset containing all data samples that not had been already cleaned.
 
@@ -102,6 +103,7 @@ class textFilter:
         print("Cleaned data:", cleaned_data.shape)
         return raw_data
 
+    @classmethod
     def load_cities(self) -> dict:
         """Load a complete list of citynames of a cities above 15,000 inhabitants. All data is licensed under the Creative Common 
         Attribution License as is the original data from geonames.
@@ -124,6 +126,7 @@ class textFilter:
                     cites_dic[city.lower()] = "" 
         return cites_dic
     
+    @classmethod
     def regex_remove(self,row:str) -> str:
         """Basic text cleaning with help of regex (rowwise). Removes all text that is part of scripting like html or xml.
 
@@ -157,6 +160,7 @@ class textFilter:
             output = ""
         return output
 
+    @classmethod
     def stopword_remove(self,row:str) -> str:
         """Advanced text cleaning with help of regex (rowwise). Removes advanced websites specific "stopwrods" as well as domain specific "stopwrods" as 
         well as other basic stopwrods to remove. 
@@ -206,6 +210,7 @@ class textFilter:
                 output_sentence.append(" ".join(out_sentence))
         return " ".join(output_sentence)
     
+    @classmethod
     def __remove_nonText(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Apply rowwise basic text cleaning with regex_remove() on raw texts.
 
@@ -232,6 +237,7 @@ class textFilter:
         data[self.text_col] = data[self.text_col].apply(lambda row: self.stopword_remove(row))
         return data
 
+    @classmethod
     def __flag_lang(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Detect Language of each sample (row) containing text of one crawled website. 
 
@@ -263,6 +269,7 @@ class textFilter:
         data = data.reset_index(drop = True)
         return data
 
+    @classmethod
     def __lemmatize_text(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Lemmatize text with help of spacy
 
@@ -276,6 +283,7 @@ class textFilter:
         data[self.text_col] = data[self.text_col].apply(lambda row: " ".join([token.lemma_ for token in self.__nlp(row)]))
         return data
 
+    @classmethod
     def __remove_cityNames(self, input_data:pd.DataFrame) -> pd.DataFrame:
         """Removes all city names in text
 
@@ -290,6 +298,7 @@ class textFilter:
         data[self.text_col] = data[self.text_col].apply(lambda row: regex.sub(lambda match: self.cities[match.group(0)], row) if row else "")
         return data
     
+    @classmethod
     def split_dataframe(self, chunk_size:int = 300) -> list:
         """Helper function that splits loaded dataset into smaller chunks containing size "chunk_size" which is by default 300 samples.
 
@@ -305,6 +314,7 @@ class textFilter:
             chunks.append(self.__data[i*chunk_size:(i+1)*chunk_size])
         return chunks
 
+    @classmethod
     def save_data(self, cleaned_chunk:pd.DataFrame):
         """Concatenate new chunk of cleaned data to already exisiting cleaned data.
 
@@ -322,6 +332,7 @@ class textFilter:
 
         data_to_save.to_feather(df_t_path)
 
+    
     def run(self):
         """Run function of textFilter class. Firstly a basic text cleansing will be applied, than an advanced text cleaning and advanced stopwords removal will be applied.
         Than the language of cleaned texts is applied and all texts that are not matching the initialised lang are filtered. In advance all city names in texts 

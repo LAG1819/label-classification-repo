@@ -55,8 +55,9 @@ def loggingdecorator(name):
             return ret
         return _fn
     return _decor
+
 ############################################################## USER-DEFINED LABELING FUNCTIONS ######################################################################## 
-@staticmethod
+    
 def kMeans_cluster(x:str, label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer,ABSTAIN:int) -> int:
     """K-Means clustering with loaded and pre-trained KMeans cluster of an input sentence.
     This function is only used if labeling of total dataset is required.
@@ -78,7 +79,8 @@ def kMeans_cluster(x:str, label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVecto
         return label
     else:
         return ABSTAIN
-@staticmethod
+    
+
 def make_cluster_lf(label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer, abstain:int) -> LabelingFunction:
     """Generate a Label Function (LF) based on an input K-Means cluster and associated TfidfVectorizer.
     This Labeling Function is only used if labeling of total dataset is required.
@@ -95,9 +97,9 @@ def make_cluster_lf(label:int, kmeans:KMeans, kmeans_vectorizer:TfidfVectorizer,
     return LabelingFunction(
         name=f"cluster_{str(label)}",
         f=kMeans_cluster,
-        resources=dict(label=label, kmeans =kmeans, kmeans_vectorizer=kmeans_vectorizer, abstain=abstain),
+        resources=dict(label=label, kmeans =kmeans, kmeans_vectorizer=kmeans_vectorizer, ABSTAIN=abstain),
     )
-@staticmethod
+
 def keyword_lookup(x:str, keywords:list, label:int, ABSTAIN:int)->int:
     """Keyword Matching of an input sentence. Keywords can be defined in Seed.xlsx.
     This function is used in both cases: if labeling of total or partial dataset is required.
@@ -115,7 +117,7 @@ def keyword_lookup(x:str, keywords:list, label:int, ABSTAIN:int)->int:
         return label
     else:
         return ABSTAIN
-@staticmethod
+
 def make_keyword_lf(keywords:list, label:int, abstain:int) -> LabelingFunction:
     """Generate a Label Function (LF) based on keyword_lookup function. Keywords can be defined in Seed.xlsx.
     This Labeling Function is used in both cases: if labeling of total or partial dataset is required.
@@ -131,7 +133,7 @@ def make_keyword_lf(keywords:list, label:int, abstain:int) -> LabelingFunction:
     return LabelingFunction(
         name=f"keyword_{label}",
         f=keyword_lookup,
-        resources=dict(keywords=keywords, label=label, abstain=abstain),
+        resources=dict(keywords=keywords, label=label, ABSTAIN=abstain),
     )
 
 ############################################################## Label Model and Training ################################################################################## 
@@ -244,7 +246,8 @@ class Labeler:
         self.__data = self.load_data()
         self.__train_df, self.__validate_df, self.__test_df, self.__train_test_df = self.__generate_trainTestdata(lang)
         self.__trial = self.__get_trial()
-    
+
+    @classmethod
     def load_data(self) -> pd.DataFrame:
         """Loads cleaned dataset containing topics as well.
 
@@ -254,7 +257,8 @@ class Labeler:
         df_path = str(os.path.dirname(__file__)).split("src")[0] + self.source_path
         df = pd.read_feather(df_path)
         return df.replace(np.nan, "",regex = False)
-
+    
+    @classmethod
     def __generate_trainTestdata(self, lang:str) -> pd.DataFrame:
         """Loading the training, test and validation data set if they already exist. 
         Otherwise the total dataset will be split into training, test and validation datasets. The generated test and validation dataset must then first be labeled by a domain expert!
@@ -306,7 +310,8 @@ class Labeler:
         print(train.shape,test.shape,validate.shape)
 
         return train, validate, test, train_test
-
+    
+    @classmethod
     def __train_labeling_functions(self):
         """Overall Train function of model containing k-Fold Cross Validation. Labeling Functions (LF) are applied to k-fold training and testset.
         If process got interrupted by user the best model including the evaluation results of the training up to this point will be saved anyway 
@@ -394,7 +399,8 @@ class Labeler:
                 return
             else:
                 return
-
+    
+    @classmethod
     def __analysis_training_result(self, k, i,coverage_df):
         """Analysation of applied Labeling Functions (LF) and the polarity, coverage, conflicts and overlaps (in %) of each LF on the dataset. Save coverage in dedicated result folder.
             polarity = The set of unique labels this LF outputs (excluding abstains)
@@ -429,6 +435,7 @@ class Labeler:
             coverage_df.reset_index(inplace=True, drop = True)
             coverage_df.to_feather(path+coverage_path)
 
+    @classmethod
     def train_model(self,l_train,l_test,y_test,j,u):
         """Train function of model. Follows the usual procedure consisting (Hyper-)parameter Tuning.
         Selected optimizer are: Grid Search, Random Search and Bayesian Optimization. 
@@ -658,7 +665,7 @@ class Labeler:
         label_model.fit(L_train=train, n_epochs=best_model['n_epochs'], seed=123, log_freq=best_model['log_freq'], l2=best_model['l2'], lr=best_model['lr'], optimizer = best_model['optimizer'])
         label_model.save(model_folder+r"\label_model.pkl")
         
-        
+    @classmethod
     def __test_model(self):
         """Validation function of model. Follows the usual procedure consisting testing of the optimized trained model with validation set. 
         If an trained model already exists on dedicated path the new trained model will be compared with existing model.
@@ -708,6 +715,7 @@ class Labeler:
         after_val_shape = validation_df.shape
         print(f"Shape of Validationset before: {before_val_shape} and after: {after_val_shape}")
     
+    @classmethod
     def __save_model(self):
         """Saving of trained Label model as pickle file with optimized parameter.
         """
@@ -721,6 +729,7 @@ class Labeler:
             logger.info(f"Model not saved!")
             self.__update_data = False
 
+    @classmethod
     def __apply_model(self):
         """Apply trained model with best configuration on whole dataset and saves datasets if better than existing model.
         """
@@ -741,6 +750,7 @@ class Labeler:
         else:
             logger.info(f"Language:{self.__lang}. NOT Applying trained model with best parameters and trainset on whole data set due to worse model accuracy.")
 
+    @classmethod
     def __save_data(self):
         """Saves labeled data as feather into files folder.
         """
@@ -756,6 +766,7 @@ class Labeler:
         else:
             logger.info("Data with applied labels not saved!")
 
+    @classmethod
     def __save_current_result(self, k:int,i:int,optim:str, best_model:dict, model_folder:str):
         """Saves intermediate (best) evaluation results into a temporary file.
 
@@ -784,7 +795,7 @@ class Labeler:
         df_all_new.reset_index(inplace = True, drop = True) 
         df_all_new.to_feather(path+t_path)
 
- 
+    @classmethod
     def save_results(self):
         """Saves evaluation results to dedicated result folder.
         """
@@ -810,6 +821,7 @@ class Labeler:
         temp_df.sort_values(by=['accuracy'], ascending=[False], inplace=True)
         return temp_df
 
+    @classmethod
     def __get_trial(self) -> int:
         """Gets current trial of training of a Label Model.
 
@@ -849,8 +861,8 @@ class Labeler:
         #save dataset with assigned labels
         self.__save_data()
 
-for lang in ['de']:#,'en']:
-    for i in range(2):
+for lang in ['en']:
+    for i in range(3):
         Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', True).run()
     for i in range(3):
         Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT',True).run()

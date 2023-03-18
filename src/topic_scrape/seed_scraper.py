@@ -81,6 +81,7 @@ class TopicScraper:
         self.browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=self.options)
         self.wait = WebDriverWait(self.browser, 20)
 
+    @classmethod
     def load_data(self, s_path:str):
         """Call of both Seed files. TOPIC_Seed.xlsx contains keywords to crawl. URL_Seed.xlsx contains links to crawl.
 
@@ -104,7 +105,8 @@ class TopicScraper:
         topic_df = topic_df[['CLASS', 'KEYWORD']].dropna()
         
         return topic_df,url_df 
-        
+    
+    @classmethod
     def __get_url(self,q:str) -> list:
         """Performs a google search based on the given topic using BeautifulSoup first. If no result or an error occures a google search based on the given topic using Selenium is performed.
 
@@ -129,6 +131,7 @@ class TopicScraper:
                         
         return resultLinks
 
+    @classmethod
     def __google_search(self,query:str)-> list:
         """Performs a google search based on the given topic using BeautifulSoup.
 
@@ -154,6 +157,7 @@ class TopicScraper:
 
         return filteredsearchRefs
 
+    @classmethod
     def __google_search_selenium(self,query:str) -> list:
         """Performs a google search based on the given topic using selenium.
 
@@ -188,10 +192,9 @@ class TopicScraper:
             else:
                 searchResults.append(tag.get_attribute('href'))
 
-        return list(filter(self.__filter_resultLinks,searchResults))
-        
+        return list(filter(self.__filter_resultLinks,searchResults)) 
 
-
+    @classmethod    
     def __filter_resultLinks(self,link:str):
         """Filter a given url based on its domain. 
 
@@ -213,6 +216,7 @@ class TopicScraper:
         else:
             return
     
+    @classmethod
     def save_data(self):
         """Concatenates dataframe containing all google search result website links based on keywords withdataframe containing dataframe containing website links.
         """

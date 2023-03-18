@@ -85,6 +85,7 @@ class TopicSpider(scrapy.Spider):
         for url in self.__queue:
             yield scrapy.Request(url = url[1], meta={'CLASS': url[0]},callback=self.parse)
 
+    @classmethod
     def get_data(self):
         """Get the input data with the url links to be retrieved. Deletes existing ouput file where crawled data will be saved to.
 
@@ -104,6 +105,7 @@ class TopicSpider(scrapy.Spider):
 
         return seed_df
 
+    @classmethod
     def parse(self, response):
         """Scrapy mandatory function. Actual parsing of the retrieved website. Parses text content of requested url with help of BeautifoulSoup and Selenium. 
 
@@ -199,6 +201,7 @@ class SeederSpider(CrawlSpider):
                         "termin", "store", "update", "accessor", "adbk", "sky", "betriebsanleitung", "manual", "kununu", "wissen.de", "gutschein", "geo.de", "linguee",\
                             "mouser.de" ]
 
+    @classmethod
     def get_data(self,url_path:str):
         """Get the input data with the url links to be retrieved.
 
@@ -214,7 +217,8 @@ class SeederSpider(CrawlSpider):
 
         seed_df = seed_df[['CLASS','KEYWORD','URL']]
         return seed_df
-
+    
+    @classmethod
     def get_already_visited(self) -> list:
         """Because of possible long crawling times depending on the size of the seed, crawling can be interrupted because of lost internet connection etc.. 
         Because of that this helper function is created to link to already crawled content and not to crawl again the already crawled pages.
@@ -236,7 +240,8 @@ class SeederSpider(CrawlSpider):
             visited =[]
 
         return list(set(visited))
-
+    
+    @classmethod
     def start_requests(self):
         """Start of Retrieval of the individual input url links. Scrapy own mandatory function.
 
@@ -246,7 +251,7 @@ class SeederSpider(CrawlSpider):
         for url in self.__queue:      
             yield scrapy.Request(url = url[2], meta={'CLASS': url[0], 'KEYWORD':url[1]},callback=self.parse)
         
-        
+    @classmethod    
     def filter_link(self,link:str, link_text:str) -> bool:
         """This helper functions filters an input link name and its text description. It checks if the link contains any word of a defined blacklist and if it is not
         a link with ending .de, .com or .en. If one of the criteria is met, the link is marked (flag = True) and thus placed on the list of pages not to be crawled.
@@ -281,7 +286,8 @@ class SeederSpider(CrawlSpider):
         # if not re.search(selected_countryURL,link_text.lower()):
         #     flag = True
         return flag
-
+    
+    @classmethod
     def parse(self, response):
         """Scrapy mandatory function. Actual parsing of the retrieved website. Parses text content of requested url with help of BeautifoulSoup and Selenium. 
         Dynamically adds all urls found on the website to the list of urls to be crawled (Breadth-first-search). A distinction is made between internal and external crawling. 

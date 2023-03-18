@@ -66,6 +66,7 @@ class TopicExtractor:
         logging.basicConfig(filename=__filenames, encoding='utf-8', level=logging.DEBUG)
         logging.info("Topic Extraction with Language {l} and data file {path} (source) started. Target file is {tpath}".format(l = self.lang, path = self.source_path, tpath = self.__target_path))       
 
+    @classmethod
     def load_data(self):
         """Read cleaned text stored in source path
 
@@ -103,7 +104,7 @@ class TopicExtractor:
             print("[{log}]Total of data to extract topics: {all}. Total of data already with extracted topic: {t}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, t = topiced_data.shape,l=raw_data.shape))          
         return raw_data
 
-
+    @classmethod
     def __generate_tfIdf(self,doc_list:list):
         """Apply rowwise generation of Tfidf-Vector and fit to cleaned texts (URL_TEXT).
 
@@ -124,6 +125,7 @@ class TopicExtractor:
         
         return fit_data,tfidf_v   
 
+    @classmethod
     def __apply_lda(self,fit_data,tfidf_v) -> str:
         """Fit and applies LDA Algorithm on tfidf matrix of cleaned texts rowwise and returns a list of generated topics.
 
@@ -161,6 +163,7 @@ class TopicExtractor:
 
         return ",".join(topics)
 
+    @classmethod
     def __generate_topic(self,text:str) -> str:
         """Generation, Fit and Application of cleaned text rowwise by calling generate_tfIdf and apply_lda function.  
 
@@ -180,6 +183,7 @@ class TopicExtractor:
             print(e)
             return ''
 
+    @classmethod
     def split_dataframe(self, chunk_size:int = 300) -> list:
         """Helper function that splits loaded dataset into smaller chunks containing size "chunk_size" which is by default 300 samples.
 
