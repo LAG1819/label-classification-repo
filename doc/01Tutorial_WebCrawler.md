@@ -14,7 +14,7 @@ The keywords/topics and url can be customized in [**Seed.xlsx**](https://github.
 4. [Seed-based WebCrawler](#seed-based-webcrawler)  
     1. [Customize url](#customize-url)
 ------
-### Start Crawling
+## Start Crawling
 * Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)
   ```console
    python3 ml-classification-repo
@@ -23,7 +23,7 @@ The keywords/topics and url can be customized in [**Seed.xlsx**](https://github.
 * Select custom database (if requested): Supported types are .feather, .xlsx or .csv.
 * Execute data crawling.
 
-### Change the path to a custom seed.xlsx file
+## Change the path to a custom seed.xlsx file
 To use a different file for crawling keywords, an alternative path can be specified. There are three ways to perform this:  
 **1. Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)**
 * Start main in terminal and the main menu will show up.
@@ -78,7 +78,7 @@ b.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change th
    ```
 *Note: The custom seed.xlsx file must have the same column names as the original framework seed file for any kind of web crawling. Otherwise it will not work.*
 ------
-### Topic-based WebCrawler
+## Topic-based WebCrawler
 #### Change Keywords:
    * Open Excel-File [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx)
    * Customize Columns:
@@ -105,7 +105,7 @@ Let's say one wants to get only the first three Google search hits for a keyword
       seeder.crawl_data(language)
    ```
 ------   
-### Seed-based WebCrawler
+## Seed-based WebCrawler
 #### Customize URL:
    * Open Excel-File [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx)
    * Customize Columns:
