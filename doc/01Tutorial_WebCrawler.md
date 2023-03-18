@@ -86,12 +86,17 @@ Let's say one wants to get only the first three Google search hits for a keyword
       desired_number_google_search_results = 3
       crawl_data(lang, desired_number_google_search_results)
    ```
-**2. Create a TopicScraper instance and pass to it the desired number. This approach is recommended if only a keyword search is to be performed in a dedicated manner:** 
+**2. Create a TopicScraper instance and pass to it the desired number. In advance add the seeder.crawl_data() to start the seed_crawling subsequently:** 
    ```Python3
+      from src.topic_scrape.seed_scraper import *
+      from src.url_scrape.url_scrape.spiders import seeder
+
       language = 'de'
       desired_number_google_search_results = 3
       keyword_scraper = TopicScraper(language, desired_number_google_search_results)
       keyword_scraper.run()
+
+      seeder.crawl_data(language)
    ```
    
 ### Seed-based WebCrawler
