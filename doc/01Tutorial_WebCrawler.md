@@ -13,7 +13,8 @@ The keywords/topics and url can be customized in [**Seed.xlsx**](https://github.
     2. [Customize number of Google search results per keyword](#change-number-google-search-results)
 4. [Seed-based WebCrawler](#seed-based-webcrawler)  
     1. [Customize url](#customize-url)
-------
+------  
+
 ## Start Crawling
 * Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py)
   ```console
@@ -76,7 +77,8 @@ b.com/LGHDM/ml-classification-repo/blob/main/__main__.py) function and change th
 
       seeder.crawl_data(language)
    ```
-*Note: The custom seed.xlsx file must have the same column names as the original framework seed file for any kind of web crawling. Otherwise it will not work.*
+*Note: The custom seed.xlsx file must have the same column names as the original framework seed file for any kind of web crawling. Otherwise it will not work.*  
+
 ------
 ## Topic-based WebCrawler
 #### Change Keywords:
@@ -104,7 +106,8 @@ Let's say one wants to get only the first three Google search hits for a keyword
 
       seeder.crawl_data(language)
    ```
-------   
+------  
+
 ## Seed-based WebCrawler
 #### Customize URL:
    * Open Excel-File [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx)
