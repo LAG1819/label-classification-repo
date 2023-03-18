@@ -49,7 +49,7 @@ To use a different file for crawling keywords, an alternative path can be specif
       (7) Execute classification: Train and Apply Classification Modell.
    2
    ```
-* **Select custom database : Supported types are .feather, .xlsx or .csv.**
+* **Select custom database - supported types are .feather, .xlsx or .csv.:**
    ```Python3
       Take custom data? (y/n)
       y
