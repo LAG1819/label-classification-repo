@@ -14,8 +14,8 @@ To learn more about Snorkel visit [🚀 Snorkel.org](https://snorkel.org) or che
     1. [Total data labeling](#perform-a-total-data-labeling-using-k-means-cluster-each-data-sample-gets-a-label-assigned)
     2. [Partial data labeling](#perform-a-partial-data-labeling-not-every-data-sample-gets-a-data-label)
 2. [Change path to a customized dataset.](#change-dataset)
-    1. [Total data labeling](#total-data-labeling)
-    2. [Partial data labeing](#partial-data-labeling)
+    1. [kMeans](#change-kmeans-data-for-total-data-labeling)
+    2. [Automated Labeling](#change-data-to-label-for-total-and-partial-data-labeling)
 3. [Customize Classes to label with.]()
 4. [Add Labeling Functions.]()
 5. [Add custom hyperparameter optimization techniques]()
@@ -107,7 +107,7 @@ To learn more about Snorkel visit [🚀 Snorkel.org](https://snorkel.org) or che
 To use an alternative dataset for data cleansing, the same options as in Tutorial 01 and 02 can applied: Execute main and follow instructions or create a label class.  
 *Note: The dataset must be a .feather file*  
 
-## Total data labeling
+## Change kMeans data (for total data labeling)
 There are two ways (1. and 2.) to change the dataset for kMeans and one option (3.) to change the dataset for the automated labeling. 
 1. Change k-Means dataset: Change selected centroids for k-Means in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx). Each centroid represents one class labels. Execute main after adaption.
 2. Change k-Means dataset: Loading a customized file for the zentroids of kMeans. The customized zentroids can be cleaned and topics extracted if requested.
@@ -125,22 +125,8 @@ There are two ways (1. and 2.) to change the dataset for kMeans and one option (
       #actual k means generation
       TOPIC_KMeans(lang = language ,r"files\topiced_classes_"+language+r".feather",r"files\topiced_texts_"+language+r".feather").run()
    ```
-3. Change label dataset: Loading a customized file for automated labeling.
-    ```Python3
-      adjusted_path_for_label_data = r"my\other\desired\path\file.feather"
-      selected_text_column = 'MY_TEXT'
-      language = 'de'
 
-      labelModel_tarining_and_application = Labeler(lang,s_path = adjusted_path_for_label_data, column = selected_text_column, partial = False)
-      labelModel_tarining_and_application.run()
-
-      Out: Train, Test and Validate Dataset were generated. Please label train and validate data before further proceeding!
-      Out: No labeled Test and Validate data exist! Please label generated train and test data file, stored in files/03_label/
-       ```
-    The framework automatically generates training-, test- and validationset (ratio: 60 -20 -20) after this execution and stops the further execution with the displayed output.  
-    The test- and validationset must then be labeled manually (by a domain expert). After the labeling is done, the process can be started again.
-
-## Partial data labeling
+## Change data to label (for total and partial data labeling)
 To perform a partial data labeling only the label model has to be started.
 
 Change label dataset: Loading a customized file for automated labeling.
@@ -155,5 +141,5 @@ Change label dataset: Loading a customized file for automated labeling.
       Out: Train, Test and Validate Dataset were generated. Please label train and validate data before further proceeding!
       Out: No labeled Test and Validate data exist! Please label generated train and test data file, stored in files/03_label/
        ```
-    The framework automatically generates training-, test- and validationset (ratio: 60 -20 -20) after this execution and stops the further execution with the displayed output.  
-    The test- and validationset must then be labeled manually (by a domain expert). After the labeling is done, the process can be started again.
+The framework automatically generates training-, test- and validationset (ratio: 60 -20 -20) after this execution and stops the further execution with the displayed output.  
+The test- and validationset must then be labeled manually (by a domain expert). After the labeling is done, the process can be started again.
