@@ -35,26 +35,6 @@ import bayes_opt
 from sklearn.model_selection import KFold
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
-def loggingdecorator(name):
-    """Helper function for logging. Used to make logging in a lucid way.
-
-    Args:
-        name (_type_): Name to show log with.
-
-    Returns:
-        _type_: Returns arranged logging. 
-    """
-    logger = logging.getLogger(name)
-    def _decor(fn):
-        function_name = fn.__name__
-        def _fn(*args, **kwargs):
-            ret = fn(*args, **kwargs)
-            argstr = [str(x) for x in args]
-            argstr += [key+"="+str(val) for key,val in kwargs.items()]
-            logger.debug("%s(%s) -> %s", function_name, ", ".join(argstr), ret)
-            return ret
-        return _fn
-    return _decor
 
 ############################################################## USER-DEFINED LABELING FUNCTIONS ######################################################################## 
     
@@ -188,17 +168,16 @@ class Labeler:
     __individualisation_cluster_e = make_cluster_lf(label = INDIVIDUALISATION, kmeans= _kmeans_en, kmeans_vectorizer= _kmeans_vectorizer_en, abstain = __ABSTAIN)
     __shared_cluster_e = make_cluster_lf(label = SHARED, kmeans= _kmeans_en, kmeans_vectorizer= _kmeans_vectorizer_en, abstain = __ABSTAIN)
 
-    
 
-    def __init__(self,lang:str,s_path:str, t_path:str, column:str, partial:bool):
+    def __init__(self,lang:str,s_path:str=None, t_path:str=None, column:str = 'TOPIC', partial:bool = True):
         """Initialisation for Label Model training and application.
 
         Args:
             lang (str): Unicode of language to train model with. It can be choosen between de (german) and en (englisch).
-            s_path (str): source path to file containing raw texts to clean
-            t_path (str): target path to save file with cleaned texts
-            column (str): Selected Column on which the data get labeled on. It can be choosen between TOPIC or URL_TEXT.
-            partial (bool): Selected type of data labeling. If True a partial data labeling is applied. If False a total data labeling is applied with help of a pretrained k-Means cluster.
+            s_path (str, optional): source path to file containing raw texts to label. Defaults to None.
+            t_path (str, optional): target path to save file with labeled texts. Defaults to None.
+            column (str, optional): Selected Column on which the data get labeled on.. Defaults to 'TOPIC'.
+            partial (bool, optional):Selected type of data labeling. If True a partial data labeling is applied. If False a total data labeling is applied with help of a pretrained k-Means cluster. Defaults to True.
         """
         # Create logger and assign handler
         logger = logging.getLogger("Labeler")
@@ -240,12 +219,20 @@ class Labeler:
         self.__update_model = False
         # self.L_train = None
         self.__label_model = None
-        self.__source_path = s_path
-        self.__target_path = t_path
         self.__text_col = column
+        if s_path:
+            self.__source_path = s_path
+        else:
+            self.__source_path = r"files\02_clean\topiced_texts_"+self.__lang+".feather"
+        
+        if t_path:
+            self.__target_path = t_path 
+        else:
+            self.__target_path = r"files\04_classify\labeled_texts_"+self.__lang+'_'+self.__text_col+".feather"
         self.__data = self.load_data()
         self.__train_df, self.__validate_df, self.__test_df, self.__train_test_df = self.__generate_trainTestdata(lang)
         self.__trial = self.__get_trial()
+        self.__hpo_list = [("RandomSearch",self.__apply_randomSearch),("GridSearch",self.__apply_gridSearch), ("BayesianSearch",self.__apply_bayesianOptimization)]
 
     def load_data(self) -> pd.DataFrame:
         """Loads cleaned dataset containing topics as well.
@@ -441,31 +428,38 @@ class Labeler:
         logger = logging.getLogger("Labeler")
         logger.info(f"Training and Evaluation of best Model with {_k}-fold Cross Validation with Trainingset {_i}")
 
-        #random search
-        loggerr = logging.getLogger("Labeler.randomSearch")
-        try:
-            self.__apply_randomSearch(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
-        except Exception as e:
-            loggerr.warning("Error occurred: ", e)
-            pass
+        for hpo_name, hpo in self.__hpo_list:
+            try:
+                hpo(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
+            except Exception as e:
+                logger.info(f"[{hpo_name}]Error occured", e)
+                pass
+
+        # #random search
+        # loggerr = logging.getLogger("Labeler.randomSearch")
+        # try:
+        #     self.__apply_randomSearch(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
+        # except Exception as e:
+        #     loggerr.warning("Error occurred: ", e)
+        #     pass
         
-        #grid search
-        loggerg = logging.getLogger("Labeler.gridSearch")
-        try:
-            self.__apply_gridSearch(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
-        except Exception as e:
-            loggerg.warning("Error occurred: ", e)
-            pass
+        # #grid search
+        # loggerg = logging.getLogger("Labeler.gridSearch")
+        # try:
+        #     self.__apply_gridSearch(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
+        # except Exception as e:
+        #     loggerg.warning("Error occurred: ", e)
+        #     pass
 
-        #bayesian search
-        loggerb = logging.getLogger("Labeler.bayesianOptim")
-        try:
-            self.__apply_bayesianOptimization(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
-        except Exception as e:
-            loggerb.warning("Error occurred: ", e)
-            pass
+        # #bayesian search
+        # loggerb = logging.getLogger("Labeler.bayesianOptim")
+        # try:
+        #     self.__apply_bayesianOptimization(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
+        # except Exception as e:
+        #     loggerb.warning("Error occurred: ", e)
+        #     pass
 
-    @loggingdecorator("label.function")
+   
     def __apply_randomSearch(self,train,test,y_test,k:int,i:int, max_evals = 40):
         """Hyperparameter Optimization techinique of Random Search Optimization.
         Save model checpoint in specific path and saves model parameter and metrics globally.
@@ -518,7 +512,7 @@ class Labeler:
         self.__save_current_result(k,i,'RandomSearch', best_model, model_folder)
 
 
-    @loggingdecorator("label.function")
+  
     def __apply_gridSearch(self,train,test,y_test,k:int,i:int):
         """Hyperparameter Optimization techinique of Grid Search Optimization.
         Save model checpoint in specific path and saves model parameter and metrics globally.
@@ -575,7 +569,7 @@ class Labeler:
         label_model.save(model_folder+r"\label_model.pkl")
 
 
-    @loggingdecorator("label.function")
+   
     def __apply_bayesianOptimization(self,train,test,y_test,k:int,i:int, max_evals = 40):
         """Hyperparameter Optimization techinique of Bayesian Optimization using bayes_opt. 
         Save model checpoint in specific path and saves model parameter and metrics globally.

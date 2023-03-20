@@ -38,22 +38,30 @@ nltk.download('stopwords')
 class TopicExtractor:
     """Class to identify topics of cleand texts (cleaned_texts.feather) based on LDA(LatentDirichletAllocation) algorithm. 
     """
-    def __init__(self, input_topic: int, s_path:str,t_path:str, lang:str, topic:bool = False):
+    def __init__(self, input_topic: int = 2, s_path:str = None,t_path:str = None, lang:str, zentroid:bool = False):
         """Initialisation of a topic generator object. 
-
         Args:
-            input_topic (int): Number of topics, that shall be generated
             s_path (str): source path to file containing cleaned texts to identify topics
             t_path (str): target path to save file with cleaned texts and generated topics
-            lang (str): unicode of language to filter raw texts only in that language 
+            lang (str): unicode of language to filter raw texts only in that language
+            input_topic (int, optional): Number of topics, that shall be generated. Defaults to 2.
+            zentroid (bool, optional): Boolean to indicate of topics extracted for zentroids of k-Means Cluster for Automated Labeling. Defaults to False.
         """
-        self.source_path = s_path
-        self.__target_path = t_path
-        self.__topic = topic
-        self.__data = self.load_data()
-        self.__number_topics = input_topic
+
         self.__text_col = 'URL_TEXT'
         self.__lang = lang
+        if s_path:
+            self.__source_path = s_path
+        else: 
+            self.__source_path = r"files\cleaned_texts_"+self.__lang+r".feather"
+        if t_path:
+            self.__target_path = t_path
+        else:
+            self.__target_path = r"files\topiced_texts_"+self.__lang+r".feather"
+        self.__zentroid = zentroid
+        self.__data = self.load_data()
+        self.__number_topics = input_topic
+        
 
         if self.__lang == "de":
             self.__stopwords = stopwords.words('german')
@@ -64,7 +72,7 @@ class TopicExtractor:
 
         __filenames =  str(os.path.dirname(__file__)).split("src")[0] +r'files\02_clean\topic_extraction_'+lang+'.log'
         logging.basicConfig(filename=__filenames, encoding='utf-8', level=logging.DEBUG)
-        logging.info("Topic Extraction with Language {l} and data file {path} (source) started. Target file is {tpath}".format(l = self.lang, path = self.source_path, tpath = self.__target_path))       
+        logging.info("Topic Extraction with Language {l} and data file {path} (source) started. Target file is {tpath}".format(l = self.lang, path = self.__source_path, tpath = self.__target_path))       
 
     
     def load_data(self):
@@ -73,11 +81,11 @@ class TopicExtractor:
         Returns:
             DataFrame: Returns a pandas DataFrame containing domain name of url link (DOMAIN), url link (URL), cleaned texts(URL_TEXT), language of text (LANG) and CLASS (optional).
         """
-        df_path = str(os.path.dirname(__file__)).split("src")[0] + self.source_path
+        df_path = str(os.path.dirname(__file__)).split("src")[0] + self.__source_path
         df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.__target_path
 
         #if topic dataset than group by class#
-        if self.__topic:
+        if self.__zentroid:
             data = pd.read_feather(df_path)
             raw_data = data.groupby("CLASS").agg({'URL_TEXT':lambda x: "|".join(list(x))})#['URL_TEXT'].apply(list)
             logging.info("[{log}]Total of k-Means centroid data to extract topics: {all}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, l=raw_data.shape))
@@ -206,7 +214,7 @@ class TopicExtractor:
             topiced_chunk (pd.Dataframe): Chunk of 300 (by default) samples of data with extracted topics.
         """
         df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.__target_path
-        if self.__topic:            
+        if self.__zentroid:            
             data_to_save = topiced_chunk
             data_to_save.reset_index(inplace=True)
         else:

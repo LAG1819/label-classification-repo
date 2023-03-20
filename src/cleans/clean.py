@@ -30,15 +30,19 @@ from datetime import datetime
 class textFilter:
     """Class to clean and filter raw texts (raw_texts.json) that had been crawled in previous step. 
     """
-    def __init__(self,lang:str, s_path:str, t_path:str):
+    def __init__(self,lang:str, s_path:str = None, t_path:str = None, stopwords:list = [], pattern:list = [], chunk_size:int = 300):
         """Initialise a textFilter object that can clean raw html text.
 
         Args:
             lang (str): unicode of language to filter raw texts only in that language 
             s_path (str): source path to file containing raw texts to clean
-            t_path (str): target path to save file with cleaned texts
+            t_path (str, optional): target path to save file with cleaned texts. Defaults to None.
+            stopwords (list, optional): list of user defined stopwords to be added to data cleansing process. Defaults to [].
+            pattern (list, optional): list of user defined pattern to be added to data cleansing process. Defaults to [].
+            chunk_size (int, optional): Size of DataFrame chunk to split DataFrame into. Defaults to 300.
         """
-        # Create logger and assign handler
+        # Create logger and assign handle
+        
         logger = logging.getLogger("Cleaining")
 
         handler  = logging.StreamHandler()
@@ -57,11 +61,21 @@ class textFilter:
         self.text_col = 'URL_TEXT'
         self.url_col = 'URL'
         self.__lang = lang
-        self.__target_path = t_path
-        self.all_stopwords = []
-        self.pattern_list = []
-        
-        self.__data = self.load_data(s_path, t_path)
+        if t_path: 
+            self.__target_path = t_path
+        else: 
+            self.__target_path =r"files\cleaned_texts_"+self.__lang+".feather"
+
+        if s_path:
+            self.__source_path = s_path
+        else:
+            self.__source_path = r"files\raw_texts_"+self.__lang+r".feather"
+            
+        self.all_stopwords = stopwords
+        self.pattern_list = pattern
+        self.__chunk_size = chunk_size
+
+        self.__data = self.load_data(self.__source_path, self.__target_path)
         #self.cities = self.load_cities()
 
         if self.__lang == 'de':
@@ -299,19 +313,16 @@ class textFilter:
         return data
     
    
-    def split_dataframe(self, chunk_size:int = 300) -> list:
+    def split_dataframe(self) -> list:
         """Helper function that splits loaded dataset into smaller chunks containing size "chunk_size" which is by default 300 samples.
-
-        Args:
-            chunk_size (int, optional): Size of DataFrame chunk. Defaults to 300.
 
         Returns:
             list: Returns a list of DataFrames each containting a sampleset of 300 samples. All DataFrames in list result in the total dataset.
         """
         chunks = list()
-        num_chunks = math.ceil(len(self.__data) / chunk_size)
+        num_chunks = math.ceil(len(self.__data) / self.__chunk_size)
         for i in range(num_chunks):
-            chunks.append(self.__data[i*chunk_size:(i+1)*chunk_size])
+            chunks.append(self.__data[i*self.__chunk_size:(i+1)*self.__chunk_size])
         return chunks
 
     

@@ -29,19 +29,26 @@ class TOPIC_KMeans:
     """Class to predict predefined clusters (topics/classes) with kMeans Algorithm based on predefined fixed centroids.
     The centroids are based on TOPIC_Classes.xlsx with cleaned and generated topics in topiced_classes.feather 
     """
-    def __init__(self,lang:str ,topics_path:str,data_path:str, nbr_clusters = 7):
-        """Initialisation of a cluster generator object. Loads predefined clusters and cleaned texts to predict clusters on.
-
+    def __init__(self,lang:str ,topics_path:str= None,data_path:str=None, nbr_clusters:int = 7):
+         """Initialisation of a cluster generator object. Loads predefined clusters and cleaned texts to predict clusters on.
+         
         Args:
-            lang(str):unicode of language selected texts to create cluster with 
-            topics_path (str): Path to predefined cluster data.
-            data_path (str): Source path to file containing cleaned texts and generated topics to predict cluster.
+            lang (str): Unicode of language selected texts to create cluster with.
+            topics_path (str, optional): Path to predefined cluster data. Defaults to None.
+            data_path (str, optional):  Source path to file containing cleaned texts and generated topics to predict cluster. Defaults to None.
+            nbr_clusters (int, optional): Numbers of cluster which is equivalent to the number of classes for automated labeling. Defaults to 7.
         """
-        self.__topics = self.__load_centroids(topics_path)
-        self.__raw_data = self.__load_data(data_path)
         self.__lang = lang
         self.__number_clusters = nbr_clusters
-
+        if topics_path:
+            self.__topics = self.__load_centroids(topics_path)
+        else:
+            self.__topics = self.__load_centroids(r"files\topiced_classes_"+self.__lang+r".feather")
+        if data_path:
+            self.__raw_data = self.__load_data(data_path)
+        else:
+            self.__raw_data = self.__load_data(r"files\topiced_texts_"+self.__lang+r".feather")
+        
     def __load_centroids(self,source_path:str) -> pd.DataFrame:
         """Load data containing predefined clusters. The data contain the Cluster (CLASS), the url link (DOMAIN), 
         the url link (URL), the cleaned texts(URL_TEXT), the language of text (LANG) and the identfied topics (TOPIC).

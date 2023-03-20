@@ -23,9 +23,8 @@ from src.cleans.clean import *
 from src.cleans.topic_lda import *
 from src.automated_label.cluster_kmeans import *
 from src.automated_label.label import *
-from src.classifier import classifier_model
+from src.classifier.classifier_model import run as classifier_run
 from sys import exit
-
 
 def select_language() -> str:
     """Selection of language based processing. Selection between german and english text possible.
@@ -102,7 +101,7 @@ def execute_full_process(lang:str):
     crawl_data(lang)
     clean_data(lang)
     extract_topics(lang)
-    print("Plase check cata and identify classes!")
+    print("Plase check data and identify classes!")
     print("Classes identified? (y/n)")
     wrongAnswer = True
     while wrongAnswer:
@@ -127,7 +126,7 @@ def crawl_data(lang:str, number = 0, data_path = r'files\Seed.xlsx'):
     ###Crawl data of given Seed###
     seeder.crawl_data(lang)
 
-def clean_data(lang:str, data_path:str):
+def clean_data(lang:str, data_path:str = None):
     """Performs a cleanup of the text data of the previously crawled web pages or other specified database.
 
     Args:
@@ -135,11 +134,11 @@ def clean_data(lang:str, data_path:str):
         data_path(str): Selected path to the data to be used.
     """
     if os.path.exists(data_path):
-        textFilter(lang,data_path,r"files\cleaned_texts_"+lang+r".feather").run()
+        textFilter(lang = lang,s_path = data_path).run()
     else:
-        textFilter(lang,r"files\raw_texts_"+lang+r".feather",r"files\cleaned_texts_"+lang+r".feather").run()
+        textFilter(lang = lang).run()
     
-def extract_topics(lang:str, data_path:str, qty_topics =2):
+def extract_topics(lang:str, data_path:str = None):
     """Performs the extraction of topics based on the Latent Dirichlet Allocation algorithm
 
     Args:
@@ -147,11 +146,11 @@ def extract_topics(lang:str, data_path:str, qty_topics =2):
         data_path(str): Selected path to the data to be used.
     """
     if os.path.exists(data_path):
-        TopicExtractor(qty_topics,data_path,r"files\topiced_texts_"+lang+r".feather", lang).run()
+        TopicExtractor(s_path = data_path,lang = lang).run()
     else:
-        TopicExtractor(qty_topics,r"files\cleaned_texts_"+lang+r".feather",r"files\topiced_texts_"+lang+r".feather", lang).run()
+        TopicExtractor(lang = lang).run()
       
-def generate_kMeans(lang:str, data_path:str):
+def generate_kMeans(lang:str, data_path:str = None):
     """Trains a k-Means cluster with k=number of classes (user defined). The centroids are fixed points. The data basis of the centroids can be customized in Seed.xlsx.
 
     Args:
@@ -159,16 +158,16 @@ def generate_kMeans(lang:str, data_path:str):
         data_path(str): Selected path to the data to be used.
     """
     if os.path.exists(data_path):
-        textFilter(lang,data_path,r"files\cleaned_classes_"+lang+r".feather").run()
+        textFilter(lang = lang,s_path = data_path,t_path = r"files\cleaned_classes_"+lang+r".feather").run()
     else:
         seeder.crawl_centroids(lang)
-        textFilter(lang,r"files\raw_classes_"+lang+r".feather",r"files\cleaned_classes_"+lang+r".feather").run() 
+        textFilter(lang = lang,s_path = r"files\raw_classes_"+lang+r".feather",t_path = r"files\cleaned_classes_"+lang+r".feather").run() 
 
-    TopicExtractor(2,r"files\cleaned_classes_"+lang+r".feather",r"files\topiced_classes_"+lang+r".feather",lang,True).run()
-    TOPIC_KMeans(lang,r"files\topiced_classes_"+lang+r".feather",r"files\topiced_texts_"+lang+r".feather").run()
+    TopicExtractor(input_topic = 2,s_path = r"files\cleaned_classes_"+lang+r".feather",t_path = r"files\topiced_classes_"+lang+r".feather",lang = lang,zentroid = True).run()
+    TOPIC_KMeans(lang = lang ,t_path = r"files\topiced_classes_"+lang+r".feather",s_path = r"files\topiced_texts_"+lang+r".feather").run()
 
 
-def label_data(lang:str, data_path:str):
+def label_data(lang:str, data_path:str = None):
     """Performs labeling of input data and development of a label model based on the input data.
 
     Args:
@@ -186,19 +185,19 @@ def label_data(lang:str, data_path:str):
             wrongNumber = True
     if number == 1:
         if os.path.exists(data_path):
-            Labeler(lang,data_path,r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', False).run()
-            Labeler(lang,data_path,r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT', False).run()
+            Labeler(lang = lang,s_path = data_path, partial = False).run()
+            Labeler(lang = lang,s_path = data_path, column = 'URL_TEXT', partial = False).run()
         else:
-            Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', False).run()
-            Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT', False).run()
+            Labeler(lang = lang, partial = False).run()
+            Labeler(lang = lang, column = 'URL_TEXT', partial = False).run()
     elif number == 2:
-        generate_kMeans(lang)
+        generate_kMeans(lang=lang)
         if os.path.exists(data_path):
-            Labeler(lang,data_path,r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', True).run()
-            Labeler(lang,data_path,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT', True).run()
+            Labeler(lang = lang,s_path = data_path).run()
+            Labeler(lang = lang,s_path = data_path, column = 'URL_TEXT').run()
         else:
-            Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_TOPIC'+".feather",'TOPIC', True).run()
-            Labeler(lang,r"files\02_clean\topiced_texts_"+lang+".feather",r"files\04_classify\labeled_texts_"+lang+'_URL_TEXT'+".feather",'URL_TEXT', True).run()
+            Labeler(lang = lang).run()
+            Labeler(lang = lang, column = 'URL_TEXT').run()
 
 
 def classify_data(lang:str):
@@ -208,7 +207,7 @@ def classify_data(lang:str):
         lang (str): unicode of language specification for text processing, labeling and classification
         data_path(str): Selected path to the data to be used.
     """
-    classifier_model.run(lang, col = 'TOPIC')
+    classifier_run(lang, col = 'TOPIC')
 
 def main_menu(lang:str):
     """Main Menu defined for external user.
