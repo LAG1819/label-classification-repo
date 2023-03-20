@@ -57,7 +57,7 @@ classifier_run(lang =language, col = textcolumn_to_learn_classification)
 ```
 
 # Customize number of classes
-To change the number of classes the classifier needs to learn with one can simply create a classification run and set the parameter nbr_class
+To change the number of classes the classifier needs to learn with one can simply create a classification run and set the parameter nbr_class.
 
 ```Python3
 from src.classifier.classifier_model import run as classifier_run
@@ -93,7 +93,7 @@ classifier_run(lang ='de', col = 'TOPIC', num_cpu = number_cpu, num_gpu = number
 ```
 
 # Add or change hyperparameter optimization techniques
-To change of add other hyperparameter optimization techniques please read the latest documentation and guidlines of [Ray.Tune](https://docs.ray.io/en/latest/tune/index.html) and generate customized optimization techniques according to them.   
+To change or add other hyperparameter optimization techniques please read the latest documentation and guidlines of [Ray.Tune](https://docs.ray.io/en/latest/tune/index.html) and generate customized optimization techniques according to them.   
 To add a hyperparameter optimization technique it can simply added as parameter in the run function. 
 ```Python3
 import ray
