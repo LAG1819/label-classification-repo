@@ -104,7 +104,6 @@ To learn more about Snorkel visit [🚀 Snorkel.org](https://snorkel.org) or che
 
 
 # Change Dataset
-To use an alternative dataset for data cleansing, the same options as in Tutorial 01 and 02 can applied: Execute main and follow instructions or create a label class.  
 *Note: The dataset must be a .feather file*  
 
 ## Change kMeans data (for total data labeling)
@@ -113,7 +112,6 @@ There are two ways (1. and 2.) to change the dataset for kMeans and one option (
 2. Change k-Means dataset: Loading a customized file for the zentroids of kMeans. The customized zentroids can be cleaned and topics extracted if requested.
     ```Python3
       from src.automated_label.cluster_kmeans import *
-      from src.automated_label.label import *
 
       language = 'de'
       adjusted_path_kMeans_data = r"my\desired\path\file.feather"
@@ -127,20 +125,21 @@ There are two ways (1. and 2.) to change the dataset for kMeans and one option (
    ```
 
 ## Change data to label (for total and partial data labeling)
-To perform a partial data labeling only the label model has to be started.
-
-Change label dataset: Loading a customized file for automated labeling.  
-
+    To use an alternative dataset for data cleansing, the same options as in Tutorial 01 and 02 can applied: Execute main and follow instructions or create a label class.  
+    
     ```Python3
-      adjusted_path_for_label_data = r"my\other\desired\path\file.feather"
-      selected_text_column = 'MY_TEXT'
-      language = 'de'
 
-      labelModel_tarining_and_application = Labeler(lang,s_path = adjusted_path_for_label_data, column = selected_text_column)
-      labelModel_tarining_and_application.run()
+        from src.automated_label.label import *
 
-      Out: Train, Test and Validate Dataset were generated. Please label train and validate data before further proceeding!
-      Out: No labeled Test and Validate data exist! Please label generated train and test data file, stored in files/03_label/
-       ```
+        adjusted_path_for_label_data = r"my\other\desired\path\file.feather"
+        selected_text_column = 'MY_TEXT'
+        language = 'de'
+
+        labelModel_tarining_and_application = Labeler(lang,s_path = adjusted_path_for_label_data, column = selected_text_column)
+        labelModel_tarining_and_application.run()
+
+        Out: Train, Test and Validate Dataset were generated. Please label train and validate data before further proceeding!
+        Out: No labeled Test and Validate data exist! Please label generated train and test data file, stored in files/03_label/
+      ```
 The framework automatically generates training-, test- and validationset (ratio: 60 -20 -20) after this execution and stops the further execution with the displayed output.  
 The test- and validationset must then be labeled manually (by a domain expert). After the labeling is done, the process can be started again.
