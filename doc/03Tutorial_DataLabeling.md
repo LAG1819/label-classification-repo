@@ -108,6 +108,7 @@ To use an alternative dataset for data cleansing, the same options as in Tutoria
 *Note: The dataset must be a .feather file*  
 
 ## Total data labeling
+There are two ways (1. and 2.) to change the dataset for kMeans and one option (3.) to change the dataset for the automated labeling. 
 1. Change k-Means dataset: Change selected centroids for k-Means in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx). Each centroid represents one class labels. Execute main after adaption.
 2. Change k-Means dataset: Loading a customized file for the zentroids of kMeans. The customized zentroids can be cleaned and topics extracted if requested.
     ```Python3
