@@ -200,14 +200,15 @@ from src.automated_label.label import *
 
 language = 'de'
 
+name_my_custom_hpo = 'custom_hpo'
 def my_custom_hpo(training_set, test_set, Y_test_set, k_fold, split_i):
     #do something
 
 # add new hyperparameter optimization techniques
-my_labeler = Labeler(lang = language, hpos = [(name_my_custom_hpo:str, my_custom_hpo:function)])
+my_labeler = Labeler(lang = language, hpos = [(name_my_custom_hpo, my_custom_hpo)])
 
 # overwrite and assign only new hyperparameter optimization techniques
-my_labeler.hpo_list = [(name_my_custom_hpo:str, my_custom_hpo:function)]
+my_labeler.hpo_list = [(name_my_custom_hpo, my_custom_hpo)]
 
 my_labaler.run()
 
