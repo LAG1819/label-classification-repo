@@ -16,7 +16,7 @@ To learn more about Snorkel visit [🚀 Snorkel.org](https://snorkel.org) or che
 2. [Change path to a customized dataset.](#change-dataset)
     1. [kMeans](#change-kmeans-data-for-total-data-labeling)
     2. [Automated Labeling](#change-data-to-label-for-total-and-partial-data-labeling)
-3. [Customize Classes to label with.]()
+3. [Customize Classes to label with.](#customize-class-labels)
 4. [Add Labeling Functions.]()
 5. [Add custom hyperparameter optimization techniques]()
 
@@ -147,3 +147,22 @@ The framework automatically generates training-, test- and validationset (ratio:
 The test- and validationset must then be labeled manually (by a domain expert). After the labeling is done, the process can be started again.  
 
 # Customize Class labels
+In order to generate new or own classes for the data labeling, the class variables of an customized class can simply be set up. The customized class inherits from the Labeler class.
+*Attention: The labeling functions must also be adapted accordingly!*
+
+```Python3
+from src.automated_label.label import *
+
+class CustomLabeler(Labeler):
+    CUSTOM_CLASS = 0
+    CUSTOM_CLASS = 1
+    .
+    .
+    .
+```
+
+# Add Labeling Functions
+In order for new labeling functions to be applied, they must first be generated. These can be easily added to the list lfs of a Labeler instance.
+
+```Python3
+```
