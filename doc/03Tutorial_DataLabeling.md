@@ -124,9 +124,9 @@ There are two ways (1. and 2.) to change the dataset for kMeans and one option (
       TOPIC_KMeans(lang = language ,r"files\topiced_classes_"+language+r".feather",r"files\topiced_texts_"+language+r".feather").run()
    ```
 
-## Change data to label (for total and partial data labeling)
-    To use an alternative dataset for data cleansing, the same options as in Tutorial 01 and 02 can applied: Execute main and follow instructions or create a label class.  
-    
+## Change data to label (for total and partial data labeling)  
+To use an alternative dataset for data cleansing, the same options as in Tutorial 01 and 02 can applied: Execute main and follow instructions or create a label class.  
+
     ```Python3
 
         from src.automated_label.label import *
