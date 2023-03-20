@@ -8,12 +8,12 @@ The underlying processes and documentation can be found in [clean.py](https://gi
 
 # Table of Contents
 1. [Data Cleansing](#data-cleansing)    
-    1. [Start a complete DataCleansing](#start-data-cleansing)
+    1. [Start a complete Data Cleansing](#start-data-cleansing)
     2. [Change path to a customized dataset](#change-dataset)
     3. [Customize Stopwords](#customize-stopwords)
     4. [Customize Pattern](#customize-pattern)
-    5. [Change data chunks in data cleansing](#change-chunking-of-dataset-for-data-cleansing)
-    6. [Add Function for data cleansing](#add-data-cleansing-function)
+    5. [Change data chunks in Data Cleansing](#change-chunking-of-dataset-for-data-cleansing)
+    6. [Add Function for Data Cleansing](#add-data-cleansing-function)
 2. [Topic Extraction](#topic-Extraction)
     1. [Start a complete Topic Extraction](#start-topic-extraction)
     2. [Change path to a customized dataset](#change-dataset-1)
@@ -51,9 +51,9 @@ The underlying processes and documentation can be found in [clean.py](https://gi
    ```
 
 ## Change Dataset
-To use an alternative data set for data cleansing, the following two options can be applied.  
+To use an alternative dataset for data cleansing, the following two options can be applied.  
 *Note: The dataset must be a .feather file.*
-#### 1. Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) in terminal and the main menu will show up.
+#### Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) in terminal and the main menu will show up.
   ```console
    python3 ml-classification-repo
   ```
@@ -84,7 +84,7 @@ To use an alternative data set for data cleansing, the following two options can
       Please insert absolute path (str) to custom data. Supported extensions right now are (.feather, .xlsx, .csv):
       r"my\desired\path\file.xlsx"
    ```
-#### 2. Create a TextFilter Class and change path
+#### Create a TextFilter Class and change path
      ```Python3
       from src.cleans.clean import *
 
