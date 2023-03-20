@@ -4,7 +4,9 @@ In this tutorial you will find a short introduction on how to perform web crawli
 **Note: The input data used here are sample data.**
 
 The goal is to generate a sample dataset based on a customizable list of keywords/topics and url used by the topic- and seed-based WebCrawler.
-The keywords/topics and url can be customized in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx). Please check further information in the sections below.
+The underlying processes and documentation can be found in [seed_scraper.py](https://github.com/LGHDM/ml-classification-repo/blob/main/src/topic_scrape/seed_scraper.py) and in [seeder.py](https://github.com/LGHDM/ml-classification-repo/blob/main/src/url_scrape/url_scrape/spiders/seeder.py)
+The keywords/topics and url can be customized in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx).  
+
 # Table of Contents
 1. [Start a complete WebCrawling](#start-crawling)
 2. [Change path to a customized seed.xlsx](#change-the-path-to-a-custom-seedxlsx-file)
