@@ -1,6 +1,6 @@
 # Tutorial 02: DataCleansing and how to add additional cleansing
 
-In this tutorial it will be shown how a text cleanup of texts can be done using the framework presented here.
+In this tutorial it will be shown how a text cleanup of texts can be done using the framework presented here.  
 **Note: The input data used here are sample data.**
 
 The goal is to achieve a cleanup of the input texts that is as comprehensive as possible.
