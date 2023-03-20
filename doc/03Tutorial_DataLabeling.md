@@ -3,7 +3,7 @@
 In this tutorial you will find a short introduction on how to train and apply a Snorkel Label Model including customized Labeling Functions.
 
 To learn more about Snorkel visit [🚀 Snorkel.org](https://snorkel.org) or check out the [Snorkel API documentation](https://snorkel.readthedocs.io/).  
-  
+
 **Note: The input data used here are sample data.**  
   
 
@@ -104,7 +104,7 @@ To learn more about Snorkel visit [🚀 Snorkel.org](https://snorkel.org) or che
 
 
 # Change Dataset
-To use an alternative dataset for data cleansing, the same options as in Tutorial 01 and 02 can applied: Execute main and follow instructions or create a label class. 
+To use an alternative dataset for data cleansing, the same options as in Tutorial 01 and 02 can applied: Execute main and follow instructions or create a label class.  
 *Note: The dataset must be a .feather file*  
 
 ## Total data labeling
