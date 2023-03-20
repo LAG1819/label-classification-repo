@@ -13,6 +13,8 @@ The underlying processes and documentation can be found in [clean.py](https://gi
     3. [Customize Stopwords](#customize-stopwords)
     4. [Add Function for data cleansing](#add-data-cleansing-function)
 2. [Topic Extraction](#topic-Extraction)
+    1. [Start a complete Topic Extraction](#start-topic-extraction)
+    2. [Change path to a customized dataset](#change-dataset-1)
 
 # Data Cleansing 
 ## Start Data Cleansing
