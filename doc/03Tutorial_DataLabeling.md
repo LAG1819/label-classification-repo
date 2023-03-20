@@ -17,8 +17,8 @@ To learn more about Snorkel visit [🚀 Snorkel.org](https://snorkel.org) or che
     1. [kMeans](#change-kmeans-data-for-total-data-labeling)
     2. [Automated Labeling](#change-data-to-label-for-total-and-partial-data-labeling)
 3. [Customize Classes to label with.](#customize-class-labels)
-4. [Add Labeling Functions.]()
-5. [Add custom hyperparameter optimization techniques]()
+4. [Add Labeling Functions.](#add-labeling-functions)
+5. [Add custom hyperparameter optimization techniques](#add-hyperparameter-optimization-techniques)
 
 
 # Start Automated Labeling and Label Modell training
@@ -122,8 +122,18 @@ INSERT GIF.
       TopicExtractor(input_topic = 2,s_path = r"files\cleaned_classes_"+lang+r".feather",t_path = r"files\topiced_classes_"+lang+r".feather",lang = language,zentroid = True).run()
       
       #actual k means generation
-      TOPIC_KMeans(lang = language ,r"files\topiced_classes_"+language+r".feather",r"files\topiced_texts_"+language+r".feather").run()
+      TOPIC_KMeans(lang = language).run()
     ```
+Alternatively if custom data set containing zentroids are already cleaned: 
+```Python3
+from src.automated_label.cluster_kmeans import *
+
+language = 'de'
+adjusted_path_kMeans_data = r"my\desired\path\file.feather"
+
+#actual k means generation
+TOPIC_KMeans(lang = language, topics_path = adjusted_path_kMeans_data ).run()
+```
 
 ## Change data to label (for total and partial data labeling)  
 To use an alternative dataset for data cleansing, the same options as in Tutorial 01 and 02 can applied: Execute main and follow instructions or create a label class.   
@@ -154,8 +164,8 @@ In order to generate new or own classes for the data labeling, the class variabl
 from src.automated_label.label import *
 
 class CustomLabeler(Labeler):
-    CUSTOM_CLASS = 0
-    CUSTOM_CLASS = 1
+    CUSTOM_CLASS1 = 0
+    CUSTOM_CLASS2 = 1
     .
     .
     .
@@ -165,4 +175,40 @@ class CustomLabeler(Labeler):
 In order for new labeling functions to be applied, they must first be generated. These can be easily added to the list lfs of a Labeler instance.
 
 ```Python3
+from src.automated_label.label import *
+
+language = 'de'
+
+def my_custom_lf():
+    #do something
+
+my_labeler = Labeler(lang = language)
+
+#add new labeling fucntions
+my_labeler.lfs += [my_custom_lf]
+
+#overwrite and assign only new labeling functions
+my_labeler.lfs = [my_custom_lf]
+
+my_labeler.run()
+```
+
+# Add hyperparameter optimization techniques
+Adding more hyperparameter optimization techniques is done quite similar as adding more labeling functions.
+```Python3
+from src.automated_label.label import *
+
+language = 'de'
+
+def my_custom_hpo(training_set, test_set, Y_test_set, k_fold, split_i):
+    #do something
+
+# add new hyperparameter optimization techniques
+my_labeler = Labeler(lang = language, hpos = [(name_my_custom_hpo:str, my_custom_hpo:function)])
+
+# overwrite and assign only new hyperparameter optimization techniques
+my_labeler.hpo_list = [(name_my_custom_hpo:str, my_custom_hpo:function)]
+
+my_labaler.run()
+
 ```
