@@ -11,7 +11,9 @@ The underlying processes and documentation can be found in [clean.py](https://gi
     1. [Start a complete DataCleansing](#start-data-cleansing)
     2. [Change path to a customized dataset](#change-dataset)
     3. [Customize Stopwords](#customize-stopwords)
-    4. [Add Function for data cleansing](#add-data-cleansing-function)
+    4. [Customize Pattern](#customize-pattern)
+    5. [Change data chunks in data cleansing](#change-chunking-of-dataset-for-data-cleansing)
+    6. [Add Function for data cleansing](#add-data-cleansing-function)
 2. [Topic Extraction](#topic-Extraction)
     1. [Start a complete Topic Extraction](#start-topic-extraction)
     2. [Change path to a customized dataset](#change-dataset-1)
@@ -49,7 +51,7 @@ The underlying processes and documentation can be found in [clean.py](https://gi
    ```
 
 ## Change Dataset
-To use an alternative data set for data cleansing, the following two options can be applied. 
+To use an alternative data set for data cleansing, the following two options can be applied.  
 *Note: The dataset must be a .feather file.*
 #### 1. Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) in terminal and the main menu will show up.
   ```console
@@ -91,19 +93,6 @@ To use an alternative data set for data cleansing, the following two options can
 
       text_filter = textFilter(language,s_path = adjusted_path)
       text_filter.run()
-
-   ```
-## Change chunking of dataset for DataCleansing
-The given dataset is split by default into chunks of size 300 sample during data cleansing to achieve a higher execution rate and to achieve a low loss rate in case of process interruptions. The chunk size can be adjusted.
-
-    ```Python3
-      from src.cleans.clean import *
-
-      language = 'de'
-      desired_chunk_size = 1200
-
-      text_filter = textFilter(language, chunk_size = desired_chunk_size)
-      text_filter.run()
    ```
 
 ## Customize Stopwords
@@ -130,6 +119,20 @@ To use an additional set of pattern that needs to be removed during data cleansi
       my_pattern_list = ["rgx41","njpk"]
 
       text_filter = textFilter(language,pattern = my_pattern_list)
+      text_filter.run()
+   ```
+
+
+## Change chunking of dataset for Data Cleansing
+The given dataset is split by default into chunks of size 300 sample during data cleansing to achieve a higher execution rate and to achieve a low loss rate in case of process interruptions. The chunk size can be adjusted.
+
+    ```Python3
+      from src.cleans.clean import *
+
+      language = 'de'
+      desired_chunk_size = 1200
+
+      text_filter = textFilter(language, chunk_size = desired_chunk_size)
       text_filter.run()
    ```
 
