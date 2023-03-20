@@ -109,6 +109,7 @@ To learn more about Snorkel visit [🚀 Snorkel.org](https://snorkel.org) or che
 ## Change kMeans data (for total data labeling)
 There are two ways (1. and 2.) to change the dataset for kMeans and one option (3.) to change the dataset for the automated labeling. 
 1. Change k-Means dataset: Change selected centroids for k-Means in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx). Each centroid represents one class labels. Execute main after adaption.
+INSERT GIF.
 2. Change k-Means dataset: Loading a customized file for the zentroids of kMeans. The customized zentroids can be cleaned and topics extracted if requested.
     ```Python3
       from src.automated_label.cluster_kmeans import *
@@ -122,13 +123,13 @@ There are two ways (1. and 2.) to change the dataset for kMeans and one option (
       
       #actual k means generation
       TOPIC_KMeans(lang = language ,r"files\topiced_classes_"+language+r".feather",r"files\topiced_texts_"+language+r".feather").run()
-   ```
+    ```
 
 ## Change data to label (for total and partial data labeling)  
-To use an alternative dataset for data cleansing, the same options as in Tutorial 01 and 02 can applied: Execute main and follow instructions or create a label class.  
+To use an alternative dataset for data cleansing, the same options as in Tutorial 01 and 02 can applied: Execute main and follow instructions or create a label class.   
+
 
     ```Python3
-
         from src.automated_label.label import *
 
         adjusted_path_for_label_data = r"my\other\desired\path\file.feather"
@@ -140,6 +141,9 @@ To use an alternative dataset for data cleansing, the same options as in Tutoria
 
         Out: Train, Test and Validate Dataset were generated. Please label train and validate data before further proceeding!
         Out: No labeled Test and Validate data exist! Please label generated train and test data file, stored in files/03_label/
-      ```
-The framework automatically generates training-, test- and validationset (ratio: 60 -20 -20) after this execution and stops the further execution with the displayed output.  
-The test- and validationset must then be labeled manually (by a domain expert). After the labeling is done, the process can be started again.
+    ```
+
+The framework automatically generates training-, test- and validationset (ratio: 60 -20 -20) after this execution and stops the further execution with the displayed output.   
+The test- and validationset must then be labeled manually (by a domain expert). After the labeling is done, the process can be started again.  
+
+# Customize Class labels
