@@ -129,7 +129,8 @@ There are two ways (1. and 2.) to change the dataset for kMeans and one option (
 ## Change data to label (for total and partial data labeling)
 To perform a partial data labeling only the label model has to be started.
 
-Change label dataset: Loading a customized file for automated labeling.
+Change label dataset: Loading a customized file for automated labeling.  
+
     ```Python3
       adjusted_path_for_label_data = r"my\other\desired\path\file.feather"
       selected_text_column = 'MY_TEXT'
