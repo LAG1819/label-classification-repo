@@ -44,21 +44,23 @@ def load_clean_data():
 def load_labeled_data():
     """Load labeled data and print data shapes.
     """
-    labeled_en_TOPIC = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\04_classify\labeled_texts_en_TOPIC.feather")
-    labeled_de_TOPIC = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\04_classify\labeled_texts_de_TOPIC.feather")
+    for experiment in ['\Experiment1', '\Experiment2']:
+        labeled_en_TOPIC = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\04_classify"+experiment+"\labeled_texts_en_TOPIC.feather")
+        labeled_de_TOPIC = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\04_classify"+experiment+"\labeled_texts_de_TOPIC.feather")
 
-    labeled_en_URL_TEXT = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\04_classify\labeled_texts_en_URL_TEXT.feather")
-    labeled_de_URL_TEXT = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\04_classify\labeled_texts_de_URL_TEXT.feather")
+        labeled_en_URL_TEXT = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\04_classify"+experiment+"\labeled_texts_en_URL_TEXT.feather")
+        labeled_de_URL_TEXT = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r"files\04_classify"+experiment+"\labeled_texts_de_URL_TEXT.feather")
 
-    print(labeled_en_TOPIC.shape)
-    print(labeled_en_URL_TEXT.shape)
-    print(labeled_de_TOPIC.shape)
-    print(labeled_de_URL_TEXT.shape)
+        print(experiment,":")
+        print("TOPIC, EN: ",labeled_en_TOPIC.shape)
+        print("URL_TEXT, EN: ",labeled_en_URL_TEXT.shape)
+        print("TOPIC, DE: ",labeled_de_TOPIC.shape)
+        print("URL_TEXT, DE: ",labeled_de_URL_TEXT.shape)
 
 def load_eval_data_automated_label():
     """Load results of labeled data and results of coverage of labeled data and generate graphics of each. Saves graphis in images folder.
     """
-    for experiment in ['\Experiment1']:#, '\Experiment2']:
+    for experiment in ['\Experiment1', '\Experiment2']:
         for lang in ['de','en']:
             for text_col in ['TOPIC', 'URL_TEXT']:
                 # coverage = pd.read_feather(str(os.path.dirname(__file__)).split("ml-classification-repo")[0]+r'backup\models\label\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
@@ -249,11 +251,10 @@ def make_tarfile(output_filename:str, source_dir:str):
 
 # load_raw_data()
 # load_clean_data()
-# load_labeled_data()
-load_eval_data_automated_label()
+load_labeled_data()
+# load_eval_data_automated_label()
 # calculate_runtime((2023,3,12,2,26,46,9,8,1),(2023,3,12,20,38,32,2,7,5))
 # make_tarfile("compressed_ml-classification-repo","ml-classification-repo")
-
 
 
 #remove wrong results automated labeling 

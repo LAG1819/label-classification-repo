@@ -13,8 +13,12 @@ src/archive/*
 *.pdf
 !Seed*
 !files/03_label/k_Means/*
-models/classification/pytorch_tuning_de/*
-models/classification/pytorch_tuning_en/*
+models/classification/Experiment1/pytorch_tuning_de/*
+models/classification/Experiment1/pytorch_tuning_en/*
+models/classification/Experiment1/temp/*
+models/classification/Experiment2/pytorch_tuning_de/*
+models/classification/Experiment2/pytorch_tuning_en/*
+models/classification/Experiment2/temp/*
 models/classification/temp*
 models/label/model_tuning_de/*
 models/label/model_tuning_en/*
