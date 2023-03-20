@@ -1,4 +1,4 @@
-# Intro Tutorial: Classify Data with a pretrained BERT
+# Tutorial 04: Classify Data with a pretrained BERT
 
 In this tutorial you will find a short introduction on how to train and apply a pretrained BERT-model including Hyperparameteroptimization. 
 
