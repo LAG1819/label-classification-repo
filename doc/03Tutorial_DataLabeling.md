@@ -3,7 +3,10 @@
 In this tutorial you will find a short introduction on how to train and apply a Snorkel Label Model including customized Labeling Functions.
 
 To learn more about Snorkel visit [🚀 Snorkel.org](https://snorkel.org) or check out the [Snorkel API documentation](https://snorkel.readthedocs.io/).  
-**Note: The input data used here are sample data.**
+  
+**Note: The input data used here are sample data.**  
+  
+
 **Important note: If a user-defined data set is entered, the frame work generates a training, test and validation data set from it (ratio: 60 -20 -20). The test and validation data set (marked as label_testes.xlsx and label_valset.xlsx files) are stored in the [files](https://github.com/LGHDM/ml-classification-repo/blob/main/files/03_label/). These must then be labeled manually (by a domain expert). After the labeling is done, the process can be started again and a label model is developed.**
 
 # Table of Contents
