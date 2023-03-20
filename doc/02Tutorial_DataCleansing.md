@@ -47,6 +47,8 @@ The underlying processes and documentation can be found in [clean.py](https://gi
    ```
 
 ## Change Dataset
+To use an alternative data set for data cleansing, the following two options can be applied. 
+*Note: The dataset must be a .feather file.*
 #### 1. Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) in terminal and the main menu will show up.
   ```console
    python3 ml-classification-repo
@@ -83,7 +85,7 @@ The underlying processes and documentation can be found in [clean.py](https://gi
       from src.cleans.clean import *
 
       language = 'de'
-      adjusted_path = r"my\desired\path\file.xlsx"
+      adjusted_path = r"my\desired\path\file.feather"
 
       text_filter = textFilter(language,s_path = adjusted_path)
       text_filter.run()
@@ -103,6 +105,8 @@ The given dataset is split by default into chunks of size 300 sample during data
    ```
 
 ## Customize Stopwords
+To use an additional set of stopwords that needs to be removed during data cleansing, the following option can be applied. 
+
 #### Create a TextFilter Class and add custom stopwords list
     ```Python3
       from src.cleans.clean import *
@@ -115,6 +119,7 @@ The given dataset is split by default into chunks of size 300 sample during data
    ```
 
 ## Customize Pattern
+To use an additional set of pattern that needs to be removed during data cleansing, the following option can be applied. 
 #### Create a TextFilter Class and add custom pattern list
     ```Python3
       from src.cleans.clean import *
@@ -182,7 +187,10 @@ Currently the only way to change the data cleansing or to add another function f
     n
    ```
 
-## Change input dataset
+## Change Dataset
+To use an alternative data set for data cleansing, the following two options can be applied. 
+*Note: The dataset must be a .feather file.*
+#### 1. Start [main](https://github.com/LGHDM/ml-classification-repo/blob/main/__main__.py) in terminal and the main menu will show up.
  ```console
    python3 ml-classification-repo
   ```
@@ -211,10 +219,21 @@ Currently the only way to change the data cleansing or to add another function f
       Take custom data? (y/n)
       y
       Please insert absolute path (str) to custom data. Supported extensions right now are (.feather, .xlsx, .csv):
-      r"my\desired\path\file.xlsx"
+      r"my\desired\path\file.feather"
+   ```
+#### 2. Create a TopicExtractor Class and change path
+     ```Python3
+      from src.cleans.topic_lda import *
+
+      language = 'de'
+      adjusted_path = r"my\desired\path\file.feather"
+
+      topic_extractor = TopicExtractor(lang = language, s_path = adjusted_path).run()
+
    ```
 
 ## Change number of topics
+To extract the desired number of topics from the dataset, the following procedure can be used:
 ```Python3
       from src.cleans.topic_lda import *
 
