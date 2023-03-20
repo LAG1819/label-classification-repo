@@ -3,7 +3,9 @@
 In this tutorial you will find a short introduction on how to train and apply a pretrained BERT-model including Hyperparameteroptimization. 
 
 To learn more about PyTorch for model customizations check out [PyTorch.org ](https://pytorch.org/).  
-To learn more about the unlimited possibilities of pre-trained Machine Learning models please check out the HuggingFace community on [:hugs: HuggingFace.co](https://huggingface.co/)
+To learn more about the unlimited possibilities of pre-trained Machine Learning models please check out the HuggingFace community on [:hugs: HuggingFace.co](https://huggingface.co/)  
+  
+Current supported languages are German (de) and English (en).
 
 # Table of Contents
 1. [Start a complete Classification training](#start-classification-training)
@@ -51,7 +53,7 @@ from src.classifier.classifier_model import run as classifier_run
 language = 'de'
 textcolumn_to_learn_classification = 'TOPIC'
 
-classifier_run(lang ='de', col = 'TOPIC')
+classifier_run(lang =language, col = textcolumn_to_learn_classification)
 ```
 
 # Customize number of classes
@@ -64,7 +66,7 @@ language = 'de'
 textcolumn_to_learn_classification = 'TOPIC'
 desired_number_classes = 3
 
-classifier_run(lang ='de', col = 'TOPIC', nbr_class = desired_number_classes)
+classifier_run(lang =language, col = textcolumn_to_learn_classification, nbr_class = desired_number_classes)
 ```
 
 # Customizer parameter of ressources usage
