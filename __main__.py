@@ -26,6 +26,7 @@ from src.automated_label.label import *
 from src.classifier.classifier_model import run as classifier_run
 from sys import exit
 
+
 def select_language() -> str:
     """Selection of language based processing. Selection between german and english text possible.
 
@@ -120,11 +121,13 @@ def crawl_data(lang:str, data_path:str):
         data_path(str): Selected path to the data to be used. 
     """
      ###Get Top 10 Search Results per Keyword -> Save url in Seed.feather###
+    print("Topic Scraping started.")
     if data_path:
         TopicScraper(lang,data_path).run()
     else: 
-        TopicScraper(lang,r'files\Seed.xlsx').run()
+        TopicScraper(lang).run()
 
+    print("Seed Scraping started.")
     ###Crawl data of given Seed###
     seeder.crawl_data(lang)
 
