@@ -38,7 +38,7 @@ nltk.download('stopwords')
 class TopicExtractor:
     """Class to identify topics of cleand texts (cleaned_texts.feather) based on LDA(LatentDirichletAllocation) algorithm. 
     """
-    def __init__(self, input_topic: int = 2, s_path:str = None,t_path:str = None, lang:str, zentroid:bool = False):
+    def __init__(self,lang:str, input_topic: int = 2, s_path:str = None,t_path:str = None, zentroid:bool = False):
         """Initialisation of a topic generator object. 
         Args:
             s_path (str): source path to file containing cleaned texts to identify topics
