@@ -51,25 +51,21 @@ def select_language() -> str:
     return lang
     
 
-def select_database() -> str:
-    print("Please insert absolute path (str) to custom data. Supported extensions right now are (.feather, .xlsx, .csv):")
+def select_database(nbr_execution:int) -> str:
     wrongPath = True
     df = None
-    while wrongPath:
-        wrongPath = False
-        path = str(input())
-        if not os.path.exists(path):
-            wrongPath = True
-            print("Path could not be found. Please retry!")
-        else:
+    while wrongPath: 
+        path = input("Please insert path (C:/User/absolute/path/data_folder/data.feather) to custom data. Supported extensions right now are [.feather, .xlsx, .csv]:")
+        if os.path.exists(path):
+            wrongPath = False
             try:        
                 if path.lower().endswith(('.feather')):
-                    df = pd.read_feather(path)
+                    df = pd.read_feather(os.path.join(os.path.dirname(__file__), path))
                 if path.lower().endswith(('.xlsx')):
-                    df = pd.read_excel(path, header = 0)
+                    df = pd.read_excel(os.path.join(os.path.dirname(__file__), path), header = 0)
                 if path.lower().endswith(('.csv')):
-                    df = pd.read_csv(path, header = 0)
-                path_to_save = str(os.path.dirname(__file__)) + r"files\custom_data.feather"
+                    df = pd.read_csv(os.path.join(os.path.dirname(__file__), path), header = 0)
+                path_to_save = str(os.path.dirname(__file__)) + r"\files\custom_data.feather"
                 df.to_feather(path_to_save)
                 return path_to_save
             except Exception as e:
@@ -86,7 +82,11 @@ def select_database() -> str:
                 
                 if selection == "n":
                     return
-                wrongPath = True
+                wrongPath = True            
+        else:
+            wrongPath = True
+            print("Path could not be found. Please retry!")
+            
            
 
 def end_session():
@@ -110,12 +110,11 @@ def execute_full_process(lang:str):
     while wrongAnswer:
         decision = str(input())
         if decision == "y":
-            wrongAnswer = False
-   
+            wrongAnswer = False   
     label_data(lang)
     classify_data(lang)
 
-def crawl_data(lang:str, data_path:str):
+def crawl_data(lang:str, data_path:str=None):
     """Runs a combination of two WebCrawlers to crawl web pages. The seed of the WebCrawlers is defined in Seed.xlsx.
 
     Args:
@@ -125,7 +124,7 @@ def crawl_data(lang:str, data_path:str):
      ###Get Top n Search Results per Keyword -> Save url in Seed.feather###
     print("Topic Scraping started.")
     if data_path:
-        TopicScraper(lang,data_path).run()
+        TopicScraper(lang,s_path = data_path).run()
     else: 
         TopicScraper(lang).run()
 
@@ -141,7 +140,8 @@ def clean_data(lang:str, data_path:str = None):
         data_path(str): Selected path to the data to be used.
     """
     if os.path.exists(data_path):
-        textFilter(lang = lang,s_path = data_path).run()
+        path = data_path.split("ml-classification-repo\\")[-1]
+        textFilter(lang = lang,s_path = path).run()
     else:
         textFilter(lang = lang).run()
     
@@ -153,7 +153,8 @@ def extract_topics(lang:str, data_path:str = None):
         data_path(str): Selected path to the data to be used.
     """
     if os.path.exists(data_path):
-        TopicExtractor(s_path = data_path,lang = lang).run()
+        path = data_path.split("ml-classification-repo\\")[-1]
+        TopicExtractor(s_path = path,lang = lang).run()
     else:
         TopicExtractor(lang = lang).run()
       
@@ -165,13 +166,14 @@ def generate_kMeans(lang:str, data_path:str = None):
         data_path(str): Selected path to the data to be used.
     """
     if os.path.exists(data_path):
-        textFilter(lang = lang,s_path = data_path,t_path = r"files\cleaned_classes_"+lang+r".feather").run()
+        path = data_path.split("ml-classification-repo\\")[-1]
+        textFilter(lang = lang,s_path = path,t_path = r"files\cleaned_classes_"+lang+r".feather").run()
     else:
         seeder.crawl_centroids(lang)
         textFilter(lang = lang,s_path = r"files\raw_classes_"+lang+r".feather",t_path = r"files\cleaned_classes_"+lang+r".feather").run() 
 
     TopicExtractor(input_topic = 2,s_path = r"files\cleaned_classes_"+lang+r".feather",t_path = r"files\topiced_classes_"+lang+r".feather",lang = lang,zentroid = True).run()
-    TOPIC_KMeans(lang = lang ,t_path = r"files\topiced_classes_"+lang+r".feather",s_path = r"files\topiced_texts_"+lang+r".feather").run()
+    TOPIC_KMeans(lang = lang , data_path= r"files\topiced_texts_"+lang+r".feather",topics_path = r"files\topiced_classes_"+lang+r".feather").run()
 
 
 def label_data(lang:str, data_path:str = None):
@@ -192,29 +194,35 @@ def label_data(lang:str, data_path:str = None):
             wrongNumber = True
     if number == 1:
         if os.path.exists(data_path):
-            Labeler(lang = lang,s_path = data_path, partial = False).run()
-            Labeler(lang = lang,s_path = data_path, column = 'URL_TEXT', partial = False).run()
+            path = data_path.split("ml-classification-repo\\")[-1]
+            Labeler(lang = lang,s_path = path, partial = False).run()
+            Labeler(lang = lang,s_path = path, column = 'URL_TEXT', partial = False).run()
         else:
             Labeler(lang = lang, partial = False).run()
             Labeler(lang = lang, column = 'URL_TEXT', partial = False).run()
     elif number == 2:
         generate_kMeans(lang=lang)
         if os.path.exists(data_path):
-            Labeler(lang = lang,s_path = data_path).run()
-            Labeler(lang = lang,s_path = data_path, column = 'URL_TEXT').run()
+            path = data_path.split("ml-classification-repo\\")[-1]
+            Labeler(lang = lang,s_path = path).run()
+            Labeler(lang = lang,s_path = path, column = 'URL_TEXT').run()
         else:
             Labeler(lang = lang).run()
             Labeler(lang = lang, column = 'URL_TEXT').run()
 
 
-def classify_data(lang:str):
+def classify_data(lang:str, data_path:str):
     """Performs development and training of a BERT-based text classifier based on labeled input data. 
 
     Args:
         lang (str): unicode of language specification for text processing, labeling and classification
         data_path(str): Selected path to the data to be used.
     """
-    classifier_run(lang, col = 'TOPIC')
+    if os.path.exists(data_path):
+        path = path = data_path.split("ml-classification-repo\\")[-1]
+        classifier_run(lang = lang, data_path = path,col = 'TOPIC')
+    else: 
+        classifier_run(lang = lang, col = 'TOPIC')
 
 def main_menu(lang:str):
     """Main Menu defined for external user.
@@ -271,7 +279,7 @@ def main_menu(lang:str):
         while wrongAnswer:
             decision = str(input())
             if decision == "y":
-                data_path = select_database()
+                data_path = select_database(2)
                 wrongAnswer = False
             elif decision == "n":
                 wrongAnswer = False
@@ -287,7 +295,7 @@ def main_menu(lang:str):
         while wrongAnswer:
             decision = str(input())
             if decision == "y":
-                data_path = select_database()
+                data_path = select_database(3)
                 wrongAnswer = False
             elif decision == "n":
                 wrongAnswer = False
@@ -302,7 +310,7 @@ def main_menu(lang:str):
         while wrongAnswer:
             decision = str(input())
             if decision == "y":
-                data_path = select_database()
+                data_path = select_database(4)
                 wrongAnswer = False
             elif decision == "n":
                 wrongAnswer = False
@@ -317,7 +325,7 @@ def main_menu(lang:str):
         while wrongAnswer:
             decision = str(input())
             if decision == "y":
-                data_path = select_database()
+                data_path = select_database(5)
                 wrongAnswer = False
             elif decision == "n":
                 wrongAnswer = False
@@ -332,7 +340,7 @@ def main_menu(lang:str):
         while wrongAnswer:
             decision = str(input())
             if decision == "y":
-                data_path = select_database()
+                data_path = select_database(6)
                 wrongAnswer = False
             elif decision == "n":
                 wrongAnswer = False
@@ -347,7 +355,7 @@ def main_menu(lang:str):
         while wrongAnswer:
             decision = str(input())
             if decision == "y":
-                data_path = select_database()
+                data_path = select_database(7)
                 wrongAnswer = False
             elif decision == "n":
                 wrongAnswer = False
@@ -359,9 +367,11 @@ def main_menu(lang:str):
 if __name__ == "__main__":
     lang = select_language()
     main_menu(lang)
+    #C:/Users/Luisa/Documents/DataScience_M.Sc._HDM/Masterarbeit/Repository/ml-classification-repo/files/01_crawl/pristine_raw_texts_de.feather
 
-    # save raw data that are not already in the all data 
-    # lang = 'de'
+    # t = os.path.exists(r"C:\Users\Luisa\Documents\DataScience_M.Sc._HDM\Masterarbeit\Repository\ml-classification-repo\files\01_crawl\pristine_raw_texts_de.feather")
+    # # save raw data that are not already in the all data 
+    # lang = 'en'
     # df_eval_data = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r'\files\01_crawl\raw_texts_'+lang+'.feather')
     # df_all_data = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r'\files\01_crawl\alldata_raw_texts_'+lang+'.feather')
 
