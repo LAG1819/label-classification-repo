@@ -447,7 +447,7 @@ def crawl_data(lang:str):
     Args:
         lang (str): unicode to select texts in that language 
     """
-    _filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\seed_scraping_'+lang+'.log'
+    _filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'files\01_crawl\seed_scraping_'+lang+'.log'
     logging.basicConfig(filename=_filenames, encoding='utf-8', level=logging.DEBUG)
     logging.info(f"####################### Seed Scraping started. Langauge:{lang}, Data: files\Seed_{lang}.feather, Destination: files/01_crawl/raw_texts{lang}.feather ########################")
     try:
@@ -467,7 +467,7 @@ def crawl_centroids(lang:str):
     Args:
         lang (str): unicode to select texts in that language
     """
-    _filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\zentroid_scraping_'+lang+'.log'
+    _filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'files\01_crawl\zentroid_scraping_'+lang+'.log'
     logging.basicConfig(filename=_filenames, encoding='utf-8', level=logging.DEBUG)
     logging.info(f"####################### Seed Scraping started. Langauge:{lang}, Data: files\Seed_{lang}.feather, Destination: files/01_crawl/raw_classes_{lang}.feather ########################")
     try:
