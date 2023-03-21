@@ -37,7 +37,7 @@ def select_language() -> str:
         2: English")
     wrongInput = True
     while wrongInput:
-        selection = input()
+        selection = int(input())
         if selection == 1:
             lang = 'de'
             wrongInput = False
@@ -112,16 +112,18 @@ def execute_full_process(lang:str):
     label_data(lang)
     classify_data(lang)
 
-def crawl_data(lang:str, number = 0, data_path = r'files\Seed.xlsx'):
+def crawl_data(lang:str, data_path:str):
     """Runs a combination of two WebCrawlers to crawl web pages. The seed of the WebCrawlers is defined in Seed.xlsx.
 
     Args:
         lang (str): unicode of language specification for text processing, labeling and classification
-        number(int): Selected Number of first Google search hits for a keyword.
         data_path(str): Selected path to the data to be used. 
     """
      ###Get Top 10 Search Results per Keyword -> Save url in Seed.feather###
-    TopicScraper(lang,number, data_path).run()
+    if data_path:
+        TopicScraper(lang,data_path).run()
+    else: 
+        TopicScraper(lang,r'files\Seed.xlsx').run()
 
     ###Crawl data of given Seed###
     seeder.crawl_data(lang)
@@ -244,13 +246,12 @@ def main_menu(lang:str):
     elif selected_execution == 1:
         print("Full Process will be executed.")
         print("WARNING: Execution may require several hours! Still proceed? (y/n)")
-
         wrongAnswer = True
         while wrongAnswer:
-            wrongAnswer = False
             answer = str(input())
-            if answer != 'y' or answer != 'n':
-                wrongAnswer = True
+            if answer == 'y' or answer == 'n':
+                wrongAnswer = False
+            else:
                 print("Wrong input! Please retry!")
 
         if answer == 'y':
@@ -267,11 +268,13 @@ def main_menu(lang:str):
             if decision == "y":
                 data_path = select_database()
                 wrongAnswer = False
-        if data_path:
-            crawl_data(lang, data_path=data_path)
-        else:
-            crawl_data(lang)
-            
+            elif decision == "n":
+                wrongAnswer = False
+            else: 
+                print("Wrong input. Take custom data? (y/n)")
+        
+        crawl_data(lang, data_path=data_path)
+        
     elif selected_execution == 3:
         data_path = None
         print("Take custom data? (y/n)")
@@ -281,6 +284,10 @@ def main_menu(lang:str):
             if decision == "y":
                 data_path = select_database()
                 wrongAnswer = False
+            elif decision == "n":
+                wrongAnswer = False
+            else: 
+                print("Wrong input. Take custom data? (y/n)")
         clean_data(lang,data_path=data_path)
 
     elif selected_execution == 4:
@@ -292,6 +299,10 @@ def main_menu(lang:str):
             if decision == "y":
                 data_path = select_database()
                 wrongAnswer = False
+            elif decision == "n":
+                wrongAnswer = False
+            else: 
+                print("Wrong input. Take custom data? (y/n)")
         extract_topics(lang, data_path=data_path)
 
     elif selected_execution == 5:
@@ -303,6 +314,10 @@ def main_menu(lang:str):
             if decision == "y":
                 data_path = select_database()
                 wrongAnswer = False
+            elif decision == "n":
+                wrongAnswer = False
+            else: 
+                print("Wrong input. Take custom data? (y/n)")
         generate_kMeans(lang, data_path=data_path)
         
     elif selected_execution == 6:
@@ -314,6 +329,10 @@ def main_menu(lang:str):
             if decision == "y":
                 data_path = select_database()
                 wrongAnswer = False
+            elif decision == "n":
+                wrongAnswer = False
+            else: 
+                print("Wrong input. Take custom data? (y/n)")
         label_data(lang,data_path=data_path)
 
     elif selected_execution == 7:
@@ -325,6 +344,10 @@ def main_menu(lang:str):
             if decision == "y":
                 data_path = select_database()
                 wrongAnswer = False
+            elif decision == "n":
+                wrongAnswer = False
+            else: 
+                print("Wrong input. Take custom data? (y/n)")
         classify_data(lang,data_path=data_path)
 
 
