@@ -13,6 +13,7 @@ src/archive/*
 files/GITHUB_TOKEN.json
 
 !Seed*
+!files/01_crawl/pristine*
 !files/03_label/k_Means/*
 !setup.cfg
 !setup.py
