@@ -42,12 +42,14 @@ def select_language() -> str:
         if selection == 1:
             lang = 'de'
             wrongInput = False
-        elif selection == 2:
-            lang == 'en'
+            return lang
+        if selection == 2:
+            lang = 'en'
             wrongInput = False
         else:
             print("Wrong Input. Please Selecet either language german (1) or english (2).")
     return lang
+    
 
 def select_database() -> str:
     print("Please insert absolute path (str) to custom data. Supported extensions right now are (.feather, .xlsx, .csv):")
@@ -120,7 +122,7 @@ def crawl_data(lang:str, data_path:str):
         lang (str): unicode of language specification for text processing, labeling and classification
         data_path(str): Selected path to the data to be used. 
     """
-     ###Get Top 10 Search Results per Keyword -> Save url in Seed.feather###
+     ###Get Top n Search Results per Keyword -> Save url in Seed.feather###
     print("Topic Scraping started.")
     if data_path:
         TopicScraper(lang,data_path).run()
@@ -357,3 +359,16 @@ def main_menu(lang:str):
 if __name__ == "__main__":
     lang = select_language()
     main_menu(lang)
+
+    # save raw data that are not already in the all data 
+    # lang = 'de'
+    # df_eval_data = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r'\files\01_crawl\raw_texts_'+lang+'.feather')
+    # df_all_data = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r'\files\01_crawl\alldata_raw_texts_'+lang+'.feather')
+
+    # df3 = df_eval_data.merge(df_all_data, on='URL', how='left', indicator=True)
+    # df = df3.loc[df3['_merge'] == 'left_only', 'URL']
+    # df_eval_data_only = df_eval_data[df_eval_data['URL'].isin(df)]
+    # print("Shape eval with overlaps: ", df_eval_data.shape[0])
+    # print("Shape absolutely new: ", df_eval_data_only.shape[0])
+    # df_eval_data_only.reset_index(inplace =True)
+    # df_eval_data_only.to_feather(str(os.path.dirname(__file__)).split("src")[0] + r'\files\01_crawl\pristine_raw_texts_'+lang+'.feather')
