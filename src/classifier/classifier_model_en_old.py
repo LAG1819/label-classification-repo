@@ -651,10 +651,6 @@ class Transformer():
         # self.model_preprocess_test()
         self.evaluate_classifier()
         self.apply_classifier()
-
-if __name__ == "__main__":
-    c = Transformer()
-    c.run()
    
     
     # for text_batch in c.val_df.take(1):
