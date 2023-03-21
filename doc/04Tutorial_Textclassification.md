@@ -76,7 +76,8 @@ classifier_run(lang =language, col = textcolumn_to_learn_classification, nbr_cla
 There are several parameters to adapt for training the classification modell so that the computing capacities are used optimally and no errors occur (e.g. CUDA out of memory).  
 
 Therefore the number of cpu and gpu to use for the training can be selected, as well as the number of workers for parallel data allocation by the DataLoader.
-To change the number of hyperparameteroptimization trials and the iteration per optimization trial one can change the parameters num_samples_per_tune and num_training_iter.  
+To change the number of hyperparameteroptimization trials and the iteration per optimization trial one can change the parameters NUM_TRIALS and NUM_TRIALS_ITER.  
+To load the data directly to the gpu set PIN_MEMORY to True. Depending on resources and dataset size a CUDA Out of Memory Error can occure, therefore one shall set than the variable to False. 
 
 *Note: Please check your computational resources before setting these parameters!*
   
@@ -86,13 +87,14 @@ from src.classifier.classifier_model import run as classifier_run
 
 language = 'de'
 textcolumn_to_learn_classification = 'TOPIC'
-number_cpu = 4
-number_gpu = 1
-number_workers = 4
-number_trials = 5
-number_trial_iterations = 3
+NUM_CPU = 4
+NUM_GPU = 1
+NUM_WORKERS = 4
+NUM_TRIALS = 5
+NUM_TRIAL_ITER = 3
+PIN_MEMORY = True
 
-classifier_run(lang ='de', col = 'TOPIC', num_cpu = number_cpu, num_gpu = number_gpu, num_workers = number_workers, num_samples_per_tune = number_trials, num_training_iter = number_trial_iterations)
+classifier_run(lang ='de', col = 'TOPIC')
 ```
 
 # Add or change hyperparameter optimization techniques
@@ -108,31 +110,28 @@ from ray.tune import CLIReporter
 from ray.tune.experiment.trial import Trial
 from src.classifier.classifier_model import run as classifier_run
 
-def my_hyperparameter_optimization_technique(lang:str, text_col:str, path_to_save_experiment:str,data_path:str, num_workers:int,num_samples = 1, num_cpu=2, num_gpu=1,  num_training_iter = 5,nbr_class=7):
+def my_hyperparameter_optimization_technique(lang:str, text_col:str, path_to_save_experiment:str,data_path:str):
     
     configuration_space = {
             "lr":tune.loguniform(1e-4,1e-1),
             "batch_size":tune.choice([2,4,6,8,12]),
             "epoch":tune.choice([3,5,7,10]),
             "lang":lang,
-            "text_col":col,
-            'n_class':nbr_class,
-            'data_dir' : data_path,
-            "num_workers": num_workers
+            "text_col":col
         }
             
     random_search = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(_train_model),
-            resources={"cpu": num_cpu, "gpu":num_gpu}
+            tune.with_parameters(_train_model, data_path),
+            resources={"cpu": NUM_CPU, "gpu":NUM_GPU}
         ),
         tune_config=tune.TuneConfig(
             metric="accuracy",
             mode="max",
-            num_samples = num_samples,
+            num_samples = NUM_TRIALS,
         ),
         param_space=config_rand,
-        run_config=air.RunConfig(local_dir=path_to_save_experiment, name="random_search_"+lang, stop={"training_iteration":  num_training_iter})
+        run_config=air.RunConfig(local_dir=path_to_save_experiment, name="random_search_"+lang, stop={"training_iteration":  NUM_TRIAL_ITER})
     )
     result = random_search.fit()
     best_result = result.get_best_result("accuracy", "max")
