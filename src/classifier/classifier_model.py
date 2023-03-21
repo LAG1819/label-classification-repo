@@ -39,14 +39,14 @@ from ray.tune.experiment.trial import Trial
 from functools import partial
 from tqdm import tqdm
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:256"
-N_CLASS = 7
-NUM_WORKERS = 1
-NUM_CPU = 2
-NUM_GPU = 1
-NUM_TRIALS = 1
-NUM_TRIAL_ITER = 3
-PIN_MEM = True
-BATCH_SIZE = tune.choice([2,4,6,8])
+N_CLASS = 7 #Number of classes to train classifier. Defaults to 7
+NUM_WORKERS = 1 #Number of workers for DataLoader. Defaults to 1.
+NUM_CPU = 2 #Number of cpu to use. Defaults to 2.
+NUM_GPU = 1 #Number of gpu to use. Defaults to 1.
+NUM_TRIALS = 1 #Number of samples to train. Defaults to 1.
+NUM_TRIAL_ITER = 3 #Number of iterations a samples trains. Defaults to 3.
+PIN_MEM = True #Boolean to set memory pin. If true data dirctly to gpu. Defaults to True.
+BATCH_SIZE = tune.choice([2,4,6,8]) #Size of batches to split data. Defaults to tune.choice with option 2,4,6, and 8.
 
 #pip install datasets transformers numpy pandas evaluate scikit-learn hpbandster "ray[default]" "ray[tune]" "ray[air]"
 #pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
@@ -151,7 +151,7 @@ def _load_data(text_col:str,dir:str) -> dict:
         text_col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT. 
                         If TOPIC is choosen, the classifier will be trained on the extracted TOPICS of the cleaned text data (for more info check src/cleans/topic_lda.py)
                         If URL_TEXT is choosen, the classifier will be trained on on the cleaned texts (for more info check src/cleans/clean.py)
-        dir (str): Selected path to the desired labeled data to train the classifier with. Defaults to r"files\04_classify\labeled_texts_de_TOPIC.feather" through run().
+        dir (str): Selected path to the desired labeled data to train the classifier with. Defaults to r"files\04_classify\labeled_texts_"+lang+"_"+text_col+".feather" through run().
 
     Returns:
         dict: Returns dictionary containing three datasets: 60% training, 20% testing and 20% validation dataset generated from the whole dataset. 
@@ -299,7 +299,7 @@ def _set_params(model:BertClassifier, config_lr:float, config_epoch:int,len_trai
 
     return _num_training_steps,_num_epochs, optimizer, lr_scheduler,accuracy,f1_mi,f1_ma,precision_mi,precision_ma,recall, mcc
 
-def _train_model(config:dict, data_dir:str):
+def _train_model(config:dict, data_dir:str, lang:str, col:str):
     """Training function of model. Follows the usual procedure consisting training and evaluation of the model with training and testing set.
 
     Args:
@@ -310,17 +310,17 @@ def _train_model(config:dict, data_dir:str):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     #select bert model for dedicated language
-    if config['lang'] == 'de':
+    if lang == 'de': #config['lang']
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
         model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=N_CLASS)
-    elif config['lang'] == 'en':
+    elif lang == 'en':
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         model = BertClassifier(checkpoint='bert-base-uncased',num_labels=N_CLASS)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
     model.to(device)
 
     #load and preprocess data 
-    loaded_data = _load_data(config["col"], dir=data_dir)
+    loaded_data = _load_data(col, dir=data_dir)
     data = _preprocess_data(loaded_data, tokenizer)
     len_train_dl = len(data['train'])
 
@@ -393,12 +393,7 @@ def random_search(lang:str, col:str, path:str,data_path:str):
     Args:
         lang (str): Unicode of language to train model with. It can be choosen between de (german) and en (englisch).
         col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
-        path (str): Path to save experiment.
-        tokenized_train_test_set_fold (_type_): train and test set for model training.
-        len_train_dl (_type_): Length of training data to determine number of training steps.
-        num_samples (int, optional): Number of samples to train. Defaults to 1.
-        num_cpu (int, optional): Number of cpu to use. Defaults to 2.
-        num_gpu (int, optional): Number of gpu to use. Defaults to 1.
+        data_path (str): Path to save experiment.
 
     Returns:
         Result: Returns metainformation and metrics of best trial.
@@ -407,15 +402,15 @@ def random_search(lang:str, col:str, path:str,data_path:str):
             "lr":tune.loguniform(1e-4,1e-1),
             "batch_size":BATCH_SIZE,
             "epoch":tune.choice([3,5,7,10]),
-            "lang":lang,
-            "col":col
+            # "lang":lang,
+            # "col":col
         }
     if lang == 'en':
         config_rand["batch_size"] = tune.choice([2])
             
     tuner_random = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(_train_model, data_path),
+            tune.with_parameters(_train_model, data_dir = data_path, lang = lang, col = col),
             resources={"cpu": NUM_CPU, "gpu":NUM_GPU}
         ),
         # tune.with_resources(
@@ -442,12 +437,7 @@ def bohb(lang:str,col:str,path:str,data_path:str):
     Args:
         lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
         col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
-        path (str): Path to save experiment.
-        tokenized_train_test_set_fold (_type_): train and test set for model training.
-        len_train_dl (_type_): Length of training data to determine number of training steps.
-        num_samples (int, optional): Number of samples to train. Defaults to 1.
-        num_cpu (int, optional): Number of cpu to use. Defaults to 2.
-        num_gpu (int, optional): Number of gpu to use. Defaults to 1.
+        data_path (str): Path to save experiment.
 
     Returns:
         Result: Returns metainformation and metrics of best trial.
@@ -456,8 +446,8 @@ def bohb(lang:str,col:str,path:str,data_path:str):
         "lr":tune.loguniform(1e-4,1e-1),
         "batch_size":BATCH_SIZE,
         "epoch":tune.choice([3,5,7,10]),
-        "lang":lang,
-        "col":col
+        # "lang":lang,
+        # "col":col
     }
     if lang == 'en':
         config["batch_size"] = tune.choice([2])
@@ -471,7 +461,7 @@ def bohb(lang:str,col:str,path:str,data_path:str):
     bohb_search = tune.search.ConcurrencyLimiter(bohb_search, max_concurrent=2)
     tuner_bayes = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(_train_model, data_path),
+            tune.with_parameters(_train_model, data_dir = data_path, lang = lang, col = col),
             resources={"cpu": NUM_CPU, "gpu":NUM_GPU}
         ),
         # tune.with_resources(
@@ -501,12 +491,7 @@ def hyperband(lang:str, col:str, path:str, data_path:str):
     Args:
         lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
         col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
-        path (str): Path to save experiment.
-        tokenized_train_test_set_fold (_type_): train and test set for model training.
-        len_train_dl (_type_): Length of training data to determine number of training steps.
-        num_samples (int, optional): Number of samples to train. Defaults to 1.
-        num_cpu (int, optional): Number of cpu to use. Defaults to 2.
-        num_gpu (int, optional): Number of gpu to use. Defaults to 1.
+        data_path (str): Path to save experiment.
 
     Returns:
         Result: Returns metainformation and metrics of best trial.
@@ -516,8 +501,8 @@ def hyperband(lang:str, col:str, path:str, data_path:str):
         "lr":tune.loguniform(1e-4,1e-1),
         "batch_size":BATCH_SIZE,
         "epoch":tune.choice([3,5,7,10]),
-        "lang":lang,
-        "col":col
+        # "lang":lang,
+        # "col":col
     }
     if lang == 'en':
         config["batch_size"] = tune.choice([2])
@@ -525,7 +510,7 @@ def hyperband(lang:str, col:str, path:str, data_path:str):
     hyperband = HyperBandScheduler(metric = "accuracy", mode = "max")
     tuner_hyper = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(_train_model, data_path),
+            tune.with_parameters(_train_model, data_dir = data_path, lang = lang, col = col),
             resources={"cpu": NUM_CPU, "gpu":NUM_GPU}
         ),
         tune_config = tune.TuneConfig(
