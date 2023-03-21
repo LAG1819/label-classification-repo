@@ -36,7 +36,12 @@ py -3 -m venv .venv
 pip install -r environment/requirements.txt
 ```
 
-[4] Adapt and Review prefered Classes in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) (only if needed!):
+[4] Add Github Token in [GITHUB_TOKEN.json](https://github.com/LGHDM/ml-classification-repo/blob/main/files/GITHUB_TOKEN.json)
+```console
+{"GITHUB_TOKEN": "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
+```
+
+[5] Adapt and Review prefered Classes in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) (only if needed!):
 - Seed data:
    - Labeling classes and related seed keywords to crawl: CLASS,KEYWORD_DE/KEYWORD_EN
    - Companies and others related to industry and its url: KEYWORD, URL  
@@ -45,7 +50,7 @@ pip install -r environment/requirements.txt
 - Labeling classes and matching keywords:
    - Predfined labeling classes: AUTONOMOUS; ELECTRIFICATION, CONNECTIVITY, SHARED, SUSTAINABILITY, DIGITALISATION, INDIVIDUALISATION.
 
-[5] Adapt and Review prefered Classes in **Data Cleaning, Automated Labeling and Classification** (only if needed!):
+[6] Adapt and Review prefered Classes in **Data Cleaning, Automated Labeling and Classification** (only if needed!):
 - [Data Cleaning](https://github.com/LGHDM/ml-classification-repo/tree/main/src/cleans):
    - Adapt industry-specific stopwords.
 - [Automated Labeling](https://github.com/LGHDM/ml-classification-repo/tree/main/src/automated_label):
