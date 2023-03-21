@@ -837,9 +837,7 @@ class Labeler:
         #Start Label Model training and application
         logger = logging.getLogger("Labeler")
         logger.info(f"############################################################################ Run {self.__trial} - {self.__text_col} ########################################################################################")
-        logger.info("Automated Labeling started with Language {l}, Text-Column: {t_col} and data file {path} (source) created. Target file is {tpath}".format(l = lang, path = self.__source_path,\
-                                                                                                                                                               tpath = self.__target_path,\
-                                                                                                                                                                t_col = self.__text_col))
+        logger.info(f"Automated Labeling started with Language {self.__lang}, Text-Column: {self.__text_col} and source data {self.__source_path} created. Destination file is {self.__target_path}")
         
         #apply labeling functions on data splits, train model and optimize parameter
         self.__train_labeling_functions()
