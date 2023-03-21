@@ -161,7 +161,7 @@ class TopicScraper:
             for a in a_elements:
                 searchRefs.append(a.get('href')) 
         #searchRefs = [sr.find("a")["href"] for sr in searchResults] Not working bc of calling all a is needed before getting href is possible
-        filteredsearchRefs= list(filter(self.filter_resultLinks,searchRefs))
+        filteredsearchRefs= list(filter(self.__filter_resultLinks,searchRefs))
         #print(filteredsearchRefs)
 
         return filteredsearchRefs
