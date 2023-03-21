@@ -1,4 +1,4 @@
-# <one line to give the program's name and a brief idea of what it does.>
+# <Main Menu for the user. The whole process can be executed from here including several customizations by the user.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify
