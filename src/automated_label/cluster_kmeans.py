@@ -30,9 +30,9 @@ class TOPIC_KMeans:
     The centroids are based on TOPIC_Classes.xlsx with cleaned and generated topics in topiced_classes.feather 
     """
     def __init__(self,lang:str ,topics_path:str= None,data_path:str=None, nbr_clusters:int = 7):
-         """Initialisation of a cluster generator object. Loads predefined clusters and cleaned texts to predict clusters on.
+        """Initialisation of a cluster generator object. Loads predefined clusters and cleaned texts to predict clusters on.
          
-        Args:
+         Args:
             lang (str): Unicode of language selected texts to create cluster with.
             topics_path (str, optional): Path to predefined cluster data. Defaults to None.
             data_path (str, optional):  Source path to file containing cleaned texts and generated topics to predict cluster. Defaults to None.
@@ -170,11 +170,6 @@ class TOPIC_KMeans:
         #generate preset k-means cluster and save it as well as TF-IDF Vectorizer
         self.__apply_kMeans(centroids.toarray(), tfidf)
         self.__save_clusterNames()
-
-
-# lang = 'en'
-# TOPIC_KMeans(lang,r"files\02_clean\topiced_classes_"+lang+r".feather",r"files\02_clean\topiced_texts_"+lang+r".feather").run()
-
 
         
     #kmeans test
