@@ -38,7 +38,16 @@ from ray.tune import CLIReporter
 from ray.tune.experiment.trial import Trial
 from functools import partial
 from tqdm import tqdm
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:256"
+N_CLASS = 7
+NUM_WORKERS = 1
+NUM_CPU = 2
+NUM_GPU = 1
+NUM_TRIALS = 1
+NUM_TRIAL_ITER = 3
+PIN_MEM = True
+BATCH_SIZE = tune.choice([2,4,6,8])
+
 #pip install datasets transformers numpy pandas evaluate scikit-learn hpbandster "ray[default]" "ray[tune]" "ray[air]"
 #pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
 
@@ -157,7 +166,7 @@ def _load_data(text_col:str,dir:str) -> dict:
 
     _dataset = {}
 
-    _dataset['train'] = _train[['LABEL','text']].to_dict('records')#.to_records(index=False)
+    _dataset['train'] = _train[['LABEL','text']].to_dict('records')
     _dataset['test'] = _test[['LABEL','text']].to_dict('records')
     _dataset['val'] = _validate[['LABEL','text']].to_dict('records')
     
@@ -184,7 +193,7 @@ def _preprocess_data(data:dict, tokenizer) -> dict:
             _tokenized_data[str(set)].append(_tokenized_sent)
     return _tokenized_data
 
-def _transform_train_data(tokenized_data:dict, data_collator:DataCollatorWithPadding, config_batch_size:int,num_workers:int):
+def _transform_train_data(tokenized_data:dict, data_collator:DataCollatorWithPadding, config_batch_size:int):
     """Transforms preprocessed trainset and testset with pytorch DataLoader. Adds weighting to data with WeightedRandomSampler to neutrolize unbalanced classes.
 
     Args:
@@ -219,10 +228,10 @@ def _transform_train_data(tokenized_data:dict, data_collator:DataCollatorWithPad
     _test_sampler = WeightedRandomSampler(_test_weights, len(_data['test']['label']))
 
     _train_dataloader = DataLoader(
-        _data["train"], sampler = _train_sampler, batch_size=config_batch_size, collate_fn=data_collator, num_workers= num_workers,pin_memory=True
+        _data["train"], sampler = _train_sampler, batch_size=config_batch_size, collate_fn=data_collator, num_workers= NUM_WORKERS ,pin_memory=PIN_MEM
     )
     _test_dataloader = DataLoader(
-        _data["test"], sampler = _test_sampler, batch_size=config_batch_size, collate_fn=data_collator, num_workers=num_workers,pin_memory=True
+        _data["test"], sampler = _test_sampler, batch_size=config_batch_size, collate_fn=data_collator, num_workers=NUM_WORKERS ,pin_memory=PIN_MEM
     )
     return _train_dataloader, _test_dataloader
 
@@ -252,7 +261,7 @@ def _transform_eval_data(tokenized_data:dict,data_collator:DataCollatorWithPaddi
     _val_sampler = WeightedRandomSampler(_val_weights, len(_data['val']['label']))
     
     _eval_dataloader = DataLoader(
-        _data["val"], batch_size=batch_size, collate_fn=data_collator,pin_memory=True
+        _data["val"], batch_size=batch_size, collate_fn=data_collator, num_workers= NUM_WORKERS ,pin_memory=PIN_MEM
     )
     return _eval_dataloader
 
@@ -290,12 +299,12 @@ def _set_params(model:BertClassifier, config_lr:float, config_epoch:int,len_trai
 
     return _num_training_steps,_num_epochs, optimizer, lr_scheduler,accuracy,f1_mi,f1_ma,precision_mi,precision_ma,recall, mcc
 
-def _train_model(config):
+def _train_model(config:dict, data_dir:str):
     """Training function of model. Follows the usual procedure consisting training and evaluation of the model with training and testing set.
 
     Args:
-        config (_type_): Configuration of model containing parameters and metrics.
-        data (_type_): train and testset for training the model.
+        config (dict): Configuration of model containing parameters and metrics.
+        data_dir (str): Path to dataset to train with.
     """
     torch.cuda.empty_cache()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -303,20 +312,20 @@ def _train_model(config):
     #select bert model for dedicated language
     if config['lang'] == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
-        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=config['n_class'])
+        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=N_CLASS)
     elif config['lang'] == 'en':
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=config['n_class'])
+        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=N_CLASS)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
     model.to(device)
 
     #load and preprocess data 
-    loaded_data = _load_data(config["col"], dir=config["data_dir"])
+    loaded_data = _load_data(config["col"], dir=data_dir)
     data = _preprocess_data(loaded_data, tokenizer)
     len_train_dl = len(data['train'])
 
     #transform loaded data
-    train_dl,test_dl = _transform_train_data(data, data_collator, config["batch_size"], config["num_workers"])
+    train_dl,test_dl = _transform_train_data(data, data_collator, config["batch_size"])
     num_training_steps,num_epochs, optimizer, lr_scheduler,accuracy,f1_mi,f1_ma,pr_mi,pr_ma,recall, mcc = _set_params(model, config['lr'],config['epoch'], len_train_dl)
 
     # load last checkpoint if model training hab been interrupted
@@ -378,7 +387,7 @@ def _train_model(config):
                         "f1Micro": f1_metric_micro['f1'],"f1Macro": f1_metric_macro['f1'],"recall":recall_metric['recall'],\
                               "mcc":mcc_metrics['matthews_correlation']}, checkpoint=checkpoint)
 
-def random_search(lang:str, col:str, path:str,data_path:str, num_workers:int,num_samples = 1, num_cpu=2, num_gpu=1,  num_training_iter = 5,nbr_class=7):
+def random_search(lang:str, col:str, path:str,data_path:str):
     """Hyperparameter Optimization techinique of Random Search using ray.tune. 
 
     Args:
@@ -396,21 +405,18 @@ def random_search(lang:str, col:str, path:str,data_path:str, num_workers:int,num
     """
     config_rand = {
             "lr":tune.loguniform(1e-4,1e-1),
-            "batch_size":tune.choice([2,4,6,8,12]),
+            "batch_size":BATCH_SIZE,
             "epoch":tune.choice([3,5,7,10]),
             "lang":lang,
-            "col":col,
-            'n_class':nbr_class,
-            'data_dir' : data_path,
-            "num_workers": num_workers
+            "col":col
         }
     if lang == 'en':
         config_rand["batch_size"] = tune.choice([2])
             
     tuner_random = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(_train_model),
-            resources={"cpu": num_cpu, "gpu":num_gpu}
+            tune.with_parameters(_train_model, data_path),
+            resources={"cpu": NUM_CPU, "gpu":NUM_GPU}
         ),
         # tune.with_resources(
         #     tune.with_parameters(_train_model, data = tokenized_train_test_set_fold),
@@ -419,10 +425,10 @@ def random_search(lang:str, col:str, path:str,data_path:str, num_workers:int,num
         tune_config=tune.TuneConfig(
             metric="accuracy",
             mode="max",
-            num_samples = num_samples,
+            num_samples = NUM_TRIALS,
         ),
         param_space=config_rand,
-        run_config=air.RunConfig(local_dir=path, name="random_search_"+lang, stop={"training_iteration":  num_training_iter})#,progress_reporter=TrialTerminationReporter())#, progress_reporter=TrialTerminationReporter() OR ExperimentTerminationReporter()
+        run_config=air.RunConfig(local_dir=path, name="random_search_"+lang, stop={"training_iteration":  NUM_TRIAL_ITER})#,progress_reporter=TrialTerminationReporter())#, progress_reporter=TrialTerminationReporter() OR ExperimentTerminationReporter()
     )
     result_rand = tuner_random.fit()
     best_results_rand = result_rand.get_best_result("accuracy", "max")
@@ -430,7 +436,7 @@ def random_search(lang:str, col:str, path:str,data_path:str, num_workers:int,num
     # print("[RAND]Best trial final validation accuracy: {}".format(best_results_rand.metrics["accuracy"]))
     return best_results_rand
 
-def bohb(lang:str,col:str,path:str,data_path:str,num_workers:int, num_samples=1, num_cpu=2, num_gpu=1,  num_training_iter = 5,nbr_class = 7):
+def bohb(lang:str,col:str,path:str,data_path:str):
     """Hyperparameter Optimization techinique of combination of Bayesian optimization (BO) and Hyperband (HB) using ray.tune. 
 
     Args:
@@ -448,13 +454,10 @@ def bohb(lang:str,col:str,path:str,data_path:str,num_workers:int, num_samples=1,
     """
     config = {
         "lr":tune.loguniform(1e-4,1e-1),
-        "batch_size":tune.choice([2,4,6,8,12]),
+        "batch_size":BATCH_SIZE,
         "epoch":tune.choice([3,5,7,10]),
         "lang":lang,
-        "col":col,
-        'n_class':nbr_class,
-        'data_dir':data_path,
-        "num_workers": num_workers
+        "col":col
     }
     if lang == 'en':
         config["batch_size"] = tune.choice([2])
@@ -468,8 +471,8 @@ def bohb(lang:str,col:str,path:str,data_path:str,num_workers:int, num_samples=1,
     bohb_search = tune.search.ConcurrencyLimiter(bohb_search, max_concurrent=2)
     tuner_bayes = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(_train_model),
-            resources={"cpu": num_cpu, "gpu":num_gpu}
+            tune.with_parameters(_train_model, data_path),
+            resources={"cpu": NUM_CPU, "gpu":NUM_GPU}
         ),
         # tune.with_resources(
         #     tune.with_parameters(_train_model, data_dir = data_path)#data = tokenized_train_test_set_fold),
@@ -480,9 +483,9 @@ def bohb(lang:str,col:str,path:str,data_path:str,num_workers:int, num_samples=1,
             mode="max",
             scheduler=bohb,
             search_alg=bohb_search,
-            num_samples=num_samples,
+            num_samples=NUM_TRIALS,
         ),
-        run_config=air.RunConfig(local_dir=path, name="bohb_search_"+lang,stop={"training_iteration": num_training_iter}),#,progress_reporter=TrialTerminationReporter()),
+        run_config=air.RunConfig(local_dir=path, name="bohb_search_"+lang,stop={"training_iteration": NUM_TRIAL_ITER}),#,progress_reporter=TrialTerminationReporter()),
         param_space=config,
     )
     result_bayes = tuner_bayes.fit()
@@ -492,7 +495,7 @@ def bohb(lang:str,col:str,path:str,data_path:str,num_workers:int, num_samples=1,
     # print("[BOHB]Best trial final validation accuracy: {}".format(best_results_bayes.metrics["accuracy"]))
     return best_results_bayes
 
-def hyperband(lang:str, col:str, path:str, data_path:str, num_workers:int, num_samples=1, num_cpu=2, num_gpu=1, num_training_iter = 5,nbr_class=7):
+def hyperband(lang:str, col:str, path:str, data_path:str):
     """Hyperparameter Optimization techinique of Hyperband (HB) using ray.tune. 
 
     Args:
@@ -511,13 +514,10 @@ def hyperband(lang:str, col:str, path:str, data_path:str, num_workers:int, num_s
     
     config = {
         "lr":tune.loguniform(1e-4,1e-1),
-        "batch_size":tune.choice([2,4,6,8,12]),
+        "batch_size":BATCH_SIZE,
         "epoch":tune.choice([3,5,7,10]),
         "lang":lang,
-        "col":col,
-        'n_class':nbr_class,
-        'data_dir':data_path,
-        "num_workers": num_workers
+        "col":col
     }
     if lang == 'en':
         config["batch_size"] = tune.choice([2])
@@ -525,15 +525,15 @@ def hyperband(lang:str, col:str, path:str, data_path:str, num_workers:int, num_s
     hyperband = HyperBandScheduler(metric = "accuracy", mode = "max")
     tuner_hyper = tune.Tuner(
         tune.with_resources(
-            tune.with_parameters(_train_model),
-            resources={"cpu": num_cpu, "gpu":num_gpu}
+            tune.with_parameters(_train_model, data_path),
+            resources={"cpu": NUM_CPU, "gpu":NUM_GPU}
         ),
         tune_config = tune.TuneConfig(
-            num_samples = num_samples,
+            num_samples = NUM_TRIALS,
             scheduler = hyperband
         ),
         param_space = config,
-        run_config=air.RunConfig(local_dir=path, name="hyperband_"+lang,stop={"training_iteration": num_training_iter})#stop={"training_iteration": num_training_iter},progress_reporter=TrialTerminationReporter())
+        run_config=air.RunConfig(local_dir=path, name="hyperband_"+lang,stop={"training_iteration": NUM_TRIAL_ITER})#stop={"training_iteration": num_training_iter},progress_reporter=TrialTerminationReporter())
     )
     
     result = tuner_hyper.fit()
@@ -544,7 +544,7 @@ def hyperband(lang:str, col:str, path:str, data_path:str, num_workers:int, num_s
     return best_results
     
     
-def _validate_model(text_col:str,lang:str, best_result, model_path:str, model_name:str, n_class:int):
+def _validate_model(text_col:str,lang:str, data_path:str, best_result, model_path:str, model_name:str):
     """Validation function of model. Follows the usual procedure consisting testing of the optimized trained model with validation set.
 
     Args:
@@ -560,17 +560,17 @@ def _validate_model(text_col:str,lang:str, best_result, model_path:str, model_na
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if lang == 'de':
         tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
-        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=n_class).to(device)
+        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=N_CLASS).to(device)
     elif lang == 'en':
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=n_class).to(device)
+        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=N_CLASS).to(device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     checkpoint_path = best_result["Checkpoint"]+ "\checkpoint.pt"
     model_state, optimizer_state = torch.load(checkpoint_path)
     model.load_state_dict(model_state)
     
-    train_test_val_set = _load_data(text_col)
+    train_test_val_set = _load_data(text_col, data_path)
     tokenized_train_test_set = _preprocess_data(train_test_val_set, tokenizer)
     eval_dl = _transform_eval_data(tokenized_train_test_set,data_collator,best_result["batch_size"])
 
@@ -703,20 +703,17 @@ def _save_results(lang:str, col:str):
 
     return best_results_df.to_dict('records')[0]
 
-def run(lang:str, col:str,data_path = r"files\04_classify\labeled_texts_de_TOPIC.feather", list_of_hpo =[("RandomSearch",random_search),("Hyperband", hyperband),("BOHB", bohb)],num_workers =2, nbr_class = 7, num_cpu = 1, num_gpu = 1, num_samples_per_tune = 5, num_training_iter = 3):
+def run(lang:str, col:str,data_path:str = None, list_of_hpo =[("RandomSearch",random_search),("Hyperband", hyperband),("BOHB", bohb)]):
     """Main function. Combines the training of the model with the different hyperparameter optimization techniques, 
     the validation of the best model and stores them including the evaluation results. Whole Run based on specified language and column
 
     Args:
         lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch).
         col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
-        data_path (regexp, optional): Selected path to the desired labeled data to train the classifier with. Defaults to r"files\04_classify\labeled_texts_de_TOPIC.feather".
-        nbr_class (int, optional): Desired number of classes to train classifier with. Defaults to 7.
-        num_cpu (int, optional): Desired number of cpus that shall be used for the training. Defaults to 4.
-        num_gpu (int, optional): Desired number of gpus that shall be used for the training. Defaults to 1.
-        num_samples_per_tune (int, optional): Desired number of tuning samples per hyperparameteroptimization technique. Defaults to 5.
-        num_training_iter (int, optional): Desired number of training iterations one tuning sample can take. Defaults to 3.
+        data_path (regexp, optional): Selected path to the desired labeled data to train the classifier with. Defaults to None.
     """
+    if not data_path:
+        data_path =  r"files\04_classify\labeled_texts_"+lang+"_"+col+".feather"
     #generate temp path
     temp_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],r"models\classification\temp")
     ray.init(_temp_dir = temp_path)
@@ -748,7 +745,7 @@ def run(lang:str, col:str,data_path = r"files\04_classify\labeled_texts_de_TOPIC
     try:
         for hpo_name,hpo in list_of_hpo:
             torch.cuda.empty_cache()
-            best_results = hpo(lang,col,path,data_path,num_workers,num_samples_per_tune, num_cpu, num_gpu, num_training_iter,nbr_class)
+            best_results = hpo(lang,col,path,data_path)
             _save_current_result(lang, col, k,i,hpo_name, best_results)
             logger.info(f"[{hpo_name}]Best Model with Accuracy: {best_results.metrics['accuracy']} and Configuration:{best_results.config} reached. Checkpoint: {best_results.checkpoint}")
    
@@ -775,12 +772,14 @@ def run(lang:str, col:str,data_path = r"files\04_classify\labeled_texts_de_TOPIC
             logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_record['Accuracy']} and Configuration: batch_size = {best_result_record['batch_size']}, lr = {lr}, epoch = {epoch}.")
 
             #validate best model on validation data###
-            _validate_model(col,lang, best_result_record, model_path, model_name, nbr_class)
+            _validate_model(col,lang, data_path, best_result_record, model_path, model_name)
 
             ray.shutdown()
             torch.cuda.empty_cache()
             return
         else:
+            ray.shutdown()
+            torch.cuda.empty_cache()
             return
     
 def predict(sentence:str, lang:str,text_col = 'TOPIC'):
@@ -820,22 +819,35 @@ def predict(sentence:str, lang:str,text_col = 'TOPIC'):
         print(prediction)
         print(label)
 
-hpos =[("Hyperband", hyperband),("BOHB", bohb)]
 #####Experiment 2#########
-run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",num_workers = 2, list_of_hpo=[("Hyperband", hyperband)], num_cpu = 2,num_samples_per_tune = 1, num_training_iter = 3)
+hpos =[("Hyperband", hyperband)]
+# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
+run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
 
-# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",num_workers = 2, list_of_hpo=[("BOHB", bohb)], num_cpu = 2)
-# run(lang ='de', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather")
-# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather")
-# run(lang ='en', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather")
+# hpos = [("BOHB", bohb)]
+# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
+#run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
+
+# hpos =[("Hyperband", hyperband)]
+# run(lang ='de', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos,)
+# run(lang ='en', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
+# hpos = [("BOHB", bohb)]
+# run(lang ='de', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
+# run(lang ='en', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
 
 
 #####Experiment 1#########
-# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather")
-# run(lang ='de', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather")
-# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather")
-# run(lang ='en', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather")
+# hpos =[("Hyperband", hyperband)]
+# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
+# run(lang ='de', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
+# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
+# run(lang ='en', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
 
+# hpos = [("BOHB", bohb)]
+# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
+# run(lang ='de', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
+# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
+# run(lang ='en', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
 
 # ###Test new sample sentence###
 # predict("Connectivität ist digitale Vernetzung")
