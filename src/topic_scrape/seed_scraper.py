@@ -89,6 +89,21 @@ class TopicScraper:
         self._topics_df, self._url_df = self.load_data(s_path)
         self.__n = n_results
 
+        logger = logging.getLogger("TopicScraper")
+
+        handler  = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+
+        __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'files\01_crawl\topic_scraping_'+lang+r'.log'
+        fh = logging.FileHandler(filename=__filenames)
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+        logger.addHandler(fh)
+
+        logger.info(f"##################Topic Scraping, Language: {self.__lang}, data: {s_path}, destination: files\Seed_{self.__lang}.feather ######################")
+
     def load_data(self, s_path:str):
         """Call of both Seed files. TOPIC_Seed.xlsx contains keywords to crawl. URL_Seed.xlsx contains links to crawl.
 
@@ -123,6 +138,8 @@ class TopicScraper:
         Returns:
             list: Returns a list of the url of the top 10 Google search hits.
         """
+        logger = logging.getLogger("TopicScraper")
+        logger.info(f"Current topic:{q}")
         try:
             resultLinks = self.__google_search(q)
         except Exception as e:
@@ -136,10 +153,12 @@ class TopicScraper:
                 resultLinks =[]
                 print("SELENIUM Google Search went wrong: ",e)
         if self.__n > 0:
+            logger.info(f"Found number of url:{len(resultLinks[:self.__n])}")
             return resultLinks[:self.__n]
-        else:                         
+        else:      
+            logger.info(f"Found number of url:{len(resultLinks)}")                   
             return resultLinks
-
+        
     
     def __google_search(self,query:str)-> list:
         """Performs a google search based on the given topic using BeautifulSoup.
@@ -228,12 +247,15 @@ class TopicScraper:
     def save_data(self):
         """Concatenates dataframe containing all google search result website links based on keywords withdataframe containing dataframe containing website links.
         """
+        logger = logging.getLogger("TopicScraper")
         all_seed_df = pd.concat([self._url_df,self._topics_df], ignore_index= True)
         all_seed_df = all_seed_df[all_seed_df[["CLASS","KEYWORD","URL"]].notnull()].reset_index(drop=True)
         
         if os.path.exists(os.path.join(self.__package_dir,r'files\Seed_'+self.__lang+r'.feather')):
             os.remove(os.path.join(self.__package_dir,r'files\Seed_'+self.__lang+r'.feather'))
         all_seed_df.to_feather(os.path.join(self.__package_dir,r'files\Seed_'+self.__lang+r'.feather'))
+
+        logger.info("Topic scraped data saved.")
 
     def run(self):
         """Run method of class. Applies rowwise google search on given keywords and saves top 10 result website links in new column "URL". 
