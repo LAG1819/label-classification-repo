@@ -696,6 +696,7 @@ def run(lang:str, col:str,data_path:str = None, list_of_hpo =[("RandomSearch",ra
         lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch).
         col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
         data_path (regexp, optional): Selected path to the desired labeled data to train the classifier with. Defaults to None.
+        list_of_hpos (list, optional): List of hyperparameter optimization techniques to train classifier with. Defaults to [("RandomSearch",random_search),("Hyperband", hyperband),("BOHB", bohb)].
     """
     if not data_path:
         data_path =  r"files\04_classify\labeled_texts_"+lang+"_"+col+".feather"
