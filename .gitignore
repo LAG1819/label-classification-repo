@@ -13,6 +13,7 @@ src/archive/*
 *.pdf
 !Seed*
 !files/03_label/k_Means/*
+!files/GITHUB_TOKEN.json
 models/classification/pytorch_tuning_de/*
 models/classification/pytorch_tuning_en/*
 models/classification/temp/*
