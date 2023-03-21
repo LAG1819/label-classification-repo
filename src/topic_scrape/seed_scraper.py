@@ -36,11 +36,19 @@ from selenium.webdriver.support import expected_conditions as EC
 import os
 import pandas as pd
 import logging
-import secrets_git_luisa as s
+import json
+# import secrets_git as s
 import certifi
 
+def get_token():
+    print("Add token in files/GITHUB_TOKEN.json! Otherwise ValueError: API Rate limit exceeded. You have to add GH_TOKEN!!!")
+    with open(os.path.join(str(os.path.dirname(__file__)).split("src")[0],r'files/GITHUB_TOKEN.json'), 'r') as f:
+        token = json.load(f)
+    return token['GITHUB_TOKEN']
+
+GITHUB_TOKEN = get_token()
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-os.environ['GH_TOKEN'] = s.github_token
+os.environ['GH_TOKEN'] = GITHUB_TOKEN 
 os.environ['WDM_LOG'] = str(logging.NOTSET)
 os.environ['WDM_LOCAL'] = '1'
 os.environ['WDM_SSL_VERIFY'] = '0'
