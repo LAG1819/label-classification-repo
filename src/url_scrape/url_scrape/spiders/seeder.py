@@ -165,17 +165,17 @@ class SeederSpider(CrawlSpider):
     headers = {'Accept-Language': 'de;q=0.7', 
            'User-agent':"Mozilla/101.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0. 5005.78 Safari/537.36 Edge/100.0.1185.39"}
 
-    def __init__(self, url_path:str,parse:str,lang:str ,name=None, **kwargs):
+    def __init__(self, s_path:str,parse:str,lang:str ,name=None, **kwargs):
         """Initalisation of WebCrawler.
 
         Args:
-            url_path (str): path to file containing url links to crawl
+            s_path (str): path to file containing url links to crawl
             parse (str): type of crawling. It cann be selected betweent 'internal' or 'external'. If 'internal' is seleceted only websites of domains included in the seed_list can be visited.
             name (_type_, optional): Name of the scrapy crawler. Defaults to None.
         """
         super().__init__(name, **kwargs)
         self.__lang = lang
-        self.__data = self.get_data(url_path)
+        self.__data = self.get_data(s_path)
 
         self.parse_style = parse
 
@@ -447,8 +447,9 @@ def crawl_data(lang:str):
     Args:
         lang (str): unicode to select texts in that language 
     """
-    _filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
+    _filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\seed_scraping_'+lang+'.log'
     logging.basicConfig(filename=_filenames, encoding='utf-8', level=logging.DEBUG)
+    logging.info(f"####################### Seed Scraping started. Langauge:{lang}, Data: files\Seed_{lang}.feather, Destination: files/01_crawl/raw_texts{lang}.feather ########################")
     try:
         logging.info("[{log}]Crawling has started".format(log = datetime.now()))
         run_crawler_data(lang) 
@@ -458,6 +459,7 @@ def crawl_data(lang:str):
         _source_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_texts_new.json'
         if os.path.exists(_source_path):
             _union_and_save_texts(lang)
+            logging.info("Newly crawled data saved.")
 
 def crawl_centroids(lang:str):
     """Execution and data saving of Process 2 on run_crawler_centroids().
@@ -465,8 +467,9 @@ def crawl_centroids(lang:str):
     Args:
         lang (str): unicode to select texts in that language
     """
-    _filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\scraping_'+lang+'.log'
+    _filenames =  str(os.path.dirname(__file__)).split("src")[0] + 'doc\zentroid_scraping_'+lang+'.log'
     logging.basicConfig(filename=_filenames, encoding='utf-8', level=logging.DEBUG)
+    logging.info(f"####################### Seed Scraping started. Langauge:{lang}, Data: files\Seed_{lang}.feather, Destination: files/01_crawl/raw_classes_{lang}.feather ########################")
     try:
         logging.info("[{log}]Crawling has started".format(log = datetime.now()))
         run_crawler_centroids(lang) 
@@ -476,4 +479,5 @@ def crawl_centroids(lang:str):
         _class_path = str(os.path.dirname(__file__)).split("src")[0]+r'files/raw_classes.json'
         if os.path.exists(_class_path):
             _union_and_save_class(lang)
+            logging.info("Newly crawled data saved.")
     
