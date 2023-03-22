@@ -109,7 +109,7 @@ To learn more about Snorkel visit [🚀 Snorkel.org](https://snorkel.org) or che
 ## Change kMeans data (for total data labeling)
 There are two ways (1. and 2.) to change the dataset for kMeans and one option (3.) to change the dataset for the automated labeling. 
 1. Change k-Means dataset: Change selected centroids for k-Means in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx). Each centroid represents one class labels. Execute main after adaption.
-INSERT GIF.
+![Alt Text](https://github.com/LGHDM/ml-classification-repo/blob/main/doc/meta/KMeans_Excel.gif)
 2. Change k-Means dataset: Loading a customized file for the zentroids of kMeans. The customized zentroids can be cleaned and topics extracted if requested.
     ```Python3
       from src.automated_label.cluster_kmeans import *
