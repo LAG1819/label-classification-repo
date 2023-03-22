@@ -43,7 +43,7 @@ class textFilter:
         """
         # Create logger and assign handle
         
-        logger = logging.getLogger("Cleaining")
+        logger = logging.getLogger("Cleaning")
 
         handler  = logging.StreamHandler()
         handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
