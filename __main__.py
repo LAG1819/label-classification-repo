@@ -139,6 +139,7 @@ def clean_data(lang:str, data_path:str = None):
         lang (str): unicode of language specification for text processing, labeling and classification
         data_path(str): Selected path to the data to be used.
     """
+    print("Start data cleaning!")
     if data_path:
         path = data_path.split("ml-classification-repo\\")[-1]
         textFilter(lang = lang,s_path = path).run()
@@ -152,6 +153,7 @@ def extract_topics(lang:str, data_path:str = None):
         lang (str): unicode of language specification for text processing, labeling and classification
         data_path(str): Selected path to the data to be used.Defaults to empty string "".
     """
+    print("Start topic extraction")
     if data_path:
         path = data_path.split("ml-classification-repo\\")[-1]
         TopicExtractor(s_path = path,lang = lang).run()
