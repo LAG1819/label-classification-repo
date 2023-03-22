@@ -35,6 +35,8 @@ import bayes_opt
 from sklearn.model_selection import KFold
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
+# set DEVICE = "cuda" if GPU is avaliable, else "cpu"
+DEVICE = "cpu"
 
 ############################################################## USER-DEFINED LABELING FUNCTIONS ######################################################################## 
     
@@ -319,7 +321,7 @@ class Labeler:
         random_states = [12,56,123]
         try:
             #k_fold Cross Validation
-            for j in range(6,10):
+            for j in range(2,10):
                 k_fold = KFold(n_splits = j,shuffle = True, random_state = random_states[self.__trial])
                 i = 1
                 for split in k_fold.split(self.__train_test_df):
@@ -434,31 +436,6 @@ class Labeler:
             except Exception as e:
                 logger.info(f"[{hpo_name}]Error occured", e)
                 pass
-
-        # #random search
-        # loggerr = logging.getLogger("Labeler.randomSearch")
-        # try:
-        #     self.__apply_randomSearch(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
-        # except Exception as e:
-        #     loggerr.warning("Error occurred: ", e)
-        #     pass
-        
-        # #grid search
-        # loggerg = logging.getLogger("Labeler.gridSearch")
-        # try:
-        #     self.__apply_gridSearch(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
-        # except Exception as e:
-        #     loggerg.warning("Error occurred: ", e)
-        #     pass
-
-        # #bayesian search
-        # loggerb = logging.getLogger("Labeler.bayesianOptim")
-        # try:
-        #     self.__apply_bayesianOptimization(_L_train_fold, _L_test_fold,_Y_test,_k,_i)
-        # except Exception as e:
-        #     loggerb.warning("Error occurred: ", e)
-        #     pass
-
    
     def __apply_randomSearch(self,train,test,y_test,k:int,i:int, max_evals = 40):
         """Hyperparameter Optimization techinique of Random Search Optimization.
@@ -484,7 +461,7 @@ class Labeler:
         lr = [round(random.uniform(0.001,0.02),3)for _ in range(max_evals)]
         optimizer = [random.choice(["sgd", "adam", "adamax"])for _ in range(max_evals)]
         for l in range(max_evals):
-            label_model = LabelModel(cardinality = 7, verbose=False, device = 'cuda:0')
+            label_model = LabelModel(cardinality = 7, verbose=False, device = DEVICE)
             label_model.fit(L_train=train, n_epochs=n_epochs[l], seed=123, log_freq=log_freq[l], l2=l2[l], lr=lr[l], optimizer = optimizer[l])
 
             #Metrics: `accuracy`, `coverage`,`precision`, `recall`, `f1`, `f1_micro`, `f1_macro`, `fbeta`,`matthews_corrcoef`, `roc_auc`
@@ -540,7 +517,7 @@ class Labeler:
         eval_data_intern = []
         for p in permutations:
             #logger.info(f"Selected parameter {p}")
-            label_model = LabelModel(cardinality = 7, verbose=False, device = 'cuda:0')
+            label_model = LabelModel(cardinality = 7, verbose=False, device = DEVICE)
             label_model.fit(L_train=train, n_epochs=p[0], seed=123, log_freq=p[1], l2=p[2], lr=p[3], optimizer = p[4])
 
             #Metrics: `accuracy`, `coverage`,`precision`, `recall`, `f1`, `f1_micro`, `f1_macro`, `fbeta`,`matthews_corrcoef`, `roc_auc`
@@ -609,7 +586,7 @@ class Labeler:
             Returns:
                 _type_: _description_
             """
-            label_model = LabelModel(cardinality = 7, verbose=False, device = 'cuda:0')
+            label_model = LabelModel(cardinality = 7, verbose=False, device = DEVICE)
             if round(optimizer) == 0:
                 optim = "sgd"
             elif round(optimizer) == 1:
