@@ -129,6 +129,7 @@ class TOPIC_KMeans:
         path_m = str(os.path.dirname(__file__)).split("src")[0] + "models\label\k_Means\kmeans_"+str(self.__lang)+".pkl"
         path_v = str(os.path.dirname(__file__)).split("src")[0] + "models\label\k_Means\kmeans_vectorizer_"+str(self.__lang)+".pkl"
 
+
         if os.path.exists(path_m):
             os.remove(path_m)
         if os.path.exists(path_v):
@@ -152,6 +153,8 @@ class TOPIC_KMeans:
         _cluster_names =  pd.DataFrame.from_dict(dic)
 
         _path = str(os.path.dirname(__file__)).split("src")[0] +r"files\03_label\k_Means\kMeans_cluster_"+str(self.__lang)+".feather"
+        if not os.path.exists(_path):
+            os.makedirs(_path)
         _cluster_names.to_feather(_path)
 
     def run(self):
