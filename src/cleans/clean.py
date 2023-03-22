@@ -359,7 +359,7 @@ class textFilter:
         logger.info("Data cleaning started")
         for i,chunk in enumerate(df_chunks):
             try:
-                total_cleaned = i*chunk.shape[0]
+                total_cleaned = i*self.__chunk_size
                 logger.info(f"New chunk starts cleaning. Total cleaned: {total_cleaned}")
                 chunk_text = self.__remove_nonText(chunk)
                 chunk_stopwords = self.__remove_domainStopwords(chunk_text)
@@ -370,6 +370,7 @@ class textFilter:
                 # chunk_lem = self.__lemmatize_text(chunk_lang)
                 # logger.info("Text had been lemmatized.")
                 #chunk_cit = self.remove_cityNames(chunk_lem)
+                # optional city name removal. Make sure to only select city names of specified country.
                 #print("City names had been removed.")
                 # self.save_data(chunk_lem)
                 logger.info("Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape = self.__data.shape[0]))
