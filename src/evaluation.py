@@ -251,11 +251,15 @@ def make_tarfile(output_filename:str, source_dir:str):
 
 # load_raw_data()
 # load_clean_data()
-load_labeled_data()
+# load_labeled_data()
 # load_eval_data_automated_label()
 # calculate_runtime((2023,3,12,2,26,46,9,8,1),(2023,3,12,20,38,32,2,7,5))
 # make_tarfile("compressed_ml-classification-repo","ml-classification-repo")
 
+lang = 'de'
+text_col = 'TOPIC'
+metrics = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\classification\pytorch_tuning_'+lang+r'\results\eval_results_'+text_col+r'.feather')
+print(metrics)
 
 #remove wrong results automated labeling 
 # c_path = r'models\label\model_tuning_de\results\coverage_results_TOPIC.feather'

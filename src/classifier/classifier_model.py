@@ -43,7 +43,7 @@ N_CLASS = 7 #Number of classes to train classifier. Defaults to 7
 NUM_WORKERS = 1 #Number of workers for DataLoader. Defaults to 1.
 NUM_CPU = 2 #Number of cpu to use. Defaults to 2.
 NUM_GPU = 1 #Number of gpu to use. Defaults to 1.
-NUM_TRIALS = 1 #Number of samples to train. Defaults to 1.
+NUM_TRIALS = 3 #Number of samples to train. Defaults to 1.
 NUM_TRIAL_ITER = 3 #Number of iterations a samples trains. Defaults to 3.
 PIN_MEM = True #Boolean to set memory pin. If true data dirctly to gpu. Defaults to True.
 BATCH_SIZE = tune.choice([2,4,6,8]) #Size of batches to split data. Defaults to tune.choice with option 2,4,6, and 8.
@@ -261,7 +261,7 @@ def _transform_eval_data(tokenized_data:dict,data_collator:DataCollatorWithPaddi
     _val_sampler = WeightedRandomSampler(_val_weights, len(_data['val']['label']))
     
     _eval_dataloader = DataLoader(
-        _data["val"], batch_size=batch_size, collate_fn=data_collator, num_workers= NUM_WORKERS ,pin_memory=PIN_MEM
+        _data["val"], batch_size=batch_size, collate_fn=data_collator
     )
     return _eval_dataloader
 
@@ -702,7 +702,7 @@ def run(lang:str, col:str,data_path:str = None, list_of_hpo =[("RandomSearch",ra
         data_path =  r"files\04_classify\labeled_texts_"+lang+"_"+col+".feather"
     #generate temp path
     temp_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],r"models\classification\temp")
-    ray.init(_temp_dir = temp_path)
+    ray.init(_temp_dir = temp_path, num_cpus=NUM_CPU, num_gpus=NUM_GPU)
 
     #generate training path if it does not exists
     path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_"+lang
@@ -748,14 +748,14 @@ def run(lang:str, col:str,data_path:str = None, list_of_hpo =[("RandomSearch",ra
     finally:
         if(os.path.exists(str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\results\temp_eval_results_'+col+r'.feather')):
             
-            logger.info("Current best model will be validated and saved (if better than existing model).")
+            # logger.info("Current best model will be validated and saved (if better than existing model).")
             
             #save evaluation data and identify best model and load for valdation
             model_name, model_path = _get_model_path(lang, col)
             best_result_record = _save_results(lang, col)
             lr = best_result_record["lr"]
             epoch = best_result_record["epoch"]
-            logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_record['Accuracy']} and Configuration: batch_size = {best_result_record['batch_size']}, lr = {lr}, epoch = {epoch}.")
+            logger.info(f"[Model {model_name}] Best Model with Accuracy:{best_result_record['Accuracy']}, HPO {best_result_record['Type']} and Configuration: batch_size = {best_result_record['batch_size']}, lr = {lr}, epoch = {epoch}.")
 
             #validate best model on validation data###
             _validate_model(col,lang, data_path, best_result_record, model_path, model_name)
@@ -767,6 +767,31 @@ def run(lang:str, col:str,data_path:str = None, list_of_hpo =[("RandomSearch",ra
             ray.shutdown()
             torch.cuda.empty_cache()
             return
+def validate_and_save_specific_model_manually():
+    # Create logger and assign handler
+    logger = logging.getLogger("Classification")
+    if (logger.hasHandlers()):
+        logger.handlers.clear()
+
+    handler  = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+
+    __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\classifier_training_'+lang+r'.log'
+    fh = logging.FileHandler(filename=__filenames)
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+    logger.addHandler(fh)
+
+    text_col = 'TOPIC'
+    lang='de'
+    best_result = {"Checkpoint": r"D:\University\HDM\Master\Repository\ml-classification-repo\models\classification\pytorch_tuning_de\bohb_search_de\_train_model_c764b777_3_batch_size=2,epoch=3,lr=0.0210_2023-03-22_01-14-42\checkpoint_000002","batch_size":2}
+    model_path = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+r'_TOPIC_2.pth'
+    model_name = 'trained_model_de_TOPIC_2'
+    data_path = r"files\04_classify\Experiment2\labeled_texts_"+lang+r"_TOPIC.feather"
+    _validate_model(text_col=text_col,lang=lang, data_path=data_path, best_result = best_result, model_path=model_path, model_name=model_name)
+
     
 def predict(sentence:str, lang:str,text_col = 'TOPIC'):
     """Final Prediction Function. The trained model is loaded and predicts the class of the input sentence.
@@ -805,14 +830,15 @@ def predict(sentence:str, lang:str,text_col = 'TOPIC'):
         print(prediction)
         print(label)
 
+   
 #####Experiment 2#########
-hpos =[("Hyperband", hyperband)]
+# hpos =[("Hyperband", hyperband)]
+# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
+# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
+
+hpos = [("BOHB", bohb)]
 # run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
 run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
-
-# hpos = [("BOHB", bohb)]
-# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
-#run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
 
 # hpos =[("Hyperband", hyperband)]
 # run(lang ='de', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos,)
