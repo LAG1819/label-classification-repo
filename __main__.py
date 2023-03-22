@@ -139,7 +139,7 @@ def clean_data(lang:str, data_path:str = None):
         lang (str): unicode of language specification for text processing, labeling and classification
         data_path(str): Selected path to the data to be used.
     """
-    if os.path.exists(data_path):
+    if data_path:
         path = data_path.split("ml-classification-repo\\")[-1]
         textFilter(lang = lang,s_path = path).run()
     else:
@@ -150,9 +150,9 @@ def extract_topics(lang:str, data_path:str = None):
 
     Args:
         lang (str): unicode of language specification for text processing, labeling and classification
-        data_path(str): Selected path to the data to be used.
+        data_path(str): Selected path to the data to be used.Defaults to empty string "".
     """
-    if os.path.exists(data_path):
+    if data_path:
         path = data_path.split("ml-classification-repo\\")[-1]
         TopicExtractor(s_path = path,lang = lang).run()
     else:
@@ -165,15 +165,19 @@ def generate_kMeans(lang:str, data_path:str = None):
         lang (str): unicode of language specification for text processing, labeling and classification
         data_path(str): Selected path to the data to be used.
     """
-    if os.path.exists(data_path):
+    if data_path:
         path = data_path.split("ml-classification-repo\\")[-1]
-        textFilter(lang = lang,s_path = path,t_path = r"files\cleaned_classes_"+lang+r".feather").run()
+        print("Cleans custom centroids.")
+        textFilter(lang = lang,s_path = path,t_path = r"files\02_clean\cleaned_zentroids_"+lang+r".feather").run()
     else:
+        print("Starts crawling data for centroids.")
         seeder.crawl_centroids(lang)
-        textFilter(lang = lang,s_path = r"files\raw_classes_"+lang+r".feather",t_path = r"files\cleaned_classes_"+lang+r".feather").run() 
-
-    TopicExtractor(input_topic = 2,s_path = r"files\cleaned_classes_"+lang+r".feather",t_path = r"files\topiced_classes_"+lang+r".feather",lang = lang,zentroid = True).run()
-    TOPIC_KMeans(lang = lang , data_path= r"files\topiced_texts_"+lang+r".feather",topics_path = r"files\topiced_classes_"+lang+r".feather").run()
+        print("Cleans crawled centroids.")
+        textFilter(lang = lang,s_path = r"files\01_crawl\raw_classes_"+lang+r".feather",t_path = r"files\02_clean\cleaned_zentroids_"+lang+r".feather").run() 
+    print("Extraction Topics from cleaned centroids.")
+    TopicExtractor(s_path = r"files\02_clean\cleaned_zentroids_"+lang+r".feather",t_path = r"files\02_clean\topiced_zentroids_"+lang+r".feather",lang = lang,zentroid = True).run()
+    print("Generate KMeans cluster.")
+    TOPIC_KMeans(lang = lang , data_path= r"files\02_clean\topiced_texts_"+lang+r".feather",topics_path = r"files\02_clean\topiced_zentroids_"+lang+r".feather").run()
 
 
 def label_data(lang:str, data_path:str = None):
@@ -186,30 +190,29 @@ def label_data(lang:str, data_path:str = None):
     wrongNumber = True
     while wrongNumber:
         wrongNumber = False
-        print("Please select type of data labeling:\n\
+        number = input("Please select type of data labeling:\n\
           1: Partial data labeling. \n\
           2: Total data labeling.")
-        number = input()
         if number != 1 or number != 2:
             wrongNumber = True
+    wrongCol = True
+    while wrongCol:
+        col = input("Type Columnname (text) to train Label Model with (TOPIC/URL_TEXT): ")
+        if col.upper() == 'TOPIC' or col.upper() == 'URL_TEXT':
+            wrongCol = False
     if number == 1:
-        if os.path.exists(data_path):
+        if data_path:
             path = data_path.split("ml-classification-repo\\")[-1]
-            Labeler(lang = lang,s_path = path, partial = False).run()
-            Labeler(lang = lang,s_path = path, column = 'URL_TEXT', partial = False).run()
+            Labeler(lang = lang,s_path = path, column = col.upper(), partial = False).run()
         else:
-            Labeler(lang = lang, partial = False).run()
-            Labeler(lang = lang, column = 'URL_TEXT', partial = False).run()
+            Labeler(lang = lang, column = col.upper(), partial = False).run()
     elif number == 2:
         generate_kMeans(lang=lang)
-        if os.path.exists(data_path):
+        if data_path:
             path = data_path.split("ml-classification-repo\\")[-1]
-            Labeler(lang = lang,s_path = path).run()
-            Labeler(lang = lang,s_path = path, column = 'URL_TEXT').run()
+            Labeler(lang = lang,s_path = path, column=col.upper()).run()
         else:
-            Labeler(lang = lang).run()
-            Labeler(lang = lang, column = 'URL_TEXT').run()
-
+            Labeler(lang = lang, column = col.upper()).run()
 
 def classify_data(lang:str, data_path:str):
     """Performs development and training of a BERT-based text classifier based on labeled input data. 
@@ -218,7 +221,7 @@ def classify_data(lang:str, data_path:str):
         lang (str): unicode of language specification for text processing, labeling and classification
         data_path(str): Selected path to the data to be used.
     """
-    if os.path.exists(data_path):
+    if data_path:
         path = path = data_path.split("ml-classification-repo\\")[-1]
         classifier_run(lang = lang, data_path = path,col = 'TOPIC')
     else: 
@@ -369,16 +372,6 @@ if __name__ == "__main__":
     main_menu(lang)
     #C:/Users/Luisa/Documents/DataScience_M.Sc._HDM/Masterarbeit/Repository/ml-classification-repo/files/01_crawl/pristine_raw_texts_de.feather
 
-    # t = os.path.exists(r"C:\Users\Luisa\Documents\DataScience_M.Sc._HDM\Masterarbeit\Repository\ml-classification-repo\files\01_crawl\pristine_raw_texts_de.feather")
-    # # save raw data that are not already in the all data 
-    # lang = 'en'
-    # df_eval_data = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r'\files\01_crawl\raw_texts_'+lang+'.feather')
-    # df_all_data = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r'\files\01_crawl\alldata_raw_texts_'+lang+'.feather')
-
-    # df3 = df_eval_data.merge(df_all_data, on='URL', how='left', indicator=True)
-    # df = df3.loc[df3['_merge'] == 'left_only', 'URL']
-    # df_eval_data_only = df_eval_data[df_eval_data['URL'].isin(df)]
-    # print("Shape eval with overlaps: ", df_eval_data.shape[0])
-    # print("Shape absolutely new: ", df_eval_data_only.shape[0])
-    # df_eval_data_only.reset_index(inplace =True)
-    # df_eval_data_only.to_feather(str(os.path.dirname(__file__)).split("src")[0] + r'\files\01_crawl\pristine_raw_texts_'+lang+'.feather')
+    # lang = 'de'
+    # df = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r'\files\02_clean\topiced_texts_'+lang+'.feather')
+    # print(df)
