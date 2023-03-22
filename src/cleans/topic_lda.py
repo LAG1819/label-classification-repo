@@ -53,11 +53,11 @@ class TopicExtractor:
         if s_path:
             self.__source_path = s_path
         else: 
-            self.__source_path = r"files\cleaned_texts_"+self.__lang+r".feather"
+            self.__source_path = r"files\02_clean\cleaned_texts_"+self.__lang+r".feather"
         if t_path:
             self.__target_path = t_path
         else:
-            self.__target_path = r"files\topiced_texts_"+self.__lang+r".feather"
+            self.__target_path = r"files\02_clean\topiced_texts_"+self.__lang+r".feather"
         self.__zentroid = zentroid
         self.__data = self.load_data()
         self.__number_topics = input_topic
@@ -72,7 +72,7 @@ class TopicExtractor:
 
         __filenames =  str(os.path.dirname(__file__)).split("src")[0] +r'files\02_clean\topic_extraction_'+lang+'.log'
         logging.basicConfig(filename=__filenames, encoding='utf-8', level=logging.DEBUG)
-        logging.info("Topic Extraction with Language {l} and data file {path} (source) started. Target file is {tpath}".format(l = self.lang, path = self.__source_path, tpath = self.__target_path))       
+        logging.info(f"Topic Extraction with Language {self.__lang} and data file {self.__source_path} (source) started. Target file is {self.__target_path}")       
 
     
     def load_data(self):
@@ -184,7 +184,7 @@ class TopicExtractor:
         try:
             doc_list = text.split(" ")
             fitted_data, tfidf = self.__generate_tfIdf(doc_list)
-            topics = self._apply_lda(fitted_data,tfidf)
+            topics = self.__apply_lda(fitted_data,tfidf)
             # print(topics.split("|"))
             return topics
         except Exception as e:

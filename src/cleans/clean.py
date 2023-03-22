@@ -30,13 +30,13 @@ from datetime import datetime
 class textFilter:
     """Class to clean and filter raw texts (raw_texts.json) that had been crawled in previous step. 
     """
-    def __init__(self,lang:str, s_path:str = None, t_path:str = None, stopwords:list = [], pattern:list = [], chunk_size:int = 300):
+    def __init__(self,lang:str, s_path:str = "", t_path:str = "", stopwords:list = [], pattern:list = [], chunk_size:int = 10):
         """Initialise a textFilter object that can clean raw html text.
 
         Args:
             lang (str): unicode of language to filter raw texts only in that language 
-            s_path (str): source path to file containing raw texts to clean
-            t_path (str, optional): target path to save file with cleaned texts. Defaults to None.
+            s_path (str): source path to file containing raw texts to clean. Defaults to empty string "".
+            t_path (str, optional): target path to save file with cleaned texts. Defaults to empty string "".
             stopwords (list, optional): list of user defined stopwords to be added to data cleansing process. Defaults to [].
             pattern (list, optional): list of user defined pattern to be added to data cleansing process. Defaults to [].
             chunk_size (int, optional): Size of DataFrame chunk to split DataFrame into. Defaults to 300.
@@ -55,8 +55,6 @@ class textFilter:
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
         logger.addHandler(fh)
-
-        logger.info("Data Preprocessing and Cleaning with Language {l} and data file {path} (source) created. Target file is {tpath}".format(l = self.__lang, path = s_path, tpath = self.__target_path))
         
         self.text_col = 'URL_TEXT'
         self.url_col = 'URL'
@@ -64,15 +62,15 @@ class textFilter:
         if t_path: 
             self.__target_path = t_path
         else: 
-            self.__target_path =r"files\cleaned_texts_"+self.__lang+".feather"
+            self.__target_path =r"files\02_clean\cleaned_texts_"+self.__lang+".feather"
 
         if s_path:
             self.__source_path = s_path
         else:
-            self.__source_path = r"files\raw_texts_"+self.__lang+r".feather"
+            self.__source_path = r"files\01_crawl\raw_texts_"+self.__lang+r".feather"
             
-        self.all_stopwords = stopwords
-        self.pattern_list = pattern
+        self.__all_stopwords = stopwords
+        self.__pattern_list = pattern
         self.__chunk_size = chunk_size
 
         self.__data = self.load_data(self.__source_path, self.__target_path)
@@ -84,6 +82,8 @@ class textFilter:
             self.__nlp = spacy.load("en_core_web_trf")
         else:
             self.__nlp = spacy.load("de_dep_news_trf")
+
+        logger.info(f"Data Preprocessing and Cleaning with Language {self.__lang} and data file {self.__source_path} (source) created. Target file is {self.__target_path}")
 
    
     def load_data(self, path:str, t_path:str) -> pd.DataFrame:
@@ -157,8 +157,8 @@ class textFilter:
         try:
             #04:57,'07-05-2018'
             for sentence in row.split("|"):
-                self.pattern_list += xml+html+[r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707', r'\xe2',r'\x80',r"\x8b", r"{{\.*}}", r"\x9d", r"\u200b"]# only digits: r'\b[0-9]+\b\s*'
-                for pattern in self.pattern_list:
+                self.__pattern_list += xml+html+[r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707', r'\xe2',r'\x80',r"\x8b", r"{{\.*}}", r"\x9d", r"\u200b"]# only digits: r'\b[0-9]+\b\s*'
+                for pattern in self.__pattern_list:
                     sentence = re.sub(pattern,'',sentence)
                 #remove any word shorter than 3 characters
                 out = re.sub(r'^\w{0,3}$','',sentence)
@@ -168,11 +168,13 @@ class textFilter:
             output = list(set(list(filter(None,output))))
             
             output = "|".join(output)
-    
+
         except Exception as e:
             print(e)
             output = ""
-        return output
+
+        finally: 
+            return output
 
    
     def stopword_remove(self,row:str) -> str:
@@ -186,6 +188,7 @@ class textFilter:
             str: full cleaned text of on sample.
         """
         output_sentence = []
+
         url = ["^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[äöüßa-zA-Z0-9()]{1,6}\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$", "www\w*de","www\w*com"]
         email = ["^\S+@\S+\.\S+$"]
         zip = ["^[0-9]{5}(?:-[0-9]{4})?\s?\w*$"]
@@ -210,18 +213,19 @@ class textFilter:
         numbers_only = ["^\\d+$","^\s?[0-9]+(\s+[0-9]+)*\s?$", "\(.*\)","\[.*\]", "^\d+.\d+"," \\d+ "]
         special_characters = ['[^äöüßA-Za-z0-9 ]+']#['[\(,.:\);^]']
         short_words = ['^\w{0,3}$', '^\s+']
-        self.all_stopwords += url+email+zip+phone+dates+numbers_only+special_characters+website_stopwords+domain_stopwords+short_words
+        self.__all_stopwords += url+email+zip+phone+dates+numbers_only+special_characters+website_stopwords+domain_stopwords+short_words
         
         for sentence in row.split("|"):
             out_sentence = []
             for word in sentence.split(" "):
-                for pattern in self.all_stopwords:
+                for pattern in self.__all_stopwords:
                     word = re.sub(pattern,'',word.lower())
                     # if re.search(pattern, str(sentence).lower()):
                 out_sentence.append(word.lstrip())
             out_sentence = list(set(list(filter(None,out_sentence))))
             if out_sentence:
                 output_sentence.append(" ".join(out_sentence))
+       
         return " ".join(output_sentence)
     
    
@@ -355,17 +359,19 @@ class textFilter:
         logger.info("Data cleaning started")
         for i,chunk in enumerate(df_chunks):
             try:
-                logger.info("New chunk starts cleaning. Total cleaned:",i*chunk.shape[0])
+                total_cleaned = i*chunk.shape[0]
+                logger.info(f"New chunk starts cleaning. Total cleaned: {total_cleaned}")
                 chunk_text = self.__remove_nonText(chunk)
                 chunk_stopwords = self.__remove_domainStopwords(chunk_text)
                 logger.info("Non textual elements and stopwords had been removed.")
                 chunk_lang = self.__flag_lang(chunk_stopwords)
                 logger.info("Languages had been detected and filtered.")
-                chunk_lem = self.__lemmatize_text(chunk_lang)
-                logger.info("Text had been lemmatized.")
+                self.save_data(chunk_lang)
+                # chunk_lem = self.__lemmatize_text(chunk_lang)
+                # logger.info("Text had been lemmatized.")
                 #chunk_cit = self.remove_cityNames(chunk_lem)
                 #print("City names had been removed.")
-                self.save_data(chunk_lem)
+                # self.save_data(chunk_lem)
                 logger.info("Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape = self.__data.shape[0]))
             except KeyboardInterrupt:
                 print(KeyboardInterrupt)
