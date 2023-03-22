@@ -170,8 +170,9 @@ def generate_kMeans(lang:str, data_path:str = None):
         print("Cleans custom centroids.")
         textFilter(lang = lang,s_path = path,t_path = r"files\02_clean\cleaned_zentroids_"+lang+r".feather").run()
     else:
-        print("Starts crawling data for centroids.")
-        seeder.crawl_centroids(lang)
+        if not os.path.exists(str(os.path.dirname(__file__)).split("src")[0] + r"files\01_crawl\raw_classes_"+lang+r".feather"):
+            print("Starts crawling data for centroids.")
+            seeder.crawl_centroids(lang)
         print("Cleans crawled centroids.")
         textFilter(lang = lang,s_path = r"files\01_crawl\raw_classes_"+lang+r".feather",t_path = r"files\02_clean\cleaned_zentroids_"+lang+r".feather").run() 
     print("Extraction Topics from cleaned centroids.")
@@ -187,27 +188,29 @@ def label_data(lang:str, data_path:str = None):
         lang (str): unicode of language specification for text processing, labeling and classification
         data_path(str): Selected path to the data to be used.
     """
+    #get type of desired data labeling 
     wrongNumber = True
     while wrongNumber:
-        wrongNumber = False
-        number = input("Please select type of data labeling:\n\
-          1: Partial data labeling. \n\
-          2: Total data labeling.")
-        if number != 1 or number != 2:
-            wrongNumber = True
+        number = int(input("Please select type of data labeling: (1) Partial data labeling. (2) Total data labeling:"))
+        if number > 0 and number < 3:
+            wrongNumber = False
     wrongCol = True
+
+    # get column to train data labeling with
     while wrongCol:
         col = input("Type Columnname (text) to train Label Model with (TOPIC/URL_TEXT): ")
         if col.upper() == 'TOPIC' or col.upper() == 'URL_TEXT':
             wrongCol = False
-    if number == 1:
+    
+    #start data labeling based on given input
+    if number == 2:
+        generate_kMeans(lang=lang)
         if data_path:
             path = data_path.split("ml-classification-repo\\")[-1]
             Labeler(lang = lang,s_path = path, column = col.upper(), partial = False).run()
         else:
             Labeler(lang = lang, column = col.upper(), partial = False).run()
-    elif number == 2:
-        generate_kMeans(lang=lang)
+    if number == 1:
         if data_path:
             path = data_path.split("ml-classification-repo\\")[-1]
             Labeler(lang = lang,s_path = path, column=col.upper()).run()
@@ -252,7 +255,7 @@ def main_menu(lang:str):
     wrongInput = True
     while wrongInput:
         selected_execution = int(input())
-        if selected_execution < 6:
+        if selected_execution < 8:
             wrongInput = False
         else:
             print("Wrong Input. Please retry!")
