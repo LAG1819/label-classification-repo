@@ -38,15 +38,17 @@ from ray.tune import CLIReporter
 from ray.tune.experiment.trial import Trial
 from functools import partial
 from tqdm import tqdm
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:256"
+#TOPICS:mb 256, cpu 2, batch_size 2,4,6,7, trials 3, pin_mem true, num_workers 1
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:256" #512,256
 N_CLASS = 7 #Number of classes to train classifier. Defaults to 7
 NUM_WORKERS = 1 #Number of workers for DataLoader. Defaults to 1.
 NUM_CPU = 2 #Number of cpu to use. Defaults to 2.
 NUM_GPU = 1 #Number of gpu to use. Defaults to 1.
-NUM_TRIALS = 3 #Number of samples to train. Defaults to 1.
+NUM_TRIALS = 3 #Number of samples to train. Defaults to 3.
 NUM_TRIAL_ITER = 3 #Number of iterations a samples trains. Defaults to 3.
 PIN_MEM = True #Boolean to set memory pin. If true data dirctly to gpu. Defaults to True.
-BATCH_SIZE = tune.choice([2,4,6,8]) #Size of batches to split data. Defaults to tune.choice with option 2,4,6, and 8.
+BATCH_SIZE = tune.choice([2,4,6,8,10]) #Size of batches to split data. Defaults to tune.choice with option 2,4,6, and 8.
+# RAM = 10**9
 
 #pip install datasets transformers numpy pandas evaluate scikit-learn hpbandster "ray[default]" "ray[tune]" "ray[air]"
 #pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
@@ -702,7 +704,7 @@ def run(lang:str, col:str,data_path:str = None, list_of_hpo =[("RandomSearch",ra
         data_path =  r"files\04_classify\labeled_texts_"+lang+"_"+col+".feather"
     #generate temp path
     temp_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],r"models\classification\temp")
-    ray.init(_temp_dir = temp_path, num_cpus=NUM_CPU, num_gpus=NUM_GPU)
+    ray.init(_temp_dir = temp_path, num_cpus=NUM_CPU, num_gpus=NUM_GPU)#, object_store_memory=RAM)
 
     #generate training path if it does not exists
     path = str(os.path.dirname(__file__)).split("src")[0] + r"models\classification\pytorch_tuning_"+lang
@@ -831,35 +833,28 @@ def predict(sentence:str, lang:str,text_col = 'TOPIC'):
         print(label)
 
    
+#####Experiment 1#########
+hpos =[("Hyperband", hyperband)]
+run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
+# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
+
+# hpos = [("BOHB", bohb)]
+# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
+# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
+
+
 #####Experiment 2#########
 # hpos =[("Hyperband", hyperband)]
 # run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
 # run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
-
-hpos = [("BOHB", bohb)]
+# hpos = [("BOHB", bohb)]
 # run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
-run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
+# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
 
-# hpos =[("Hyperband", hyperband)]
-# run(lang ='de', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos,)
-# run(lang ='en', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
-# hpos = [("BOHB", bohb)]
-# run(lang ='de', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
-# run(lang ='en', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
+# os.system('shutdown -s -t 60')
 
 
-#####Experiment 1#########
-# hpos =[("Hyperband", hyperband)]
-# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
-# run(lang ='de', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
-# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
-# run(lang ='en', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
 
-# hpos = [("BOHB", bohb)]
-# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
-# run(lang ='de', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
-# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
-# run(lang ='en', col = 'URL_TEXT', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
 
 # ###Test new sample sentence###
 # predict("Connectivität ist digitale Vernetzung")
