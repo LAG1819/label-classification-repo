@@ -353,7 +353,7 @@ class textFilter:
         Than the language of cleaned texts is applied and all texts that are not matching the initialised lang are filtered. In advance all city names in texts 
         will be removed and text will be lemmatized. Filtered and cleaned texts are finally saved to target path. 
         """
-        logger = logging.getLogger("Cleaining")
+        logger = logging.getLogger("Cleaning")
         df_chunks = self.split_dataframe()
         print("Size of full dataset: {dataset}. Number of chunks: {chunks}".format(dataset = self.__data.shape[0], chunks = len(df_chunks)))
         logger.info("Data cleaning started")
