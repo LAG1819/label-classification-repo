@@ -30,6 +30,37 @@ from datetime import datetime
 class textFilter:
     """Class to clean and filter raw texts (raw_texts.json) that had been crawled in previous step. 
     """
+    #set parameter for xml, html removal
+    XML = ["(?:<from.*?>)(.*?)(?:<\\/from>)"]
+    HTML = ["<(?:\"[^\"]*\"['\"]*|'[^']*'['\"]*|[^'\">])+>"]
+    OTHERS = [r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707', r'\xe2',r'\x80',r"\x8b", r"{{\.*}}", r"\x9d", r"\u200b"]
+
+    #set parameter for stopword removal
+    URL = ["^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[äöüßa-zA-Z0-9()]{1,6}\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$", "www\w*de","www\w*com"]
+    EMAIL = ["^\S+@\S+\.\S+$"]
+    ZIP = ["^[0-9]{5}(?:-[0-9]{4})?\s?\w*$"]
+    PHONE = ["^\\+?[1-9][0-9]{7,14}$"]
+    DATES = ["^[0-9]{1,2}\\/[0-9]{1,2}\\/[0-9]{4}$","^[0-9]{1,2}\\-[0-9]{1,2}\\-[0-9]{4}$", "^[0-9]{4}\\-[0-9]{1,2}\\-[0-9]{1,2}$"]
+    WEBSITES = ["explore","allgemeine geschäftsbedingungen","general terms and conditions","allgemein\*",'richtlinie\w*','guideline\w*',"\w*recht\w* hinweis\w*",\
+        "\w*recht\w*","\w*datenschutz\w*","data privacy", "privacy","policy\w*","cooky\w*","cookie\w*","content\w*",\
+            "anmeld\w*",  "abmeld\w*", "login","log in","logout", "log out", "kunden login","customer login", "online","zurück","back","start","select\w*", "ausw\w*","close",\
+                "extra\w*","news","report\w*","impressum","newsletter\w*", "owner","internet", "website\w*", "email\w*", "e-mail\w*", "mail\w*", "isbn", "issn",\
+                    "produkte", "products","partner","übersicht","overview", "veranstaltungen", "suche\w*","kauf\w*", "angebot\w*", "konfigur\w*", "configur\w*","nutzer\w*","icon\w*",\
+                        "zubehör", "garantie", "mehr", "modell\w*", "kontakt\w*","contact\w*","anfrage\w*","skip",'useful links','link\w*',"passw\w*", "password\w*",\
+                            "buchen","book" "anfahrt","directory", "finanzdienstleistung\w*","financial servic\w*", "connected", "required", "sitemap\w*", "\w*\s?abo\w*", 'social media', "socialmedia",\
+                                "englisch", "english","deutsch","german","google", "wikipedia", "navigation","\w*shop\w*", "\w*magazin\w*", "lifestyle",\
+                                    "facebook\w*", "youtube\w*","instagram\w*","xing\w*","linkedin\w*", "blog\w*","spiegel\w*","twitter\w*","sms","video"\
+                                        "archiv\w*", "artikel\w*", "article\w*","side\w*", "seite\w*","site","app\w*","\s?abgerufen\s?\w*\s*\d*","\s?retrieved\s?\w*\s*\d*"\
+                                            "januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember",\
+                                                "january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december",\
+                                                "dbx707", "db11","\w*\s?straße\s?\d*","\w*\s?strasse\w*", "tel\w*", "\w*\s?download\w*",\
+                                                    "covid\w*\s?\d*", "corona\w*\s?\d*","\w*\s?street\s?\d*",]
+                                    
+    DOMAIN = ["(g/km)","use case\w*", "unternehme\w*", "gmbh", "cokg", "co kg", "consult\w*", "handel\w*", "händler\w*", "leistung\w*"]
+    NUMBERS = ["^\\d+$","^\s?[0-9]+(\s+[0-9]+)*\s?$", "\(.*\)","\[.*\]", "^\d+.\d+"," \\d+ "]
+    SPECIAL_CHARACTER = ['[^äöüßA-Za-z0-9 ]+']#['[\(,.:\);^]']
+    SHORT_WORDS = ['^\w{0,3}$', '^\s+']
+
     def __init__(self,lang:str, s_path:str = "", t_path:str = "", stopwords:list = [], pattern:list = [], chunk_size:int = 100):
         """Initialise a textFilter object that can clean raw html text.
 
@@ -80,6 +111,10 @@ class textFilter:
             self.__nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
         if self.__lang == 'en':
             self.__nlp = spacy.load("en_core_web_trf")
+
+        #assign lists of regex and stopwrods to remove and add instance specified lists 
+        self.__pattern_list += self.XML+self.HTML+self.OTHERS
+        self.__all_stopwords += self.URL+self.EMAIL+self.ZIP+self.PHONE+self.DATES+self.NUMBERS+self.SPECIAL_CHARACTER+self.WEBSITES+self.DOMAIN+self.SHORT_WORDS
 
         logger.info(f"Data Preprocessing and Cleaning with Language {self.__lang} and data file {self.__source_path} (source) created. Target file is {self.__target_path}")
 
@@ -149,11 +184,6 @@ class textFilter:
             str: pre cleaned text of on sample.
         """
         output = []
-
-        xml = ["(?:<from.*?>)(.*?)(?:<\\/from>)"]
-        html = ["<(?:\"[^\"]*\"['\"]*|'[^']*'['\"]*|[^'\">])+>"]
-        self.__pattern_list += xml+html+[r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707', r'\xe2',r'\x80',r"\x8b", r"{{\.*}}", r"\x9d", r"\u200b"]# only digits: r'\b[0-9]+\b\s*'
-        
         for sentence in row.split("|"):
             if sentence != "" and sentence != '\n':        
                 for pattern in self.__pattern_list:
@@ -181,32 +211,6 @@ class textFilter:
             str: full cleaned text of on sample.
         """
         output_sentence = []
-
-        url = ["^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[äöüßa-zA-Z0-9()]{1,6}\\b(?:[-a-zäöüßA-Z0-9()@:%_\\+.~#?&\\/=]*)$", "www\w*de","www\w*com"]
-        email = ["^\S+@\S+\.\S+$"]
-        zip = ["^[0-9]{5}(?:-[0-9]{4})?\s?\w*$"]
-        phone = ["^\\+?[1-9][0-9]{7,14}$"]
-        dates = ["^[0-9]{1,2}\\/[0-9]{1,2}\\/[0-9]{4}$","^[0-9]{1,2}\\-[0-9]{1,2}\\-[0-9]{4}$", "^[0-9]{4}\\-[0-9]{1,2}\\-[0-9]{1,2}$"]
-        website_stopwords = ["explore","allgemeine geschäftsbedingungen","general terms and conditions","allgemein\*",'richtlinie\w*','guideline\w*',"\w*recht\w* hinweis\w*",\
-            "\w*recht\w*","\w*datenschutz\w*","data privacy", "privacy","policy\w*","cooky\w*","cookie\w*","content\w*",\
-                "anmeld\w*",  "abmeld\w*", "login","log in","logout", "log out", "kunden login","customer login", "online","zurück","back","start","select\w*", "ausw\w*","close",\
-                    "extra\w*","news","report\w*","impressum","newsletter\w*", "owner","internet", "website\w*", "email\w*", "e-mail\w*", "mail\w*", "isbn", "issn",\
-                        "produkte", "products","partner","übersicht","overview", "veranstaltungen", "suche\w*","kauf\w*", "angebot\w*", "konfigur\w*", "configur\w*","nutzer\w*","icon\w*",\
-                            "zubehör", "garantie", "mehr", "modell\w*", "kontakt\w*","contact\w*","anfrage\w*","skip",'useful links','link\w*',"passw\w*", "password\w*",\
-                                "buchen","book" "anfahrt","directory", "finanzdienstleistung\w*","financial servic\w*", "connected", "required", "sitemap\w*", "\w*\s?abo\w*", 'social media', "socialmedia",\
-                                    "englisch", "english","deutsch","german","google", "wikipedia", "navigation","\w*shop\w*", "\w*magazin\w*", "lifestyle",\
-                                        "facebook\w*", "youtube\w*","instagram\w*","xing\w*","linkedin\w*", "blog\w*","spiegel\w*","twitter\w*","sms","video"\
-                                            "archiv\w*", "artikel\w*", "article\w*","side\w*", "seite\w*","site","app\w*","\s?abgerufen\s?\w*\s*\d*","\s?retrieved\s?\w*\s*\d*"\
-                                                "januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember",\
-                                                    "january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december",\
-                                                    "dbx707", "db11","\w*\s?straße\s?\d*","\w*\s?strasse\w*", "tel\w*", "\w*\s?download\w*",\
-                                                        "covid\w*\s?\d*", "corona\w*\s?\d*","\w*\s?street\s?\d*",]
-                                       
-        domain_stopwords = ["(g/km)","use case\w*", "unternehme\w*", "gmbh", "cokg", "co kg", "consult\w*", "handel\w*", "händler\w*", "leistung\w*"]
-        numbers_only = ["^\\d+$","^\s?[0-9]+(\s+[0-9]+)*\s?$", "\(.*\)","\[.*\]", "^\d+.\d+"," \\d+ "]
-        special_characters = ['[^äöüßA-Za-z0-9 ]+']#['[\(,.:\);^]']
-        short_words = ['^\w{0,3}$', '^\s+']
-        self.__all_stopwords += url+email+zip+phone+dates+numbers_only+special_characters+website_stopwords+domain_stopwords+short_words
         
         for sentence in row.split("|"):
             out_sentence = []
@@ -369,9 +373,9 @@ class textFilter:
                 logger.info("Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape = self.__data.shape[0]))
             except KeyboardInterrupt:
                 logger.info('Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.')
+                return
             except Exception as e:
                 logger.info('Something with data cleaning of a chunk of samples went wrong: {error}.'.format(error =e))
-            finally:
                 return
         logger.info("Done cleaning of whole dataset!")    
 
