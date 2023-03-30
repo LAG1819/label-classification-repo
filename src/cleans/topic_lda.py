@@ -70,10 +70,22 @@ class TopicExtractor:
         else:
             self.__stopwords = stopwords.words('german')
 
-        __filenames =  str(os.path.dirname(__file__)).split("src")[0] +r'files\02_clean\topic_extraction_'+lang+'.log'
-        logging.basicConfig(filename=__filenames, encoding='utf-8', level=logging.DEBUG)
-        logging.info(f"Topic Extraction with Language {self.__lang} and data file {self.__source_path} (source) started. Target file is {self.__target_path}")       
 
+        # Create logger and assign handle
+        logger = logging.getLogger("Topic")
+
+        handler  = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+
+        __filenames =  str(os.path.dirname(__file__)).split("src")[0] +r'files\02_clean\logs\topic_extraction_'+lang+'.log'
+        fh = logging.FileHandler(filename=__filenames)
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+        logger.addHandler(fh)       
+
+        logger.info(f"Topic Extraction with Language {self.__lang} and data file {self.__source_path} (source) started. Target file is {self.__target_path}")
     
     def load_data(self):
         """Read cleaned text stored in source path
@@ -81,6 +93,7 @@ class TopicExtractor:
         Returns:
             DataFrame: Returns a pandas DataFrame containing domain name of url link (DOMAIN), url link (URL), cleaned texts(URL_TEXT), language of text (LANG) and CLASS (optional).
         """
+        logger = logging.getLogger("Topic")
         df_path = str(os.path.dirname(__file__)).split("src")[0] + self.__source_path
         df_t_path = str(os.path.dirname(__file__)).split("src")[0] + self.__target_path
 
@@ -88,8 +101,8 @@ class TopicExtractor:
         if self.__zentroid:
             data = pd.read_feather(df_path)
             raw_data = data.groupby("CLASS").agg({'URL_TEXT':lambda x: "|".join(list(x))})#['URL_TEXT'].apply(list)
-            logging.info("[{log}]Total of k-Means centroid data to extract topics: {all}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, l=raw_data.shape))
-            print("[{log}]Total of k-Means centroid data to extract topics: {all}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, l=raw_data.shape))
+            logger.info("Total of k-Means centroid data to extract topics: {all}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, l=raw_data.shape))
+            print("Total of k-Means centroid data to extract topics: {all}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, l=raw_data.shape))
         else:
             data = pd.read_feather(df_path)
 
@@ -108,8 +121,8 @@ class TopicExtractor:
             print("Raw data (total):", data.shape)
             print("Raw data:", raw_data.shape)
             print("Topiced data:", topiced_data.shape)
-            logging.info("[{log}]Total of data to extract topics: {all}. Total of data already with extracted topic: {t}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, t = topiced_data.shape,l=raw_data.shape))
-            print("[{log}]Total of data to extract topics: {all}. Total of data already with extracted topic: {t}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, t = topiced_data.shape,l=raw_data.shape))          
+            logger.info("Total of data to extract topics: {all}. Total of data already with extracted topic: {t}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, t = topiced_data.shape,l=raw_data.shape))
+            print("Total of data to extract topics: {all}. Total of data already with extracted topic: {t}. Total of data with no extracted topics yet:{l}".format(log=datetime.now(), all = data.shape, t = topiced_data.shape,l=raw_data.shape))          
         return raw_data
 
    
@@ -233,14 +246,20 @@ class TopicExtractor:
     def run(self):
         """Run function of TopicExtractor class. First generate_topic() is rowwise called, than empty values will be replaced by empty strings.
         """
+        logger = logging.getLogger("Topic")
         df_chunks = self.split_dataframe()
         print("Size of full dataset: {dataset}. Number of chunks: {chunks}".format(dataset = self.__data.shape[0], chunks = len(df_chunks)))
-        logging.info("[{log}]Topic extraction started".format(log = datetime.now()))
+        logger.info("Topic extraction started".format(log = datetime.now()))
         for i, chunk in enumerate(df_chunks):
-            logging.info("[{log}]Topic extraction with LDA of data sampleset {number} with size {size} started".format(log = datetime.now(), number = i, size = chunk.shape))
+            logger.info("Topic extraction with LDA of data sampleset {number} with size {size} started".format(log = datetime.now(), number = i, size = chunk.shape))
             chunk_c = chunk.copy()
             chunk_c['TOPIC']=chunk_c[self.__text_col].apply(lambda row: self.__generate_topic(row))
             chunk_c.replace(np.nan, "",regex = False, inplace = True)
             self.save_data(chunk_c)
-            logging.info("[{log}]Topic extraction of data sampleset {number} with size {size} of dataframe {df} is finished.".format(log = datetime.now(), number = i,size =chunk_c.shape, df = self.__data.shape))
-        logging.info("[{log}]Topic extraction of dataframe {df} is finished.".format(log = datetime.now(), df = self.__data.shape))
+            logger.info("Topic extraction of data sampleset {number} with size {size} of dataframe {df} is finished.".format(log = datetime.now(), number = i,size =chunk_c.shape, df = self.__data.shape))
+        logger.info("Topic extraction of dataframe {df} is finished.".format(log = datetime.now(), df = self.__data.shape))
+
+lang = 'de'
+source = r"files\02_clean\pristine_cleaned_texts_"+lang+r".feather"
+target = r"files\02_clean\pristine_topiced_texts_"+lang+r".feather"
+TopicExtractor(s_path = source, t_path = target,lang = lang).run()

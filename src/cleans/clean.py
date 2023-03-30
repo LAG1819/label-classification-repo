@@ -73,7 +73,6 @@ class textFilter:
             chunk_size (int, optional): Size of DataFrame chunk to split DataFrame into. Defaults to 300.
         """
         # Create logger and assign handle
-        
         logger = logging.getLogger("Cleaning")
 
         handler  = logging.StreamHandler()
@@ -81,7 +80,7 @@ class textFilter:
         logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
 
-        __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'files\02_clean\data_cleaning_'+lang+r'.log'
+        __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'files\02_clean\logs\data_cleaning_'+lang+r'.log'
         fh = logging.FileHandler(filename=__filenames)
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
@@ -378,8 +377,3 @@ class textFilter:
                 logger.info('Something with data cleaning of a chunk of samples went wrong: {error}.'.format(error =e))
                 return
         logger.info("Done cleaning of whole dataset!")    
-
-lang = 'en'
-source = r"files\01_crawl\pristine_raw_texts_"+lang+r".feather"
-target = r"files\02_clean\pristine_cleaned_texts_"+lang+r".feather"
-textFilter(lang = lang,s_path = source, t_path = target ).run()
