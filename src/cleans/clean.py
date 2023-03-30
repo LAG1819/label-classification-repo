@@ -30,7 +30,7 @@ from datetime import datetime
 class textFilter:
     """Class to clean and filter raw texts (raw_texts.json) that had been crawled in previous step. 
     """
-    def __init__(self,lang:str, s_path:str = "", t_path:str = "", stopwords:list = [], pattern:list = [], chunk_size:int = 10):
+    def __init__(self,lang:str, s_path:str = "", t_path:str = "", stopwords:list = [], pattern:list = [], chunk_size:int = 100):
         """Initialise a textFilter object that can clean raw html text.
 
         Args:
@@ -62,7 +62,7 @@ class textFilter:
         if t_path: 
             self.__target_path = t_path
         else: 
-            self.__target_path =r"files\02_clean\cleaned_texts_"+self.__lang+".feather"
+            self.__target_path =r"files\02_clean\cleaned_texts_"+self.__lang+r".feather"
 
         if s_path:
             self.__source_path = s_path
@@ -78,10 +78,8 @@ class textFilter:
 
         if self.__lang == 'de':
             self.__nlp = spacy.load("de_dep_news_trf") # trained on bert based german cased
-        elif self.__lang == 'en':
+        if self.__lang == 'en':
             self.__nlp = spacy.load("en_core_web_trf")
-        else:
-            self.__nlp = spacy.load("de_dep_news_trf")
 
         logger.info(f"Data Preprocessing and Cleaning with Language {self.__lang} and data file {self.__source_path} (source) created. Target file is {self.__target_path}")
 
@@ -151,30 +149,25 @@ class textFilter:
             str: pre cleaned text of on sample.
         """
         output = []
-        
+
         xml = ["(?:<from.*?>)(.*?)(?:<\\/from>)"]
         html = ["<(?:\"[^\"]*\"['\"]*|'[^']*'['\"]*|[^'\">])+>"]
-        try:
-            #04:57,'07-05-2018'
-            for sentence in row.split("|"):
-                self.__pattern_list += xml+html+[r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707', r'\xe2',r'\x80',r"\x8b", r"{{\.*}}", r"\x9d", r"\u200b"]# only digits: r'\b[0-9]+\b\s*'
+        self.__pattern_list += xml+html+[r'^@.*\{.*\}', r'^\..*\{.*\}',r'\s\s+',r'\n',r'\xa0',r'dbx707', r'\xe2',r'\x80',r"\x8b", r"{{\.*}}", r"\x9d", r"\u200b"]# only digits: r'\b[0-9]+\b\s*'
+        
+        for sentence in row.split("|"):
+            if sentence != "" and sentence != '\n':        
                 for pattern in self.__pattern_list:
                     sentence = re.sub(pattern,'',sentence)
                 #remove any word shorter than 3 characters
                 out = re.sub(r'^\w{0,3}$','',sentence)
                 output.append(out)
-            
-            #output = list(filter(lambda x: len(x) > 3,output))
-            output = list(set(list(filter(None,output))))
-            
-            output = "|".join(output)
+        
+        #output = list(filter(lambda x: len(x) > 3,output))
+        output = list(set(list(filter(None,output))))
+        
+        output = "|".join(output)
 
-        except Exception as e:
-            print(e)
-            output = ""
-
-        finally: 
-            return output
+        return output
 
    
     def stopword_remove(self,row:str) -> str:
@@ -375,11 +368,14 @@ class textFilter:
                 # self.save_data(chunk_lem)
                 logger.info("Data chunk {number} with {size} of {shape} total samples had been cleaned.".format(number = i,size =chunk.shape, shape = self.__data.shape[0]))
             except KeyboardInterrupt:
-                print(KeyboardInterrupt)
-                logger.warning('Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.')
-                return
+                logger.info('Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.')
             except Exception as e:
-                print(e)
-                logger.warning('Something with data cleaning of a chunk of samples went wrong: {error}.'.format(error =e))
+                logger.info('Something with data cleaning of a chunk of samples went wrong: {error}.'.format(error =e))
+            finally:
                 return
         logger.info("Done cleaning of whole dataset!")    
+
+lang = 'en'
+source = r"files\01_crawl\pristine_raw_texts_"+lang+r".feather"
+target = r"files\02_clean\pristine_cleaned_texts_"+lang+r".feather"
+textFilter(lang = lang,s_path = source, t_path = target ).run()
