@@ -62,3 +62,12 @@ INFO:root:[2023-01-14 21:30:53.463446]Topic extraction of data sampleset 26 with
 INFO:root:[2023-01-14 21:30:53.464441]Topic extraction with LDA of data sampleset 27 with size (300, 6) started
 INFO:root:[2023-01-14 21:37:44.900274]Topic extraction of data sampleset 27 with size (300, 7) of dataframe (24003, 6) is finished.
 INFO:root:[2023-01-14 21:37:44.900274]Topic extraction with LDA of data sampleset 28 with size (300, 6) started
+[2023-03-30 11:49:15,016]INFO|Topic|Topic Extraction with Language en and data file files\02_clean\pristine_cleaned_texts_en.feather (source) started. Target file is files\02_clean\pristine_topiced_texts_en.feather
+[2023-03-30 11:49:15,017]INFO|Topic|Topic extraction started
+[2023-03-30 11:49:15,017]INFO|Topic|Topic extraction with LDA of data sampleset 0 with size (300, 7) started
+[2023-03-30 11:53:44,355]INFO|Topic|Topic extraction of data sampleset 0 with size (300, 8) of dataframe (857, 7) is finished.
+[2023-03-30 11:53:44,356]INFO|Topic|Topic extraction with LDA of data sampleset 1 with size (300, 7) started
+[2023-03-30 11:56:50,100]INFO|Topic|Topic extraction of data sampleset 1 with size (300, 8) of dataframe (857, 7) is finished.
+[2023-03-30 11:56:50,100]INFO|Topic|Topic extraction with LDA of data sampleset 2 with size (257, 7) started
+[2023-03-30 11:59:13,485]INFO|Topic|Topic extraction of data sampleset 2 with size (257, 8) of dataframe (857, 7) is finished.
+[2023-03-30 11:59:13,486]INFO|Topic|Topic extraction of dataframe (857, 7) is finished.

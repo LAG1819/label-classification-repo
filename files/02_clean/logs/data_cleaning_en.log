@@ -355,3 +355,50 @@ INFO:root:[2023-01-18 02:07:41.051284]Data chunk 54 with (300, 5) of 16809 total
 INFO:root:[2023-01-18 02:15:28.773592]Data chunk 55 with (300, 5) of 16809 total samples had been cleaned.
 INFO:root:[2023-01-18 02:15:40.690134]Data chunk 56 with (9, 5) of 16809 total samples had been cleaned.
 INFO:root:[2023-01-18 02:15:40.690134] Done cleaning!
+[2023-03-30 10:50:42,253]INFO|Cleaning|Data Preprocessing and Cleaning with Language en and data file files\01_crawl\pristine_raw_texts_en.feather (source) created. Target file is files\02_clean\pristine_cleaned_texts_en.feather
+[2023-03-30 10:50:42,255]INFO|Cleaning|Data cleaning started
+[2023-03-30 10:50:42,255]INFO|Cleaning|New chunk starts cleaning. Total cleaned: 0
+[2023-03-30 11:02:15,417]INFO|Cleaning|Non textual elements and stopwords had been removed.
+[2023-03-30 11:02:18,157]INFO|Cleaning|Languages had been detected and filtered.
+[2023-03-30 11:02:18,229]INFO|Cleaning|Data chunk 0 with (100, 6) of 971 total samples had been cleaned.
+[2023-03-30 11:02:18,230]INFO|Cleaning|New chunk starts cleaning. Total cleaned: 100
+[2023-03-30 11:21:53,626]INFO|Cleaning|Data cleaning of a chunk of samples had been interrupted by KeyboardInterrupt.
+[2023-03-30 11:29:08,774]INFO|Cleaning|Data Preprocessing and Cleaning with Language en and data file files\01_crawl\pristine_raw_texts_en.feather (source) created. Target file is files\02_clean\pristine_cleaned_texts_en.feather
+[2023-03-30 11:29:08,775]INFO|Cleaning|Data cleaning started
+[2023-03-30 11:29:08,775]INFO|Cleaning|New chunk starts cleaning. Total cleaned: 0
+[2023-03-30 11:29:25,087]INFO|Cleaning|Non textual elements and stopwords had been removed.
+[2023-03-30 11:29:27,493]INFO|Cleaning|Languages had been detected and filtered.
+[2023-03-30 11:29:27,506]INFO|Cleaning|Data chunk 0 with (100, 6) of 872 total samples had been cleaned.
+[2023-03-30 11:29:27,506]INFO|Cleaning|New chunk starts cleaning. Total cleaned: 100
+[2023-03-30 11:29:45,104]INFO|Cleaning|Non textual elements and stopwords had been removed.
+[2023-03-30 11:29:47,114]INFO|Cleaning|Languages had been detected and filtered.
+[2023-03-30 11:29:47,136]INFO|Cleaning|Data chunk 1 with (100, 6) of 872 total samples had been cleaned.
+[2023-03-30 11:29:47,136]INFO|Cleaning|New chunk starts cleaning. Total cleaned: 200
+[2023-03-30 11:30:03,561]INFO|Cleaning|Non textual elements and stopwords had been removed.
+[2023-03-30 11:30:05,555]INFO|Cleaning|Languages had been detected and filtered.
+[2023-03-30 11:30:05,579]INFO|Cleaning|Data chunk 2 with (100, 6) of 872 total samples had been cleaned.
+[2023-03-30 11:30:05,580]INFO|Cleaning|New chunk starts cleaning. Total cleaned: 300
+[2023-03-30 11:30:19,121]INFO|Cleaning|Non textual elements and stopwords had been removed.
+[2023-03-30 11:30:20,782]INFO|Cleaning|Languages had been detected and filtered.
+[2023-03-30 11:30:20,807]INFO|Cleaning|Data chunk 3 with (100, 6) of 872 total samples had been cleaned.
+[2023-03-30 11:30:20,807]INFO|Cleaning|New chunk starts cleaning. Total cleaned: 400
+[2023-03-30 11:30:30,418]INFO|Cleaning|Non textual elements and stopwords had been removed.
+[2023-03-30 11:30:31,800]INFO|Cleaning|Languages had been detected and filtered.
+[2023-03-30 11:30:31,826]INFO|Cleaning|Data chunk 4 with (100, 6) of 872 total samples had been cleaned.
+[2023-03-30 11:30:31,826]INFO|Cleaning|New chunk starts cleaning. Total cleaned: 500
+[2023-03-30 11:30:41,095]INFO|Cleaning|Non textual elements and stopwords had been removed.
+[2023-03-30 11:30:42,426]INFO|Cleaning|Languages had been detected and filtered.
+[2023-03-30 11:30:42,453]INFO|Cleaning|Data chunk 5 with (100, 6) of 872 total samples had been cleaned.
+[2023-03-30 11:30:42,455]INFO|Cleaning|New chunk starts cleaning. Total cleaned: 600
+[2023-03-30 11:30:51,394]INFO|Cleaning|Non textual elements and stopwords had been removed.
+[2023-03-30 11:30:52,744]INFO|Cleaning|Languages had been detected and filtered.
+[2023-03-30 11:30:52,772]INFO|Cleaning|Data chunk 6 with (100, 6) of 872 total samples had been cleaned.
+[2023-03-30 11:30:52,772]INFO|Cleaning|New chunk starts cleaning. Total cleaned: 700
+[2023-03-30 11:31:03,417]INFO|Cleaning|Non textual elements and stopwords had been removed.
+[2023-03-30 11:31:04,887]INFO|Cleaning|Languages had been detected and filtered.
+[2023-03-30 11:31:04,917]INFO|Cleaning|Data chunk 7 with (100, 6) of 872 total samples had been cleaned.
+[2023-03-30 11:31:04,918]INFO|Cleaning|New chunk starts cleaning. Total cleaned: 800
+[2023-03-30 11:31:16,132]INFO|Cleaning|Non textual elements and stopwords had been removed.
+[2023-03-30 11:31:17,270]INFO|Cleaning|Languages had been detected and filtered.
+[2023-03-30 11:31:17,307]INFO|Cleaning|Data chunk 8 with (72, 6) of 872 total samples had been cleaned.
+[2023-03-30 11:31:17,308]INFO|Cleaning|Done cleaning of whole dataset!
