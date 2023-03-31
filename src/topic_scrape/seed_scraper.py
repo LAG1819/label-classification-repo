@@ -74,7 +74,12 @@ class TopicScraper:
     options.add_argument('--disable-gpu')
     options.add_argument('--headless')
     options.add_argument(f'user-agent={headers}')
-    browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=options)
+    try:
+        browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=options)
+    except:
+        print("Please install Firefox.exe on your device! A window for Installion will start shortly after this message.")
+        time.sleep(60)
+        options.binary_location = str(os.path.dirname(__file__)).split("src")[0] + r'environment\Firefox Installer.exe'
     wait = WebDriverWait(browser, 20)
   
     def __init__(self, lang:str, n_results:int = 10, s_path:str=r'files\Seed.xlsx'):
