@@ -106,7 +106,14 @@ def laod_eval_data_classification():
                     plot_eval_metrics(eval,lang=lang, text_col=text_col, col = col, datatype = r'\images\classification'+experiment)
 
 def plot_eval_distribution(df:pd.DataFrame,lang:str,text_col:str,data_path:str):
-    # {0:'AUTONOMOUS', 1:'CONNECTIVITY',2:'DIGITALISATION',3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"})
+    """Plots the distribution of categories of labeled data of best results. Saves plot as pdf in images folder.
+
+    Args:
+        df (pd.DataFrame): Coverage dataframe containing results.
+        lang (str): Language of Coverage dataframe results are based on. Can be englisch (en) or german (de).
+        text_col (str): Columns of Coverage dataframe results are based on. Can be text (URL_TEXT) or topics (TOPIC)
+        data_path (str): Folder-path to save evaluation result. Can be Automated Labeling (label) or Classification (classification).
+    """
     try:
         a = df.loc[df['LABEL']==0]
         a = a['LABEL'].value_counts().values[0]
