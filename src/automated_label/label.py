@@ -826,29 +826,3 @@ class Labeler:
         self.__apply_model()
         #save dataset with assigned labels
         self.__save_data()
-
-   
-    ####test of model loading###
-    # path =r'D:\University\Hochschule der Medien_M.Sc. Data Science\Master\Repository\ml-classification-repo\models\label\model_tuning_de\grid_search\model_10857_n_epochs_50_log_freq_10_l2_0.1_lr_0.002_optimizer_adam_2023-02-09\label_model.pkl'
-    # path2 = str(os.path.dirname(__file__)).split("src")[0] + r"models\label\trained_model_"+str(lang)+r".pkl"
-    # model = LabelModel(cardinality = 7, verbose=False)
-    # model2 = LabelModel(cardinality = 7,verbose = False)
-    # model.load(path)
-    # model2.load(path2)
-    # lfs = [
-    #             autonomous_keywords,
-    #             electrification_keywords,
-    #             digitalisation_keywords,
-    #             connectivity_keywords,
-    #             sustainability_keywords,
-    #             individualisation_keywords,
-    #             shared_keywords,
-    #             ]
-    # applier = PandasLFApplier(lfs=lfs)
-    # Y_test = topic_labeling.validate_df['LABEL'].to_numpy()
-    # L_test = applier.apply(df=topic_labeling.validate_df)
-    # acc = model.score(L=L_test, Y=Y_test, tie_break_policy="random")["accuracy" ] 
-    # acc2 = model2.score(L=L_test, Y=Y_test, tie_break_policy="random")["accuracy" ] 
-    # print(acc,acc2)
-    # print("FIN")
-
