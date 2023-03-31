@@ -258,8 +258,3 @@ class TopicExtractor:
             self.save_data(chunk_c)
             logger.info("Topic extraction of data sampleset {number} with size {size} of dataframe {df} is finished.".format(log = datetime.now(), number = i,size =chunk_c.shape, df = self.__data.shape))
         logger.info("Topic extraction of dataframe {df} is finished.".format(log = datetime.now(), df = self.__data.shape))
-
-lang = 'de'
-source = r"files\02_clean\pristine_cleaned_texts_"+lang+r".feather"
-target = r"files\02_clean\pristine_topiced_texts_"+lang+r".feather"
-TopicExtractor(s_path = source, t_path = target,lang = lang).run()
