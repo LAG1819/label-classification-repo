@@ -181,28 +181,6 @@ class Labeler:
             column (str, optional): Selected Column on which the data get labeled on.. Defaults to 'TOPIC'.
             partial (bool, optional):Selected type of data labeling. If True a partial data labeling is applied. If False a total data labeling is applied with help of a pretrained k-Means cluster. Defaults to True.
         """
-        # Create logger and assign handler
-        logger = logging.getLogger("Labeler")
-        if (logger.hasHandlers()):
-            logger.handlers.clear()
-
-        handler  = logging.StreamHandler()
-        handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
-        logger.addHandler(handler)
-        logger.setLevel(logging.DEBUG)
-
-        __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\label\model_tuning_'+lang+r'\automated_labeling_'+lang+r'.log'
-        fh = logging.FileHandler(filename=__filenames)
-        fh.setLevel(logging.DEBUG)
-        fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
-        logger.addHandler(fh)
-
-        logger = logging.getLogger("Labeler.randomSearch")
-        logger.setLevel(logging.INFO)
-        logger = logging.getLogger("Labeler.gridSearch")
-        logger.setLevel(logging.INFO)
-        logger = logging.getLogger("Labeler.bayesianOptim")
-        logger.setLevel(logging.INFO)
 
         self.lfs = [self.__autonomous_keywords, self.__electrification_keywords, self.__digitalisation_keywords, self.__connectivity_keywords, self.__sustainability_keywords,\
                     self.__individualisation_keywords, self.__shared_keywords]
@@ -213,13 +191,12 @@ class Labeler:
             if lang == 'en':
                 self.lfs = self.lfs + [self.__autonomous_cluster_e, self.__electrification_cluster_e, self.__digitalisation_cluster_e, self.__connectivity_cluster_e, self.__sustainability_cluster_e,\
                                        self.__individualisation_cluster_e, self.__shared_cluster_e]
-
+        self.applier = PandasLFApplier(lfs=self.lfs)
          
         logger = logging.getLogger("Labeler")
         self.__lang = lang
         self.__update_data = True
         self.__update_model = False
-        # self.L_train = None
         self.__label_model = None
         self.__text_col = column
         if s_path:
@@ -231,8 +208,6 @@ class Labeler:
             self.__target_path = t_path 
         else:
             self.__target_path = r"files\04_classify\labeled_texts_"+self.__lang+'_'+self.__text_col+".feather"
-        self.__data = self.load_data()
-        self.__train_df, self.__validate_df, self.__test_df, self.__train_test_df = self.__generate_trainTestdata(lang)
         self.__trial = self.__get_trial()
         self.__hpo_list = [("RandomSearch",self.__apply_randomSearch),("GridSearch",self.__apply_gridSearch), ("BayesianSearch",self.__apply_bayesianOptimization)]
 
@@ -306,7 +281,6 @@ class Labeler:
         """
         logger = logging.getLogger("Labeler")
         logger.info("Application of Labeling Functions: {f}".format(f = self.lfs))
-        self.applier = PandasLFApplier(lfs=self.lfs)
         
         """Alternative approach of LF application with Snorkel SparkLFApplier for a faster application. 
         Due to various error issues on the part of Snorkel no further utilization of this variant."""
@@ -811,6 +785,34 @@ class Labeler:
         """Main function. Combines the training of the model with the different hyperparameter optimization techniques, 
             the validation of the best model, applies it on the data and stores everything including the evaluation results.
         """
+        #load data and generate train, text, validaton data
+        self.__data = self.load_data()
+        self.__train_df, self.__validate_df, self.__test_df, self.__train_test_df = self.__generate_trainTestdata(lang)
+        # Create logger and assign handler
+        logger = logging.getLogger("Labeler")
+        if (logger.hasHandlers()):
+            logger.handlers.clear()
+
+        handler  = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+
+        __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\label\model_tuning_'+lang+r'\automated_labeling_'+lang+r'.log'
+        # if not os.path.exists(__filenames):
+        #     os.makedirs(__filenames)
+        fh = logging.FileHandler(filename=__filenames)
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+        logger.addHandler(fh)
+
+        logger = logging.getLogger("Labeler.randomSearch")
+        logger.setLevel(logging.INFO)
+        logger = logging.getLogger("Labeler.gridSearch")
+        logger.setLevel(logging.INFO)
+        logger = logging.getLogger("Labeler.bayesianOptim")
+        logger.setLevel(logging.INFO)
+
         #Start Label Model training and application
         logger = logging.getLogger("Labeler")
         logger.info(f"############################################################################ Run {self.__trial} - {self.__text_col} ########################################################################################")
@@ -826,3 +828,66 @@ class Labeler:
         self.__apply_model()
         #save dataset with assigned labels
         self.__save_data()
+
+    def evaluate_label_model(self):
+        """Evaluation of the best trained model by loading a given dataset of new manually labeled data stored in files/05_evaluation and 
+    calculating Accuracy and Matthew's Correlation Coefficent of the predicted results.
+        """
+        # Create logger and assign handler
+        logger = logging.getLogger("Evaluater")
+        if (logger.hasHandlers()):
+            logger.handlers.clear()
+
+        handler  = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+
+        __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\label\evaluation_automated_labeling_'+self.__lang+r'.log'
+        fh = logging.FileHandler(filename=__filenames)
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
+        logger.addHandler(fh)
+        logger = logging.getLogger("Evaluater")
+        
+        #start evaluation on new dataset
+        dp = r"files\05_evaluation\evaluation_labeled_texts_"+self.__lang+r".feather"
+        model_path = str(os.path.dirname(__file__)).split("src")[0] + r'models\label\trained_model_'+self.__lang+'_'+self.__text_col+'.pkl'
+        
+        logger.info(f"####################################### Language: {self.__lang}, Text: {self.__text_col}, Data: {dp}, Model: {model_path}#########################################################")
+        logger.info(f"Evaluation of trained model on new dataset started.")
+        try:        
+            # load and prepare data
+            evaluation_df = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + dp)
+            evaluation_df.rename(columns = {self.__text_col: 'text'},inplace=True)
+            Y_val = evaluation_df['LABEL'].to_numpy()
+
+            #load model and apply
+            label_model = LabelModel(cardinality =7, verbose=False,device = DEVICE)            
+            
+            L_val= self.applier.apply(df=evaluation_df)
+            label_model.load(model_path)
+
+            #calculate results
+            results = label_model.score(L=L_val, Y=Y_val, tie_break_policy="random", metrics = ['accuracy', 'matthews_corrcoef'])
+
+            mcc = results['matthews_corrcoef']
+            acc = results['accuracy']
+            logger.info(f"##################################### RESULTS - Accuracy: {acc}, MCC: {mcc} #####################################")
+        except Exception as e:
+            logger.info(e)
+
+    def predict_label(self, text:str):
+        model_path = str(os.path.dirname(__file__)).split("src")[0] + r'models\label\trained_model_'+self.__lang+'_'+self.__text_col+'.pkl'
+        df = pd.DataFrame({'text': [text]})
+        df_l = self.applier.apply(df=df)
+        
+        label_model = LabelModel(cardinality =7, verbose=False,device = DEVICE) 
+        label_model.load(model_path)
+        Label = label_model.predict(L = df_l)
+        print(Label)
+
+# test_text = "Autonomes Fahren ermöglicht es, dass Fahrzeuge selbstständig und ohne menschliches Eingreifen sicher auf den Straßen unterwegs sind."
+# lang ='de'
+# col = 'TOPIC'
+# Labeler(lang = lang, column = col).predict_label(test_text)
