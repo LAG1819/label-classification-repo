@@ -77,7 +77,7 @@ class TopicScraper:
     browser = webdriver.Firefox(service=Service(GeckoDriverManager().install()),options=options)
     wait = WebDriverWait(browser, 20)
   
-    def __init__(self, lang:str, n_results:int = 0, s_path:str=r'files\Seed.xlsx'):
+    def __init__(self, lang:str, n_results:int = 10, s_path:str=r'files\Seed.xlsx'):
         """Initialisation of Topic Crawler. Sets Selenium Browser and calls load_data. 
 
         Args:
