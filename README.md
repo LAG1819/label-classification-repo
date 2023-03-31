@@ -17,8 +17,13 @@ In combination, this should allow industry-specific problems from the field of N
 ```python
 git clone https://github.com/LGHDM/ml-classification-repo.git
 ```
+[2.0] Start and install requirements
 
-[2] Create virtual environment:
+[2.1] Install requirements directly:
+```python
+pip install -r environment/requirements.txt
+```
+[2.2] Create virtual environment and install requirements on venv:
 
 Anaconda:
 ```python
@@ -30,18 +35,11 @@ Windows:
 py -3 -m venv .venv
 .venv\scripts\activate
 ```
-
-[3] Install requirements:
-```python
-pip install -r environment/requirements.txt
-```
-
-[4] Add Github Token in [GITHUB_TOKEN.json](https://github.com/LGHDM/ml-classification-repo/blob/main/files/GITHUB_TOKEN.json)
+[3] Add Github Token in [GITHUB_TOKEN.json](https://github.com/LGHDM/ml-classification-repo/blob/main/files/GITHUB_TOKEN.json)
 ```console
 {"GITHUB_TOKEN": "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
 ```
-
-[5] Adapt and Review prefered Classes in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) (only if needed!):
+[4] Adapt and Review prefered Classes in [**Seed.xlsx**](https://github.com/LGHDM/ml-classification-repo/blob/main/files/Seed.xlsx) (only if needed!):
 - Seed data:
    - Labeling classes and related seed keywords to crawl: CLASS,KEYWORD_DE/KEYWORD_EN
    - Companies and others related to industry and its url: KEYWORD, URL  
@@ -50,7 +48,7 @@ pip install -r environment/requirements.txt
 - Labeling classes and matching keywords:
    - Predfined labeling classes: AUTONOMOUS; ELECTRIFICATION, CONNECTIVITY, SHARED, SUSTAINABILITY, DIGITALISATION, INDIVIDUALISATION.
 
-[6] Adapt and Review prefered Classes in **Data Cleaning, Automated Labeling and Classification** (only if needed!):
+[5] Adapt and Review prefered Classes in **Data Cleaning, Automated Labeling and Classification** (only if needed!):
 - [Data Cleaning](https://github.com/LGHDM/ml-classification-repo/tree/main/src/cleans):
    - Adapt industry-specific stopwords.
 - [Automated Labeling](https://github.com/LGHDM/ml-classification-repo/tree/main/src/automated_label):
@@ -59,12 +57,37 @@ pip install -r environment/requirements.txt
 - [Classification](https://github.com/LGHDM/ml-classification-repo/tree/main/src/classification):
    - Adapt number of classes (number labels) upon invoking the classifier model
 
-## Usage
-The generated classifier can classify random industry-specifc texts into the dedicated classes and predicts the best fitting class.
+[6] Start main menu OR customize framework:
+
+[6.1] Start main menu and follow the instructions:
+- Automatic start of the menu:
+```console
+ml-classification-repo
+```
+- "Manual" start of the menu:
 ```python
-example_text = "This is an example text. It contains automotive specific words like battery, electrical, loading station, autonomic driving and many more car words."
-classifier = pickle.load(open(str(os.path.dirname(__file__)).split("src")[0] + r"models/classifier.pkl", 'rb')) 
-predicted_topic = classifier.predict(example_text)
+py __main__.p
+```
+[6.2] Customize framework:
+Please follow the tutorials in the documentations for further help and information.
+
+## Usage
+The generated label modell and classification model can label and classify random industry-specifc texts into the dedicated classes and predicts the best fitting class.
+- Label model:
+```python
+from src.automated_label.label import predict_label
+col = 'TOPIC'
+language = 'de'
+example_text = "Autonomes Fahren ermöglicht es, dass Fahrzeuge selbstständig und ohne menschliches Eingreifen sicher auf den Straßen unterwegs sind."
+Labeler(lang = lang, column = col).predict_label(test_text)
+```
+
+- Classification model:
+```python
+from src.classifier.classifier_model import predict
+language = 'de'
+example_text = "Autonomes Fahren ermöglicht es, dass Fahrzeuge selbstständig und ohne menschliches Eingreifen sicher auf den Straßen unterwegs sind."
+predict(language,example_text)
 ```
 **What it offers:** A basic framwork to develop and adapt to industry specific text classification problems.  
 **What it doesn't offer:** The framework is designed for user-specific requirements and must be adapted accordingly before it can be used!
