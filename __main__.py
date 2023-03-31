@@ -24,6 +24,7 @@ from src.cleans.topic_lda import *
 from src.automated_label.cluster_kmeans import *
 from src.automated_label.label import *
 from src.classifier.classifier_model import run as classifier_run
+from src.classifier.classifier_model import predict as predict_class
 from sys import exit
 
 
@@ -232,6 +233,23 @@ def classify_data(lang:str, data_path:str):
     else: 
         classifier_run(lang = lang, col = 'TOPIC')
 
+def predict(lang:str, text:str):
+    predict_class(lang = lang, sentence = text)
+    ##Test new sample sentence german###
+    # predict("Connectivität ist digitale Vernetzung")
+    # predict("Tesla unterstützt autonomes Fahren.")
+    # predict("Anpassungen meines Autos sind individuell.")
+    # predict("Umwelt- und Nachhaltigkeitsprobleme wie der Klimawandel,\
+    #          der Verlust der Artenvielfalt und die Verschmutzung von \
+    #         Luft und Wasser erfordern eine gemeinsame Anstrengung auf globaler Ebene, um wirksame Lösungen zu finden.")
+    ##Test new sample sentence english###
+    # predict("Connectivity is digital networking", lang = 'en')
+    # predict("Tesla supports autonomous driving.", lang = 'en')
+    # predict("Customizations of my car are individual.", lang = 'en')
+    # predict("Environmental and sustainability issues such as\
+    #          climate change, biodiversity loss, and air and water\
+    #          pollution require a concerted effort at the global level to find effective solutions.", lang = 'en')
+
 def main_menu(lang:str):
     """Main Menu defined for external user.
 
@@ -252,12 +270,13 @@ def main_menu(lang:str):
             (4) Execute topic extraction.\n\
             (5) Execute automated labeling: k-Means. \n\
             (6) Execute automated labeling: Train and Apply Label Modell.\n\
-            (7) Execute classification: Train and Apply Classification Modell. ")
+            (7) Execute classification: Train and Apply Classification Modell.\n\
+            (8) Predict class of a text.")
 
     wrongInput = True
     while wrongInput:
         selected_execution = int(input())
-        if selected_execution < 8:
+        if selected_execution <= 8:
             wrongInput = False
         else:
             print("Wrong Input. Please retry!")
@@ -371,12 +390,21 @@ def main_menu(lang:str):
                 print("Wrong input. Take custom data? (y/n)")
         classify_data(lang,data_path=data_path)
 
+    elif selected_execution == 8:
+        continueSession = True
+        while continueSession:
+            wrongAnswer = True
+            while wrongAnswer:
+                text = input("Please submit a text to be classified: ")
+                if not text.isdigit():
+                    wrongAnswer = False
+            predict(lang,text)
+            continues = input("Do you want to predict another text? (y/n): ")
+            if continues == "n":
+                continueSession = False
+
 
 if __name__ == "__main__":
     lang = select_language()
     main_menu(lang)
-    #C:/Users/Luisa/Documents/DataScience_M.Sc._HDM/Masterarbeit/Repository/ml-classification-repo/files/01_crawl/pristine_raw_texts_de.feather
-
-    # lang = 'de'
-    # df = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0] + r'\files\02_clean\topiced_texts_'+lang+'.feather')
-    # print(df)
+   
