@@ -374,19 +374,7 @@ def make_tarfile(output_filename:str, source_dir:str):
 # load_raw_data()
 # load_clean_data()
 # load_labeled_data()
-load_eval_data_automated_label()
+# load_eval_data_automated_label()
 # laod_eval_data_classification()
-
-# print("DE - Topic -0")
 # calculate_runtime((2023,3,16,8,45,0,4,2,1),(2023,3,16,11,13,50,7,6,1))
 # make_tarfile("compressed_ml-classification-repo","ml-classification-repo")
-
-
-# Experiment1: 
-# DE d:\University\HDM\Master\Repository\ml-classification-repo\models\classification\pytorch_tuning_de\hyperband_de\_train_model_1c4d8_00002_2_batch_size=15,epoch=5,lr=0.0002_2023-03-26_17-18-56
-# EN D:\University\HDM\Master\Repository\ml-classification-repo\models\classification\pytorch_tuning_en\hyperband_en\_train_model_15c2a_00001_1_batch_size=2,epoch=7,lr=0.0014_2023-03-25_12-44-34\checkpoint_000001
-
-# Experiment2:
-# DE d:\University\HDM\Master\Repository\ml-classification-repo\models\classification\pytorch_tuning_de\hyperband_de\_train_model_4e1a7_00002_2_batch_size=13,epoch=3,lr=0.0002_2023-03-27_08-23-47
-# EN d:\University\HDM\Master\Repository\ml-classification-repo\models\classification\pytorch_tuning_en\bohb_search_en\_train_model_879c7a8d_2_batch_size=2,epoch=7,lr=0.0002_2023-03-28_05-14-10
-
