@@ -1,0 +1,15 @@
+[2023-03-31 23:10:40,647]INFO|Evaluater|####################################### Language: de, Text: TOPIC, Data: files\05_evaluation\evaluation_labeled_texts_de.feather, Model: d:\University\HDM\Master\Repository\ml-classification-repo\models\label\trained_model_de.pkl#########################################################
+[2023-03-31 23:10:40,649]INFO|Evaluater|Evaluation of trained model on new dataset started.
+[2023-03-31 23:11:12,257]INFO|Evaluater|##################################### RESULTS - Accuracy: 0.5947712418300654, MCC: 0.38803947850046844 #####################################
+[2023-03-31 23:15:10,524]INFO|Evaluater|####################################### Language: de, Text: TOPIC, Data: files\05_evaluation\evaluation_labeled_texts_de.feather, Model: d:\University\HDM\Master\Repository\ml-classification-repo\models\label\trained_model_de.pkl#########################################################
+[2023-03-31 23:15:10,526]INFO|Evaluater|Evaluation of trained model on new dataset started.
+[2023-03-31 23:15:35,711]INFO|Evaluater|##################################### RESULTS - Accuracy: 0.5947712418300654, MCC: 0.38803947850046844 #####################################
+[2023-03-31 23:15:35,715]INFO|Evaluater|####################################### Language: de, Text: URL_TEXT, Data: files\05_evaluation\evaluation_labeled_texts_de.feather, Model: d:\University\HDM\Master\Repository\ml-classification-repo\models\label\trained_model_de.pkl#########################################################
+[2023-03-31 23:15:35,716]INFO|Evaluater|Evaluation of trained model on new dataset started.
+[2023-03-31 23:15:50,898]INFO|Evaluater|##################################### RESULTS - Accuracy: 0.08496732026143791, MCC: 0.019401376338330622 #####################################
+[2023-03-31 23:18:38,876]INFO|Evaluater|####################################### Language: de, Text: TOPIC, Data: files\05_evaluation\evaluation_labeled_texts_de.feather, Model: d:/University/HDM/Master/Repository/ml-classification-repo/models\label\trained_model_de_TOPIC.pkl#########################################################
+[2023-03-31 23:18:38,877]INFO|Evaluater|Evaluation of trained model on new dataset started.
+[2023-03-31 23:18:42,022]INFO|Evaluater|##################################### RESULTS - Accuracy: 0.5947712418300654, MCC: 0.38803947850046844 #####################################
+[2023-03-31 23:18:42,050]INFO|Evaluater|####################################### Language: de, Text: URL_TEXT, Data: files\05_evaluation\evaluation_labeled_texts_de.feather, Model: d:/University/HDM/Master/Repository/ml-classification-repo/models\label\trained_model_de_URL_TEXT.pkl#########################################################
+[2023-03-31 23:18:42,080]INFO|Evaluater|Evaluation of trained model on new dataset started.
+[2023-03-31 23:18:48,540]INFO|Evaluater|##################################### RESULTS - Accuracy: 0.6797385620915033, MCC: 0.14952350762700534 #####################################

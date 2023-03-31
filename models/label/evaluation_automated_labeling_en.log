@@ -1,0 +1,12 @@
+[2023-03-31 23:15:50,900]INFO|Evaluater|####################################### Language: en, Text: TOPIC, Data: files\05_evaluation\evaluation_labeled_texts_en.feather, Model: d:\University\HDM\Master\Repository\ml-classification-repo\models\label\trained_model_en.pkl#########################################################
+[2023-03-31 23:15:50,900]INFO|Evaluater|Evaluation of trained model on new dataset started.
+[2023-03-31 23:16:09,222]INFO|Evaluater|##################################### RESULTS - Accuracy: 0.4892703862660944, MCC: 0.4075082341314814 #####################################
+[2023-03-31 23:16:09,224]INFO|Evaluater|####################################### Language: en, Text: URL_TEXT, Data: files\05_evaluation\evaluation_labeled_texts_en.feather, Model: d:\University\HDM\Master\Repository\ml-classification-repo\models\label\trained_model_en.pkl#########################################################
+[2023-03-31 23:16:09,225]INFO|Evaluater|Evaluation of trained model on new dataset started.
+[2023-03-31 23:16:21,389]INFO|Evaluater|##################################### RESULTS - Accuracy: 0.08583690987124463, MCC: 0.003998270751638811 #####################################
+[2023-03-31 23:18:48,541]INFO|Evaluater|####################################### Language: en, Text: TOPIC, Data: files\05_evaluation\evaluation_labeled_texts_en.feather, Model: d:/University/HDM/Master/Repository/ml-classification-repo/models\label\trained_model_en_TOPIC.pkl#########################################################
+[2023-03-31 23:18:48,542]INFO|Evaluater|Evaluation of trained model on new dataset started.
+[2023-03-31 23:18:51,069]INFO|Evaluater|##################################### RESULTS - Accuracy: 0.4892703862660944, MCC: 0.4075082341314814 #####################################
+[2023-03-31 23:18:51,070]INFO|Evaluater|####################################### Language: en, Text: URL_TEXT, Data: files\05_evaluation\evaluation_labeled_texts_en.feather, Model: d:/University/HDM/Master/Repository/ml-classification-repo/models\label\trained_model_en_URL_TEXT.pkl#########################################################
+[2023-03-31 23:18:51,071]INFO|Evaluater|Evaluation of trained model on new dataset started.
+[2023-03-31 23:18:53,551]INFO|Evaluater|##################################### RESULTS - Accuracy: 0.22746781115879827, MCC: 0.028351744303379837 #####################################
