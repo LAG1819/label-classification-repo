@@ -75,7 +75,7 @@ Please follow the tutorials in the documentations for further help and informati
 The generated label modell and classification model can label and classify random industry-specifc texts into the dedicated classes and predicts the best fitting class.
 - Label model:
 ```python
-from src.automated_label.label import predict_label
+from src.automated_label.label import *
 col = 'TOPIC'
 language = 'de'
 example_text = "Autonomes Fahren ermöglicht es, dass Fahrzeuge selbstständig und ohne menschliches Eingreifen sicher auf den Straßen unterwegs sind."
