@@ -38,7 +38,9 @@ from ray.tune import CLIReporter
 from ray.tune.experiment.trial import Trial
 from functools import partial
 from tqdm import tqdm
+import transformers
 
+transformers.logging.set_verbosity_error()
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:256" #512,256
 N_CLASS = 7 #Number of classes to train classifier. Defaults to 7
 NUM_WORKERS = 1 #Number of workers for DataLoader. Defaults to 1.
@@ -163,8 +165,9 @@ def _load_data(text_col:str,dir:str) -> dict:
     _df_path = os.path.join(str(os.path.dirname(__file__)).split("src")[0],dir)
     _df = pd.read_feather(_df_path)
     _data = _df.replace(np.nan, "",regex = False)
-    # data = data[:100]
     _data['text'] = _data[text_col]
+    _data = _data[_data['LABEL']!= -1]
+    _data = _data[_data['LABEL']!= -2]
     
     _train, _validate, _test = np.split(_data.sample(frac=1, random_state=42, axis = 0, replace = False),[int(.6*len(_data)), int(.8*len(_data))])
 
@@ -388,7 +391,7 @@ def _train_model(config:dict, data_dir:str, lang:str, col:str):
             pr_ma.add_batch(predictions=predictions, references=batch["labels"])
             recall.add_batch(predictions=predictions, references=batch["labels"])
             # metric.add_batch(predictions=predictions, references=batch["labels"], average = None)
-                
+            
             mcc_metrics = mcc.compute(average = 'macro')   
             acc_metric = accuracy.compute()
             f1_metric_micro = f1_mi.compute(labels = [0,1,2,3,4,5,6], average='micro')
@@ -765,7 +768,14 @@ def run(lang:str, col:str,data_path:str = None, list_of_hpo =[("RandomSearch",ra
             ray.shutdown()
             torch.cuda.empty_cache()
             return
-def validate_and_save_specific_model_manually():
+def evaluate_best_model(lang:str='de',text_col:str = 'TOPIC',data_path:str = r"files\05_evaluation\evaluation_labeled_texts_de.feather"):
+    """_summary_
+
+    Args:
+        lang (str, optional): _description_. Defaults to 'de'.
+        text_col (str, optional): _description_. Defaults to 'TOPIC'.
+        data_path (regexp, optional): _description_. Defaults to r"files\05_evaluation\evaluation_labeled_texts_de.feather".
+    """
     # Create logger and assign handler
     logger = logging.getLogger("Classification")
     if (logger.hasHandlers()):
@@ -776,22 +786,90 @@ def validate_and_save_specific_model_manually():
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
 
-    __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\pytorch_tuning_'+lang+r'\classifier_training_'+lang+r'.log'
+    __filenames =  str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\classifier_evaluation_'+lang+r'.log'
     fh = logging.FileHandler(filename=__filenames)
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(logging.Formatter("[%(asctime)s]%(levelname)s|%(name)s|%(message)s"))
     logger.addHandler(fh)
-
-    text_col = 'TOPIC'
-    lang='de'
-    best_result = {"Checkpoint": r"D:\University\HDM\Master\Repository\ml-classification-repo\models\classification\pytorch_tuning_de\bohb_search_de\_train_model_c764b777_3_batch_size=2,epoch=3,lr=0.0210_2023-03-22_01-14-42\checkpoint_000002","batch_size":2}
-    model_path = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+r'_TOPIC_2.pth'
-    model_name = 'trained_model_de_TOPIC_2'
-    data_path = r"files\04_classify\Experiment2\labeled_texts_"+lang+r"_TOPIC.feather"
-    _validate_model(text_col=text_col,lang=lang, data_path=data_path, best_result = best_result, model_path=model_path, model_name=model_name)
-
     
-def predict(sentence:str, lang:str,text_col = 'TOPIC'):
+    #assign variables
+    batch_size = 2
+    model_path = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\bert_'+lang+r'.pt'
+    model_name = 'trained_model_'+lang
+    torch.cuda.empty_cache()
+    logger = logging.getLogger("Classification")
+    
+    #start evaluation on new dataset
+    logger.info(f"####################################### Language: {lang}, Text: {text_col}, Data: {data_path}, Model: {model_name}#########################################################")
+    logger.info(f"Evaluation of trained model on new dataset started.")
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if lang == 'de':
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
+        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=N_CLASS).to(device)
+    elif lang == 'en':
+        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=N_CLASS).to(device)
+    data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+
+    model_state, optimizer_state = torch.load(model_path)
+    model.load_state_dict(model_state)
+    
+    #load data and transform for evaluation
+    df = pd.read_feather(os.path.join(str(os.path.dirname(__file__)).split("src")[0],data_path))
+    data = df.replace(np.nan, "",regex = False)
+    data['text'] = data[text_col]
+    data = data.loc[(data['LABEL'] >= 0) & (data['LABEL'] <= N_CLASS)]
+    dataset = {}
+    dataset['val'] = data[['LABEL','text']].to_dict('records')
+
+    tokenized_data = _preprocess_data(dataset, tokenizer)    
+    eval_dl = _transform_eval_data(tokenized_data,data_collator,batch_size)
+
+    accuracy_metric = evaluate.load("accuracy")
+    mcc_metric = evaluate.load("matthews_correlation")
+    try:    
+        model.eval()
+        for batch in eval_dl:
+            batch = {k: v.to(device) for k, v in batch.items()}
+            with torch.no_grad():
+                outputs = model(**batch)
+
+            logits = outputs.logits
+            predictions = torch.argmax(logits, dim=-1)
+            accuracy_metric.add_batch(predictions=predictions, references=batch["labels"])
+            mcc_metric.add_batch(predictions=predictions, references=batch["labels"])    
+                
+        acc= accuracy_metric.compute()['accuracy']
+        mcc = mcc_metric.compute(average = 'macro')['matthews_correlation']  
+
+        logger.info(f"##################################### RESULTS - Accuracy: {acc}, MCC: {mcc} #####################################")
+    except Exception as e:
+        logger.info(e) 
+
+def save_model(lang:str, data_path:str, checpoint:str):
+    """_summary_
+
+    Args:
+        lang (str): _description_
+        data_path (str): _description_
+        checpoint (str): _description_
+    """
+    torch.cuda.empty_cache()
+    logger = logging.getLogger("Classification")
+    print("Validate best found model and save it.")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if lang == 'de':
+        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=N_CLASS).to(device)
+    elif lang == 'en':
+        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=N_CLASS).to(device)
+
+    checkpoint_path = checpoint+ "\checkpoint.pt"
+    model_state, optimizer_state = torch.load(checkpoint_path)
+    model.load_state_dict(model_state)
+    torch.save(model, data_path)
+
+def predict(sentence:str, lang:str ='de'):
     """Final Prediction Function. The trained model is loaded and predicts the class of the input sentence.
 
     Args:
@@ -799,37 +877,45 @@ def predict(sentence:str, lang:str,text_col = 'TOPIC'):
         lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
         text_col (str, optional): Dedicated trained model. Currently selectable from 'TOPIC' or 'URL_TEXT' trained. Defaults to 'TOPIC' due to better evaluation results.
     """
+    # load base model and tokenizer
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    path_to_load_model = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\trained_model_'+lang+'_'+text_col+".pth"
-    model = torch.load(path_to_load_model)
+    if lang == 'de':
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-dbmdz-uncased")
+        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=N_CLASS).to(device)
+    elif lang == 'en':
+        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=N_CLASS).to(device)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+
+    #load model
+    path_to_model = str(os.path.dirname(__file__)).split("src")[0] + r'models\classification\bert_'+lang+".pt"
+    model_state, optimizer_state = torch.load(path_to_model)
+    model.load_state_dict(model_state)
+
     batch_size = 15
 
-    if lang == 'de':
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-german-cased")
-    elif lang == 'en':
-        tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
-
+    #transform sentence
     tokenized_sent = tokenizer(sentence, truncation=True, max_length = 512)
     tokenized_sent.pop('token_type_ids')
     tokenized_sent['label'] = 0
     tokenized_data = {'val':[tokenized_sent]}
-    train_dl = _transform_eval_data(tokenized_data,data_collator,batch_size)
+    eval_dl = _transform_eval_data(tokenized_data,data_collator,batch_size)
 
     ag_labels = {0:"AUTONOMOUS",1:"CONNECTIVITY",2:"DIGITALISATION",3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"}
     
-    for batch in train_dl:
+    model.eval()
+    for batch in eval_dl:
         batch = {k: v.to(device) for k, v in batch.items()}
         with torch.no_grad():
             outputs = model(**batch)
+
         logits = outputs.logits
-        prediction = torch.argmax(logits, dim=-1)[0].item()
-        label = ag_labels[prediction]
-        print(prediction)
+        predictions = torch.argmax(logits, dim=-1)[0].item()
+        label = ag_labels[predictions]
         print(label)
 
-
-# ###Test new sample sentence###
-# predict("Connectivität ist digitale Vernetzung")
-
-    
+#Evaluation of new data
+# evaluate_best_model(lang='de',text_col ='TOPIC',data_path = r"files\05_evaluation\evaluation_labeled_texts_de.feather")
+# evaluate_best_model(lang='de',text_col ='URL_TEXT',data_path = r"files\05_evaluation\evaluation_labeled_texts_de.feather")
+# evaluate_best_model(lang='en',text_col ='TOPIC',data_path = r"files\05_evaluation\evaluation_labeled_texts_en.feather")
+# evaluate_best_model(lang='en',text_col ='URL_TEXT',data_path = r"files\05_evaluation\evaluation_labeled_texts_en.feather")
