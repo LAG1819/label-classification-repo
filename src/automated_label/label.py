@@ -36,7 +36,7 @@ from sklearn.model_selection import KFold
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 # set DEVICE = "cuda" if GPU is avaliable, else "cpu"
-DEVICE = "cpu"
+DEVICE = "cuda"
 
 ############################################################## USER-DEFINED LABELING FUNCTIONS ######################################################################## 
     

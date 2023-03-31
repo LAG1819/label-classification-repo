@@ -1,4 +1,4 @@
-# <Evaluate coherence of generated topics of lda model.>
+# <Evaluate coherence of generated topics of lda model. Helper File for topic_lda.py. Under construction!>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify

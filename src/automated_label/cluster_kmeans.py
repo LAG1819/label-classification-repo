@@ -1,4 +1,4 @@
-# <Pretraining a k-Means Cluster based of user-defined classes for Automated Labeling. This is a optional preprocessing step for step 4.>
+# <Pretraining a k-Means Cluster based of user-defined classes for Automated Labeling. This is a optional preprocessing for TOTAL data labeling for step 4.>
 # Copyright (C) 2023  Luisa-Sophie Gloger
 
 # This program is free software: you can redistribute it and/or modify

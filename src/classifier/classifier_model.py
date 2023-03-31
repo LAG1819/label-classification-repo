@@ -54,9 +54,6 @@ BATCH_SIZE = tune.choice([8,13,15]) #GERMAN Size of batches to split data. Defau
 ACCUMULATION_STEPS = 4 #nmbr of batches to accumulate gradients over to achieve higher batch size.
 # RAM = 10**9
 
-#pip install datasets transformers numpy pandas evaluate scikit-learn hpbandster "ray[default]" "ray[tune]" "ray[air]"
-#pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116
-
 class BertClassifier(nn.Module):
     """Customised Bert Classifier. The Class takes a pretrained Model as input and adds a Classifier Layer on top.
     Pretrained Modell Bert-based (german): bert-base-german-dbmdz-uncased
@@ -413,8 +410,8 @@ def random_search(lang:str, col:str, path:str,data_path:str):
     """Hyperparameter Optimization techinique of Random Search using ray.tune. 
 
     Args:
-        lang (str): Unicode of language to train model with. It can be choosen between de (german) and en (englisch).
-        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        lang (str): Unicode of language to train model with. It can be choosen between 'de' (german) and 'en' (englisch).
+        col (str): Selected Column on which the data had been labeled. It can be choosen between 'TOPIC' or 'URL_TEXT'.
         data_path (str): Path to save experiment.
 
     Returns:
@@ -449,8 +446,8 @@ def bohb(lang:str,col:str,path:str,data_path:str):
     """Hyperparameter Optimization techinique of combination of Bayesian optimization (BO) and Hyperband (HB) using ray.tune. 
 
     Args:
-        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
-        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        lang (str): Unicode of language to train model with. It can be choosen between 'de' (german) and 'en' (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between 'TOPIC' or 'URL_TEXT'.
         data_path (str): Path to save experiment.
 
     Returns:
@@ -495,8 +492,8 @@ def hyperband(lang:str, col:str, path:str, data_path:str):
     """Hyperparameter Optimization techinique of Hyperband (HB) using ray.tune. 
 
     Args:
-        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
-        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        lang (str): Unicode of language to train model with. It can be choosen between 'de' (german) and 'en' (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between 'TOPIC' or 'URL_TEXT'.
         data_path (str): Path to save experiment.
 
     Returns:
@@ -535,9 +532,9 @@ def _validate_model(text_col:str,lang:str, data_path:str, best_result, model_pat
     """Validation function of model. Follows the usual procedure consisting testing of the optimized trained model with validation set.
 
     Args:
-        text_col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
-        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
-        best_results (_type_): _description_
+        text_col (str): Selected Column on which the data had been labeled. It can be choosen between 'TOPIC' or 'URL_TEXT'.
+        lang (str): Unicode of language to train model with. It can be choosen between 'de' (german) and 'en' (englisch)
+        best_results (Result): Ray result containing the results of the best model training.
         model_path (str): Path of best trained model.
         model_name (str): Model name containing metainformation about language, texttype and random model number(unique).
     """
@@ -581,8 +578,8 @@ def _get_model_path(lang:str, text_col:str):
     """Get path of best trained model and model name to save best model to specfic path for loading.
 
     Args:
-        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
-        text_col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        lang (str): Unicode of language to train model with. It can be choosen between 'de' (german) and 'en' (englisch)
+        text_col (str): Selected Column on which the data had been labeled. It can be choosen between 'TOPIC' or 'URL_TEXT'.
 
     Returns:
         _type_: Returns model_name and model path as str.
@@ -601,8 +598,8 @@ def _get_current_trial(lang:str,col:str)-> int:
     """Checks the number of trials based on evaluation data and sets trial number based on exististing number of trials.
 
     Args:
-        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
-        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        lang (str): Unicode of language to train model with. It can be choosen between 'de' (german) and 'en' (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between 'TOPIC' or 'URL_TEXT'.
 
     Returns:
         int: Returns number of current trial.
@@ -622,8 +619,8 @@ def _save_current_result(lang:str, col:str, k:int,i:int,type:str, best_results):
     """Saves intermediate (best) evaluation results into a temporary file.
 
     Args:
-        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
-        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        lang (str): Unicode of language to train model with. It can be choosen between 'de' (german) and 'en' (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between 'TOPIC' or 'URL_TEXT'.
         k (int): k of k-fold cross validation. Defaults to 0 as input if no k-fold cross validation is applied.
         i (int): i if split i in k-fold cross validation. Defaults to 0 as input if no k-fold cross validation is applied.
         type (str): Type of Optimization technique. It can be differnatiated between Random Search, Hyperband or BOHB.
@@ -661,8 +658,8 @@ def _save_results(lang:str, col:str):
     """Saves all generated results in temporary evaluation sheet as evaluation results to dedicated result folder.
 
     Args:
-        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch)
-        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        lang (str): Unicode of language to train model with. It can be choosen between 'de' (german) and 'en' (englisch)
+        col (str): Selected Column on which the data had been labeled. It can be choosen between 'TOPIC' or 'URL_TEXT'.
     """
     temp_t_path = r'models\classification\pytorch_tuning_'+lang+r'\results\temp_eval_results_'+col+r'.feather'
     t_path = r'models\classification\pytorch_tuning_'+lang+r'\results\eval_results_'+col+r'.feather'
@@ -694,8 +691,8 @@ def run(lang:str, col:str,data_path:str = None, list_of_hpo =[("RandomSearch",ra
     the validation of the best model and stores them including the evaluation results. Whole Run based on specified language and column
 
     Args:
-        lang (str): unicode of language to train model with. It can be choosen between de (german) and en (englisch).
-        col (str): Selected Column on which the data had been labeled. It can be choosen between TOPIC or URL_TEXT.
+        lang (str): Unicode of language to train model with. It can be choosen between 'de' (german) and 'en' (englisch).
+        col (str): Selected Column on which the data had been labeled. It can be choosen between 'TOPIC' or 'URL_TEXT'.
         data_path (regexp, optional): Selected path to the desired labeled data to train the classifier with. Defaults to None.
         list_of_hpos (list, optional): List of hyperparameter optimization techniques to train classifier with. Defaults to [("RandomSearch",random_search),("Hyperband", hyperband),("BOHB", bohb)].
     """
@@ -768,13 +765,37 @@ def run(lang:str, col:str,data_path:str = None, list_of_hpo =[("RandomSearch",ra
             ray.shutdown()
             torch.cuda.empty_cache()
             return
-def evaluate_best_model(lang:str='de',text_col:str = 'TOPIC',data_path:str = r"files\05_evaluation\evaluation_labeled_texts_de.feather"):
-    """_summary_
+
+def save_model(lang:str, model_path:str, checpoint:str):
+    """Saves manually a loaded model based on a given checkpoint to a specified path. 
 
     Args:
-        lang (str, optional): _description_. Defaults to 'de'.
-        text_col (str, optional): _description_. Defaults to 'TOPIC'.
-        data_path (regexp, optional): _description_. Defaults to r"files\05_evaluation\evaluation_labeled_texts_de.feather".
+        lang (str): Unicode of language to train model with. It can be choosen between 'de' (german) and 'en' (englisch).
+        model_path (str): Selected path to save the model to.
+        checpoint (str): Path to the checkpoint where the trained model is stored.
+    """
+    torch.cuda.empty_cache()
+    logger = logging.getLogger("Classification")
+    print("Validate best found model and save it.")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if lang == 'de':
+        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=N_CLASS).to(device)
+    elif lang == 'en':
+        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=N_CLASS).to(device)
+
+    checkpoint_path = checpoint+ "\checkpoint.pt"
+    model_state, optimizer_state = torch.load(checkpoint_path)
+    model.load_state_dict(model_state)
+    torch.save(model, model_path)
+
+def evaluate_best_model(lang:str='de',text_col:str = 'TOPIC',data_path:str = r"files\05_evaluation\evaluation_labeled_texts_de.feather"):
+    """Evaluation of the best trained model by loading a given dataset of new manually labeled data stored in files/05_evaluation and 
+    calculating Accuracy and Matthew's Correlation Coefficent of the predicted results.
+
+    Args:
+        lang (str, optional): Unicode of language to train model with. It can be choosen between 'de' (german) and 'en' (englisch). Defaults to 'de'.
+        text_col (str, optional): Selected Column on which the data had been labeled. It can be choosen between 'TOPIC' or 'URL_TEXT'. Defaults to 'TOPIC'.
+        data_path (regexp, optional): Selected path to the desired labeled data to evaluate the best classifier with. Defaults to r"files\05_evaluation\evaluation_labeled_texts_de.feather".
     """
     # Create logger and assign handler
     logger = logging.getLogger("Classification")
@@ -845,29 +866,7 @@ def evaluate_best_model(lang:str='de',text_col:str = 'TOPIC',data_path:str = r"f
 
         logger.info(f"##################################### RESULTS - Accuracy: {acc}, MCC: {mcc} #####################################")
     except Exception as e:
-        logger.info(e) 
-
-def save_model(lang:str, data_path:str, checpoint:str):
-    """_summary_
-
-    Args:
-        lang (str): _description_
-        data_path (str): _description_
-        checpoint (str): _description_
-    """
-    torch.cuda.empty_cache()
-    logger = logging.getLogger("Classification")
-    print("Validate best found model and save it.")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    if lang == 'de':
-        model = BertClassifier(checkpoint="bert-base-german-dbmdz-uncased",num_labels=N_CLASS).to(device)
-    elif lang == 'en':
-        model = BertClassifier(checkpoint='bert-base-uncased',num_labels=N_CLASS).to(device)
-
-    checkpoint_path = checpoint+ "\checkpoint.pt"
-    model_state, optimizer_state = torch.load(checkpoint_path)
-    model.load_state_dict(model_state)
-    torch.save(model, data_path)
+        logger.info(e)
 
 def predict(sentence:str, lang:str ='de'):
     """Final Prediction Function. The trained model is loaded and predicts the class of the input sentence.
