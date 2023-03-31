@@ -38,16 +38,18 @@ from ray.tune import CLIReporter
 from ray.tune.experiment.trial import Trial
 from functools import partial
 from tqdm import tqdm
-#TOPICS:mb 256, cpu 2, batch_size 2,4,6,7, trials 3, pin_mem true, num_workers 1
+
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:256" #512,256
 N_CLASS = 7 #Number of classes to train classifier. Defaults to 7
 NUM_WORKERS = 1 #Number of workers for DataLoader. Defaults to 1.
 NUM_CPU = 2 #Number of cpu to use. Defaults to 2.
 NUM_GPU = 1 #Number of gpu to use. Defaults to 1.
 NUM_TRIALS = 3 #Number of samples to train. Defaults to 3.
-NUM_TRIAL_ITER = 3 #Number of iterations a samples trains. Defaults to 3.
-PIN_MEM = True #Boolean to set memory pin. If true data dirctly to gpu. Defaults to True.
-BATCH_SIZE = tune.choice([2,4,6,8,10]) #Size of batches to split data. Defaults to tune.choice with option 2,4,6, and 8.
+NUM_TRIAL_ITER = 3 #Number of iterations a samples trains. 
+PIN_MEM = True #Boolean to set memory pin. If true data directly to gpu. Defaults to True.
+BATCH_SIZE = tune.choice([8,13,15]) #GERMAN Size of batches to split data. Defaults to tune.choice with option 13 and 15.
+# BATCH_SIZE = tune.choice([2]) #ENGLISH Size of batches to split data. Defaults to tune.choice with option 2.
+ACCUMULATION_STEPS = 4 #nmbr of batches to accumulate gradients over to achieve higher batch size.
 # RAM = 10**9
 
 #pip install datasets transformers numpy pandas evaluate scikit-learn hpbandster "ray[default]" "ray[tune]" "ray[air]"
@@ -339,18 +341,32 @@ def _train_model(config:dict, data_dir:str, lang:str, col:str):
         model.load_state_dict(model_state)
         optimizer.load_state_dict(optimizer_state)
 
+    
     #train and evaluation of model 
     for epoch in range(num_epochs):
         model.train()
-        for batch in train_dl:
+        for i, batch in enumerate(train_dl):
+            #clear gradients
+            if i % ACCUMULATION_STEPS == 0:
+                optimizer.zero_grad()
+                torch.cuda.empty_cache()
+
             batch = {k: v.to(device) for k, v in batch.items()}
+            
             outputs = model(**batch)
             loss = outputs.loss
-            loss.backward()
 
-            optimizer.step()
-            lr_scheduler.step()
-            optimizer.zero_grad()
+            #divide loss by accumulations steps to get "average " loss per batch
+            loss = loss/ACCUMULATION_STEPS
+            #backpropagate
+            loss.backward()
+            if(i+1) % ACCUMULATION_STEPS == 0:
+                optimizer.step()
+                lr_scheduler.step()
+                optimizer.zero_grad()
+
+                #delete unnecessary variables
+                del loss, outputs         
         
         model.eval()
         for batch in test_dl:
@@ -388,6 +404,7 @@ def _train_model(config:dict, data_dir:str, lang:str, col:str):
         session.report({"accuracy": acc_metric['accuracy'], "precisionMicro":precision_metric_micro['precision'], "precisionMacro":precision_metric_macro['precision'],\
                         "f1Micro": f1_metric_micro['f1'],"f1Macro": f1_metric_macro['f1'],"recall":recall_metric['recall'],\
                               "mcc":mcc_metrics['matthews_correlation']}, checkpoint=checkpoint)
+    torch.cuda.empty_cache()
 
 def random_search(lang:str, col:str, path:str,data_path:str):
     """Hyperparameter Optimization techinique of Random Search using ray.tune. 
@@ -404,21 +421,13 @@ def random_search(lang:str, col:str, path:str,data_path:str):
             "lr":tune.loguniform(1e-4,1e-1),
             "batch_size":BATCH_SIZE,
             "epoch":tune.choice([3,5,7,10]),
-            # "lang":lang,
-            # "col":col
         }
-    if lang == 'en':
-        config_rand["batch_size"] = tune.choice([2])
             
     tuner_random = tune.Tuner(
         tune.with_resources(
             tune.with_parameters(_train_model, data_dir = data_path, lang = lang, col = col),
             resources={"cpu": NUM_CPU, "gpu":NUM_GPU}
         ),
-        # tune.with_resources(
-        #     tune.with_parameters(_train_model, data = tokenized_train_test_set_fold),
-        #     resources={"cpu": num_cpu, "gpu":num_gpu}
-        # ),
         tune_config=tune.TuneConfig(
             metric="accuracy",
             mode="max",
@@ -448,11 +457,7 @@ def bohb(lang:str,col:str,path:str,data_path:str):
         "lr":tune.loguniform(1e-4,1e-1),
         "batch_size":BATCH_SIZE,
         "epoch":tune.choice([3,5,7,10]),
-        # "lang":lang,
-        # "col":col
     }
-    if lang == 'en':
-        config["batch_size"] = tune.choice([2])
 
     bohb = HyperBandForBOHB(
         time_attr="training_iteration",
@@ -466,10 +471,6 @@ def bohb(lang:str,col:str,path:str,data_path:str):
             tune.with_parameters(_train_model, data_dir = data_path, lang = lang, col = col),
             resources={"cpu": NUM_CPU, "gpu":NUM_GPU}
         ),
-        # tune.with_resources(
-        #     tune.with_parameters(_train_model, data_dir = data_path)#data = tokenized_train_test_set_fold),
-        #     resources={"cpu": num_cpu, "gpu":num_gpu}
-        # ),
         tune_config=tune.TuneConfig(
             metric="accuracy",
             mode="max",
@@ -503,11 +504,7 @@ def hyperband(lang:str, col:str, path:str, data_path:str):
         "lr":tune.loguniform(1e-4,1e-1),
         "batch_size":BATCH_SIZE,
         "epoch":tune.choice([3,5,7,10]),
-        # "lang":lang,
-        # "col":col
     }
-    if lang == 'en':
-        config["batch_size"] = tune.choice([2])
 
     hyperband = HyperBandScheduler(metric = "accuracy", mode = "max")
     tuner_hyper = tune.Tuner(
@@ -564,7 +561,6 @@ def _validate_model(text_col:str,lang:str, data_path:str, best_result, model_pat
     metric = evaluate.load("accuracy")
 
     model.eval()
-    # with torch.no_grad():
     for batch in eval_dl:
         batch = {k: v.to(device) for k, v in batch.items()}
         with torch.no_grad():
@@ -741,7 +737,7 @@ def run(lang:str, col:str,data_path:str = None, list_of_hpo =[("RandomSearch",ra
         r= torch.cuda.memory_summary(device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
         print(r)
         torch.cuda.empty_cache()
-        logger.info(f"[HPO]RuntimeError occurred:{e}")
+        logger.info(f"[HPO]RuntimeError CUDA out of Memomry occurred:{e}")
     except Exception as f:
         logger.info(f"[HPO]Error occurred:{f}")
     except KeyboardInterrupt:
@@ -831,29 +827,6 @@ def predict(sentence:str, lang:str,text_col = 'TOPIC'):
         label = ag_labels[prediction]
         print(prediction)
         print(label)
-
-   
-#####Experiment 1#########
-hpos =[("Hyperband", hyperband)]
-run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
-# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
-
-# hpos = [("BOHB", bohb)]
-# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
-# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment1\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
-
-
-#####Experiment 2#########
-# hpos =[("Hyperband", hyperband)]
-# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
-# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
-# hpos = [("BOHB", bohb)]
-# run(lang ='de', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_de_TOPIC.feather",list_of_hpo=hpos)
-# run(lang ='en', col = 'TOPIC', data_path = r"files\04_classify\Experiment2\labeled_texts_en_TOPIC.feather",list_of_hpo=hpos)
-
-# os.system('shutdown -s -t 60')
-
-
 
 
 # ###Test new sample sentence###
