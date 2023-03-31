@@ -74,3 +74,4 @@ src/url_scrape/url_scrape/spiders/__pycache__/seeder.cpython-39.pyc
 
 files/05_evaluation/evaluation_topiced_texts_de.xlsx
 files/05_evaluation/evaluation_topiced_texts_en.xlsx
+files/GITHUB_TOKEN.json
