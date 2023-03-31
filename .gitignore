@@ -51,12 +51,17 @@ models/classification/Experiment1/pytorch_tuning_de/*
 !models/classification/Experiment1/pytorch_tuning_de/results/*
 !models/classification/Experiment1/pytorch_tuning_de/classifier_training_de.log
 models/classification/Experiment1/pytorch_tuning_en/*
+!models/classification/Experiment1/pytorch_tuning_en/results/*
+!models/classification/Experiment1/pytorch_tuning_en/classifier_training_en.log
 models/classification/Experiment1/temp/*
 
 models/classification/Experiment2/pytorch_tuning_de/*
+!models/classification/Experiment2/pytorch_tuning_de/results/*
+!models/classification/Experiment2/pytorch_tuning_de/classifier_training_de.log
 models/classification/Experiment2/pytorch_tuning_en/*
+!models/classification/Experiment2/pytorch_tuning_en/results/*
+!models/classification/Experiment2/pytorch_tuning_en/classifier_training_en.log
 models/classification/Experiment2/temp/*
-models/classification/temp*
 
 
 src/url_scrape/url_scrape/spiders/__pycache__/__init__.cpython-39.pyc
