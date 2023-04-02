@@ -504,7 +504,7 @@ def make_tarfile(output_filename:str, source_dir:str):
 # load_raw_data()
 # load_clean_data()
 # load_labeled_data()
-load_eval_data_automated_label()
+# load_eval_data_automated_label()
 # laod_eval_data_classification()
 # plot_runtimes_automated_label()
 # plot_runtimes_classification()
