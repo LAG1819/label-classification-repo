@@ -425,7 +425,7 @@ def plot_new_data_results_automated_label():
         plt.text(x = r3[i]-barWidth/2, y = r3_val[i]+0.02, s = label[i], size = 10)  
     
     # Add xticks on the middle of the group bars
-    plt.xticks([r + barWidth-0.2 for r in range(len(accuracy_val))], ['TAKL_TOPICS_DE','TAKL_TEXTS_DE','TAKL_TOPICS_EN','TAKL_TEXTS_EN','PAKL_TOPICS_DE','PAKL_TEXTS_DE','PAKL_TOPICS_EN','TAKL_TEXTS_EN'], rotation = 45)
+    plt.xticks([r + barWidth-0.25 for r in range(len(accuracy_val))], ['TAKL_TOPICS_DE','TAKL_TEXTS_DE','TAKL_TOPICS_EN','TAKL_TEXTS_EN','PAKL_TOPICS_DE','PAKL_TEXTS_DE','PAKL_TOPICS_EN','TAKL_TEXTS_EN'], rotation = 45)
     plt.ylim(0,1)
     plt.xlim(-0.3,7.8)
     # Create legend & Show graphic
