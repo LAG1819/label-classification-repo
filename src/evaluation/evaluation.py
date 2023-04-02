@@ -61,16 +61,19 @@ def load_labeled_data():
 def load_eval_data_automated_label():
     """Load results of labeled data and results of coverage of labeled data and generate graphics of each. Saves graphis in images folder.
     """
-    for experiment in ['\Experiment1']:#, '\Experiment2']:
-        for lang in ['de']:#,'en']:
-            for text_col in ['TOPIC']:#, 'URL_TEXT']:
+    for experiment in ['\Experiment1', '\Experiment2']:
+        folder =str(os.path.dirname(__file__)).split("src")[0]+r'\images\label'+experiment
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        for lang in ['de','en']:
+            for text_col in ['TOPIC', 'URL_TEXT']:
                 # coverage = pd.read_feather(str(os.path.dirname(__file__)).split("ml-classification-repo")[0]+r'backup\models\label\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
                 coverage = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label'+experiment+r'\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
                 coverage.sort_values(by = ['TRIAL','k_fold','k_fold_split','Overlaps','Conflicts','Coverage'], ascending = [False, False, False,True,True,False], inplace = True)
                 coverage.drop_duplicates(subset=['LF'], inplace=True, keep='first')
                 coverage['Polarity'] = coverage['Polarity'].replace({0:'AUTONOMOUS', 1:'CONNECTIVITY',2:'DIGITALISATION',3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"})
                 coverage["LF"] = coverage['Polarity'] +"_"+coverage["LF"].str.split("_", n = 1, expand = True)[0] 
-                plot_coverage(coverage, lang=lang, text_col=text_col, datatype = r'\images\label'+experiment)
+                # plot_coverage(coverage, lang=lang, text_col=text_col, datatype = r'\images\label'+experiment)
 
 
                 eval = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label'+experiment+r'\model_tuning_'+lang+r'\results\eval_results_'+text_col+r'.feather')
@@ -78,17 +81,19 @@ def load_eval_data_automated_label():
                 eval2 = eval.sort_values(by = ['accuracy'], ascending = [False])
                 eval2.drop_duplicates(subset=['Type'], inplace=True, keep='first')
                 eval2 = eval2[['Type',"accuracy", "PrecisionMicro", "PrecisionMacro","F1Micro","F1Macro","MCC","Coverage"]]
-                for col in ['BayesSearch','RandomSearch',"GridSearch"]:
+                eval2['Type'].replace({'BayesSearch':'Bayesian Optimization', 'RandomSearch':'Random Search',"GridSearch":"Grid Search"}, inplace=True)
+                for col in ['Bayesian Optimization','Random Search',"Grid Search"]:
                     evalt = eval2[eval2['Type'] == col]
-                    plot_eval_metrics(evalt,lang=lang, text_col=text_col, col = col, datatype = r'\images\label'+experiment)
+                    # plot_eval_metrics(evalt,lang=lang, text_col=text_col, col = col, datatype = r'\images\label'+experiment)
 
                 eval3 = eval.sort_values(by = ['accuracy','MCC'], ascending = [False,False])
                 eval3.drop_duplicates(subset=['Type'], inplace=True, keep='first')
+                eval3['Type'].replace({'BayesSearch':'Bayesian Optimization', 'RandomSearch':'Random Search',"GridSearch":"Grid Search"}, inplace=True)
                 plot_grouped_eval_metrics(eval3[['Type',"accuracy", "PrecisionMicro", "PrecisionMacro","F1Micro","F1Macro","MCC"]], lang = lang, text_col=text_col, datatype=r'\images\label'+experiment)
                 
                 eval.sort_values(by = ['Trial','k-fold','accuracy'], ascending = [True,True,False], inplace = True)
                 eval.drop_duplicates(subset=['k-fold'], inplace=True, keep='first')
-                plot_eval_folds(eval, lang=lang, text_col=text_col, datatype = r'\images\label'+experiment)
+                # plot_eval_folds(eval, lang=lang, text_col=text_col, datatype = r'\images\label'+experiment)
 
 def laod_eval_data_classification():
     """Load results of classfication data and generate graphics of each. Saves graphis in images folder.
@@ -310,6 +315,7 @@ def plot_grouped_eval_metrics(df:pd.DataFrame,lang:str,text_col:str,datatype:str
     """
 
     barWidth = 0.7
+    df.sort_values(by = ['Type'], ascending = [True], inplace = True)
     colors = ['#2e8c37','#2e308c','#8c2e2e','#8c7b2e','#2e8c75','#8c4f2e']
     bars = ['ACC','MCC', 'PRMI', 'PRMA', 'F1MI', 'F1MA']
     plt.rcParams["figure.figsize"] = (15,4)
@@ -352,9 +358,126 @@ def plot_grouped_eval_metrics(df:pd.DataFrame,lang:str,text_col:str,datatype:str
     plt.xlim(-0.5,14)
     plt.legend(loc = 'upper center', ncol = 3)
     plt.rcParams['axes.axisbelow'] = True
+    plt.xlabel("Hyperparameter-Optimierungstechnicken", fontweight='bold')
 
     plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r"\metrics_HPOs_"+lang+'_'+text_col+r'.pdf')
     plt.close()
+
+def plot_runtimes_automated_label():
+    """Plots the manually given runtimes of the experiments of the automated labeling process.
+    """
+    fig, ax = plt.subplots()
+    plt.rcParams["figure.figsize"] = (4,15)
+
+    takl_topics_de = [63384,58622,58361]+[29476,24632,24932]
+    takl_texts_de = [73531,64049,65506]+[25531,25642,25797]
+    # takl_topics_en = [29476,24632,24932]
+    # takl_texts_en = [25531,25642,25797]
+    pakl_topics_de = [8930,8997,8752]+[7568,7462,7533]
+    pakl_texts_de = [13819,13670,13814]+[8034,8190,8933]
+    # pakl_topics_en = [7568,7462,7533]
+    # pakl_texts_en = [8034,8190,8933]
+    # takl_data = [takl_topics_de,takl_texts_de,takl_topics_en,takl_texts_en]
+    # pakl_data = [pakl_topics_de,pakl_texts_de,pakl_topics_en,pakl_texts_en]
+    data = [takl_topics_de,takl_texts_de,pakl_topics_de,pakl_texts_de]
+    
+    ax.boxplot(data)#, vert=False)#, showfliers=False)
+    # x-axis labels
+    ax.set_xticklabels(['TAKL_TOPICS', 'TAKL_TEXTS','PAKL_TOPICS', 'PAKL_TEXTS'])
+    plt.xlabel('Laufzeiten', fontweight='bold')
+
+    plt.rcParams['axes.axisbelow'] = True
+    plt.show()
+    #plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r"files\05_evaluation\images\label\Experiment2\pakl_runtime.pdf')
+
+def plot_runtimes_classification():
+    """Plots the manually given runtimes of the experiments of the classification process.
+    """
+    fig, ax = plt.subplots()
+    plt.rcParams["figure.figsize"] = (4,15)
+
+    takl_hyperband = [9060,16208]
+    takl_bohb = [4673,9765]
+    pakl_hyperband = [2610,12290]
+    pakl_bohb = [7567,9472]
+    
+    data = [takl_hyperband,takl_bohb,pakl_hyperband,pakl_bohb]
+    
+    ax.boxplot(data)#, vert=False)#, showfliers=False)
+    # x-axis labels
+    plt.xlabel('Laufzeiten', fontweight='bold')
+    ax.set_xticklabels(['TAKL_HYPERBAND', 'TAKL_BOHB','PAKL_HYPERBAND', 'PAKL_BOHB'])
+    plt.rcParams['axes.axisbelow'] = True
+    plt.show()
+    #plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r"files\05_evaluation\images\classification\metrics_runtime.pdf')
+
+def plot_new_data_results_automated_label():
+    """Plots the manually given validation and evaluation accuracies of the experiments of the automated labeling process.
+    """
+    # set width of bars
+    barWidth = 0.5
+    
+    # set heights of bars
+    accuracy_val = [0.44,0.36,0.41,0.34,0.49,0.27,0.55,0.29]
+    accuracy_eval = [0,0,0,0,0.59,0.68,0.48,0.22]
+    r3_val = accuracy_val+accuracy_eval
+    
+    # Set position of bar on X axis
+    r1 = np.arange(len(accuracy_val)).tolist()
+    r2 = [x + barWidth for x in r1]
+    r3 = r1+r2
+    
+    # Make the plot
+    plt.bar(r1, accuracy_val, color='#8c4f2e', width=barWidth, edgecolor='white', label='Validation')
+    plt.bar(r2, accuracy_eval, color='#2e8c37', width=barWidth, edgecolor='white', label='Evaluation')
+
+    # Text on the top of each bar
+    label = [str(l) for l in r3_val]
+    for i in range(len(r3)):
+        plt.text(x = r3[i]-barWidth/2, y = r3_val[i]+0.02, s = label[i], size = 10)  
+    
+    # Add xticks on the middle of the group bars
+    plt.xticks([r + barWidth-0.2 for r in range(len(accuracy_val))], ['TAKL_TOPICS_DE','TAKL_TEXTS_DE','TAKL_TOPICS_EN','TAKL_TEXTS_EN','PAKL_TOPICS_DE','PAKL_TEXTS_DE','PAKL_TOPICS_EN','TAKL_TEXTS_EN'], rotation = 45)
+    plt.ylim(0,1)
+    plt.xlim(-0.3,7.8)
+    # Create legend & Show graphic
+    plt.xlabel('Evaluationsergebnisse', fontweight='bold')
+    plt.legend()
+    plt.show()
+
+def plot_new_data_results_classification():
+    """Plots the manually given validation and evaluation accuracies of the experiments of the classification process.
+    """
+    # set width of bars
+    barWidth = 0.5
+    
+    # set heights of bars
+    accuracy_val = [0.56,0.6,0.86,0.3]
+    accuracy_eval = [0,0,0.61,0.09]
+    r3_val = accuracy_val+accuracy_eval
+    
+    # Set position of bar on X axis
+    r1 = np.arange(len(accuracy_val)).tolist()
+    r2 = [x + barWidth for x in r1]
+    r3 = r1+r2
+    
+    # Make the plot
+    plt.bar(r1, accuracy_val, color='#8c4f2e', width=barWidth, edgecolor='white', label='Validation')
+    plt.bar(r2, accuracy_eval, color='#2e8c37', width=barWidth, edgecolor='white', label='Evaluation')
+
+    # Text on the top of each bar
+    label = [str(l) for l in r3_val]
+    for i in range(len(r3)):
+        plt.text(x = r3[i]-0.1, y = r3_val[i]+0.02, s = label[i], size = 10)  
+    
+    # Add xticks on the middle of the group bars
+    plt.xticks([r + barWidth-0.25 for r in range(len(accuracy_val))], ['TAKL_TOPICS_DE','TAKL_TOPICS_EN','PAKL_TOPICS_DE','PAKL_TOPICS_EN'], rotation = 45)
+    plt.ylim(0,1)
+    plt.xlim(-0.3,3.8)
+    # Create legend & Show graphic
+    plt.xlabel('Evaluationsergebnisse', fontweight='bold')
+    plt.legend()
+    plt.show()
 
 def calculate_runtime(start = (2023,3,1,22,18,5,2,9,0), end = (2023,3,2,15,54,29,5,2,8)):
     """Helper Function to analyze logging files. Can calculate time delta between two given timestemps.
@@ -381,7 +504,11 @@ def make_tarfile(output_filename:str, source_dir:str):
 # load_raw_data()
 # load_clean_data()
 # load_labeled_data()
-# load_eval_data_automated_label()
+load_eval_data_automated_label()
 # laod_eval_data_classification()
+# plot_runtimes_automated_label()
+# plot_runtimes_classification()
+# plot_new_data_results_automated_label()
+# plot_new_data_results_classification()
 # calculate_runtime((2023,3,16,8,45,0,4,2,1),(2023,3,16,11,13,50,7,6,1))
 # make_tarfile("compressed_ml-classification-repo","ml-classification-repo")
