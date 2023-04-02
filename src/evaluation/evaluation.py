@@ -376,7 +376,7 @@ def plot_runtimes_automated_label():
 
     plt.rcParams['axes.axisbelow'] = True
     plt.show()
-    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r"files\05_evaluation\images\label\Experiment2\pakl_runtime.pdf")
+    # plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r"files\05_evaluation\images\label\Experiment2\pakl_runtime.pdf")
 
 def plot_runtimes_classification():
     """Plots the manually given runtimes of the experiments of the classification process.
@@ -397,7 +397,7 @@ def plot_runtimes_classification():
     ax.set_xticklabels(['TAKL_HYPERBAND', 'TAKL_BOHB','PAKL_HYPERBAND', 'PAKL_BOHB'])
     plt.rcParams['axes.axisbelow'] = True
     plt.show()
-    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r"files\05_evaluation\images\classification\metrics_runtime.pdf")
+    # plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r"files\05_evaluation\images\classification\metrics_runtime.pdf")
 
 def plot_new_data_results_automated_label():
     """Plots the manually given validation and evaluation accuracies of the experiments of the automated labeling process.
