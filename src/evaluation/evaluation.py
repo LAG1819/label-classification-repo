@@ -67,13 +67,12 @@ def load_eval_data_automated_label():
             os.makedirs(folder)
         for lang in ['de','en']:
             for text_col in ['TOPIC', 'URL_TEXT']:
-                # coverage = pd.read_feather(str(os.path.dirname(__file__)).split("ml-classification-repo")[0]+r'backup\models\label\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
                 coverage = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label'+experiment+r'\model_tuning_'+lang+r'\results\coverage_results_'+text_col+r'.feather')
                 coverage.sort_values(by = ['TRIAL','k_fold','k_fold_split','Overlaps','Conflicts','Coverage'], ascending = [False, False, False,True,True,False], inplace = True)
                 coverage.drop_duplicates(subset=['LF'], inplace=True, keep='first')
                 coverage['Polarity'] = coverage['Polarity'].replace({0:'AUTONOMOUS', 1:'CONNECTIVITY',2:'DIGITALISATION',3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"})
                 coverage["LF"] = coverage['Polarity'] +"_"+coverage["LF"].str.split("_", n = 1, expand = True)[0] 
-                # plot_coverage(coverage, lang=lang, text_col=text_col, datatype = r'\images\label'+experiment)
+                plot_coverage(coverage, lang=lang, text_col=text_col, datatype = r'\images\label'+experiment)
 
 
                 eval = pd.read_feather(str(os.path.dirname(__file__)).split("src")[0]+r'models\label'+experiment+r'\model_tuning_'+lang+r'\results\eval_results_'+text_col+r'.feather')
@@ -84,7 +83,7 @@ def load_eval_data_automated_label():
                 eval2['Type'].replace({'BayesSearch':'Bayesian Optimization', 'RandomSearch':'Random Search',"GridSearch":"Grid Search"}, inplace=True)
                 for col in ['Bayesian Optimization','Random Search',"Grid Search"]:
                     evalt = eval2[eval2['Type'] == col]
-                    # plot_eval_metrics(evalt,lang=lang, text_col=text_col, col = col, datatype = r'\images\label'+experiment)
+                    plot_eval_metrics(evalt,lang=lang, text_col=text_col, col = col, datatype = r'\images\label'+experiment)
 
                 eval3 = eval.sort_values(by = ['accuracy','MCC'], ascending = [False,False])
                 eval3.drop_duplicates(subset=['Type'], inplace=True, keep='first')
@@ -93,7 +92,7 @@ def load_eval_data_automated_label():
                 
                 eval.sort_values(by = ['Trial','k-fold','accuracy'], ascending = [True,True,False], inplace = True)
                 eval.drop_duplicates(subset=['k-fold'], inplace=True, keep='first')
-                # plot_eval_folds(eval, lang=lang, text_col=text_col, datatype = r'\images\label'+experiment)
+                plot_eval_folds(eval, lang=lang, text_col=text_col, datatype = r'\images\label'+experiment)
 
 def laod_eval_data_classification():
     """Load results of classfication data and generate graphics of each. Saves graphis in images folder.
@@ -205,20 +204,10 @@ def plot_coverage(df:pd.DataFrame, lang:str, text_col:str,datatype:str):
     
     ax.set(yticks=ind + width , yticklabels=df.LF, ylim=[2*width-1, len(df)], xlim = [0,1])
 
-    # # Create offset transform by -145 in x direction
-    # ax.set_yticklabels(df.LF, ha='left')
-    # dx = -145/72.; dy = 0/72. 
-    # offset = matplotlib.transforms.ScaledTranslation(dx, dy, fig.dpi_scale_trans)
-
-    # # apply offset transform to all y ticklabels. move +5 horizontal
-    # for label in ax.yaxis.get_majorticklabels():
-    #     label.set_transform(label.get_transform() + offset)
-
     ax.legend()
-    # ax.set_title("TITLE")
-    ax.set_xlabel(f"{df['k_fold'].tolist()[0]}-Fold {df['k_fold_split'].tolist()[0]}", fontweight='bold')
+    
+    ax.set_xlabel(f"Best Conflicts, Coverage and Overlaps in {df['k_fold'].tolist()[0]}-Fold Cross Validaiton", fontweight='bold', loc = "left")# and Fold {df['k_fold_split'].tolist()[0]}
 
-    # ax.margins(x = 0.5,y = 0)
     plt.subplots_adjust(left=0.28, bottom = 0.06, top = 0.99, right = 0.95)
     
     if not os.path.exists(str(os.path.dirname(__file__)).split("src")[0]+datatype):
@@ -337,7 +326,6 @@ def plot_grouped_eval_metrics(df:pd.DataFrame,lang:str,text_col:str,datatype:str
     r6 = [x + barWidth for x in r5]
     r8 = r1+r2+r3+r4+r5+r6
 
-    #plt.grid(axis = 'y',linewidth = 0.5)
     # Make the plot
     plt.bar(r1, acc, color=colors[0], width=barWidth, edgecolor='white', label=bars[0])
     plt.bar(r2, mcc, color=colors[1], width=barWidth, edgecolor='white', label=bars[1])
@@ -352,12 +340,12 @@ def plot_grouped_eval_metrics(df:pd.DataFrame,lang:str,text_col:str,datatype:str
         plt.text(x = r8[i]-0.25 , y = bars8[i]+0.02, s = label[i], size = 10)    
 
     # Add xticks on the middle of the group bars
-    # plt.xlabel('group', fontweight='bold')
     plt.xticks([r + barWidth+0.5 for r in r1], df['Type'].tolist()) 
     plt.ylim(0,1.0)
     plt.xlim(-0.5,14)
     plt.legend(loc = 'upper center', ncol = 3)
     plt.rcParams['axes.axisbelow'] = True
+
     plt.xlabel("Hyperparameter-Optimierungstechnicken", fontweight='bold')
 
     plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+datatype+r"\metrics_HPOs_"+lang+'_'+text_col+r'.pdf')
@@ -388,7 +376,7 @@ def plot_runtimes_automated_label():
 
     plt.rcParams['axes.axisbelow'] = True
     plt.show()
-    #plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r"files\05_evaluation\images\label\Experiment2\pakl_runtime.pdf')
+    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r"files\05_evaluation\images\label\Experiment2\pakl_runtime.pdf")
 
 def plot_runtimes_classification():
     """Plots the manually given runtimes of the experiments of the classification process.
@@ -409,7 +397,7 @@ def plot_runtimes_classification():
     ax.set_xticklabels(['TAKL_HYPERBAND', 'TAKL_BOHB','PAKL_HYPERBAND', 'PAKL_BOHB'])
     plt.rcParams['axes.axisbelow'] = True
     plt.show()
-    #plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r"files\05_evaluation\images\classification\metrics_runtime.pdf')
+    plt.savefig(str(os.path.dirname(__file__)).split("src")[0]+r"files\05_evaluation\images\classification\metrics_runtime.pdf")
 
 def plot_new_data_results_automated_label():
     """Plots the manually given validation and evaluation accuracies of the experiments of the automated labeling process.
