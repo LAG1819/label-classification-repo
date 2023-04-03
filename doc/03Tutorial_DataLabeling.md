@@ -1,4 +1,4 @@
-# Tutorial 03: Label Data with Help of Snorkel
+# Tutorial 03: Label Data fast with the help of Snorkel
 
 In this tutorial you will find a short introduction on how to train and apply a Snorkel Label Model including customized Labeling Functions.
 
