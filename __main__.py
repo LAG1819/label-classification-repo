@@ -26,6 +26,9 @@ from src.automated_label.label import *
 from src.classifier.classifier_model import run as classifier_run
 from src.classifier.classifier_model import predict as predict_class
 from sys import exit
+from tqdm import tqdm
+from functools import partialmethod
+tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
 
 
 def select_language() -> str:
@@ -233,22 +236,37 @@ def classify_data(lang:str, data_path:str):
     else: 
         classifier_run(lang = lang, col = 'TOPIC')
 
-def predict(lang:str, text:str):
+def predict(lang:str, text:str = "Tesla unterstützt autonomes Fahren."):
+    """Uses best trained classification model and predicts class on input text.
+
+    Args:
+        lang (str): Unicode of language specification to load matching model. 
+        text (str, optional): Text to classify. Defaults to "Tesla unterstützt autonomes Fahren.".
+    """
     predict_class(lang = lang, sentence = text)
     ##Test new sample sentence german###
     # predict("Connectivität ist digitale Vernetzung")
-    # predict("Tesla unterstützt autonomes Fahren.")
-    # predict("Anpassungen meines Autos sind individuell.")
     # predict("Umwelt- und Nachhaltigkeitsprobleme wie der Klimawandel,\
     #          der Verlust der Artenvielfalt und die Verschmutzung von \
     #         Luft und Wasser erfordern eine gemeinsame Anstrengung auf globaler Ebene, um wirksame Lösungen zu finden.")
     ##Test new sample sentence english###
     # predict("Connectivity is digital networking", lang = 'en')
-    # predict("Tesla supports autonomous driving.", lang = 'en')
     # predict("Customizations of my car are individual.", lang = 'en')
     # predict("Environmental and sustainability issues such as\
     #          climate change, biodiversity loss, and air and water\
     #          pollution require a concerted effort at the global level to find effective solutions.", lang = 'en')
+def predict_label(lang:str, text:str, col:str = 'TOPIC'):
+    """Uses best trained label model and predicts label on input text.
+
+    Args:
+        lang (str): Unicode of language specification to load matching model.
+        text (str): Text to label.
+        col (str, optional): Type of text the label model had been trained on. Can be 'URL_TEXT' or 'TOPIC'. Defaults to 'TOPIC' due to better results.
+    """
+    ##Test new sample sentence german###
+    # test_text = "Autonomes Fahren ermöglicht es, dass Fahrzeuge selbstständig und ohne menschliches Eingreifen sicher auf den Straßen unterwegs sind."
+    # lang ='de'
+    Labeler(lang = lang, column = col).predict_label(text)
 
 def main_menu(lang:str):
     """Main Menu defined for external user.
@@ -271,12 +289,13 @@ def main_menu(lang:str):
             (5) Execute automated labeling: k-Means. \n\
             (6) Execute automated labeling: Train and Apply Label Modell.\n\
             (7) Execute classification: Train and Apply Classification Modell.\n\
-            (8) Predict class of a text.")
+            (8) Predict label of a text.\n\
+            (9) Predict class of a text.")
 
     wrongInput = True
     while wrongInput:
         selected_execution = int(input())
-        if selected_execution <= 8:
+        if selected_execution <= 9:
             wrongInput = False
         else:
             print("Wrong Input. Please retry!")
@@ -391,6 +410,19 @@ def main_menu(lang:str):
         classify_data(lang,data_path=data_path)
 
     elif selected_execution == 8:
+        continueSession = True
+        while continueSession:
+            wrongAnswer = True
+            while wrongAnswer:
+                text = input("Please submit a text to be labeled: ")
+                if not text.isdigit():
+                    wrongAnswer = False
+            predict_label(lang,text)
+            continues = input("Do you want to predict another text? (y/n): ")
+            if continues == "n":
+                continueSession = False
+
+    elif selected_execution == 9:
         continueSession = True
         while continueSession:
             wrongAnswer = True
