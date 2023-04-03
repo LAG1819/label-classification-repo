@@ -157,25 +157,24 @@ It is possible to select languages german and english. The general steps to deve
    - German Model extracted from Hugging Face: [MDZ Digital Library team (dbmdz) - bert-base-german-uncased](https://huggingface.co/dbmdz/bert-base-german-uncased). 
 
 ## Results
-Two results each are reported for labeling and classification depending on the selected texts (Topics or Continuous texts) on which the models were trained.
+Two results each are reported for automated labeling and classification depending on the selected texts (Topics or Continuous texts) on which the models were trained.
 ### Automated Labeling
-|Language|Text           | Accuracy  | Matthews Correlation Coefficent | Run |
-|:------ |:-------------:|:---------:| :------------------------------:| :--:|
-|DE      |TOPIC          | 0.56      | 0.48                            | 1   |
-|DE      |TEXTS          | 0.47      | 0.35                            | 1   |
+|Language|Text           | Accuracy  | Matthews Correlation Coefficent | 
+|:------ |:-------------:|:---------:| :------------------------------:| 
+|DE      |TOPIC          | 0.59      | 0.55                            | 
+|DE      |TEXTS          | 0.47      | 0.35                            | 
 ||||||
-|EN      |TOPIC          | 0.47      | 0.37                            | 1   |
-|EN      |TEXTS          | 0.40      | 0.28                            | 1   |
+|EN      |TOPIC          | 0.59      | 0.5                             | 
+|EN      |TEXTS          | 0.47      | 0.35                            | 
 
 
 ### Classification
-|Language|Text           | Accuracy   | Matthews Correlation Coefficent  | Run |
-|:------ |:-------------:|:----------:| :-------------------------------:| :--:|
-|DE      |TOPIC          | 0.00       | 0.00                             | 1   |
-|DE      |TEXTS          | 0.00       | 0.00                             | 1   |
+|Language|Text           | Accuracy   | Matthews Correlation Coefficent  | 
+|:------ |:-------------:|:----------:| :-------------------------------:| 
+|DE      |TOPIC          | 0.86       | 0.83                             |  
 ||||||
-|EN      |TOPIC          | 0.00       | 0.00                             | 1   |
-|EN      |TEXTS          | 0.00       | 0.00                             | 1   |
+|EN      |TOPIC          | 1.00       | 0.00                             | 
+
 
 
 ## References
