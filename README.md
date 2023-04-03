@@ -1,4 +1,4 @@
-# BERT-based text classification framework for the german industry.
+# Automated Labeling Framework and BERT-based Text Classification for German Industry.
 A text classificatior of industry-specific texts based on automated labeling and tranfsormers.
 
 <!-- "Analysis and automated labeling of topics and trends in the German
