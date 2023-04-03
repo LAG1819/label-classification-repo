@@ -886,8 +886,3 @@ class Labeler:
         label_model.load(model_path)
         Label = label_model.predict(L = df_l)
         print(Label)
-
-# test_text = "Autonomes Fahren ermöglicht es, dass Fahrzeuge selbstständig und ohne menschliches Eingreifen sicher auf den Straßen unterwegs sind."
-# lang ='de'
-# col = 'TOPIC'
-# Labeler(lang = lang, column = col).predict_label(test_text)
