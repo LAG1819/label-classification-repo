@@ -109,6 +109,19 @@ def laod_eval_data_classification():
                     eval = metrics1[metrics1['Type'] == col]
                     plot_eval_metrics(eval,lang=lang, text_col=text_col, col = col, datatype = r'\images\classification'+experiment)
 
+def load_evaluation_and_validation_data():
+    for lang in ['de', 'en']:
+        print("Language: ", lang)
+        test_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\03_label\label_testset_"+lang+r".xlsx"
+        test = pd.read_excel(test_path, index_col = 0)
+        test = test[test['LABEL']!= -2]
+        print("Testset Shape: ", test.shape)
+
+        val_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\03_label\label_valset_"+lang+r".xlsx"
+        validate = pd.read_excel(val_path, index_col = 0)
+        validate = validate[validate['LABEL']!= -2]
+        print("Valset Shape: ", validate.shape)
+
 def plot_eval_distribution(df:pd.DataFrame,lang:str,text_col:str,data_path:str):
     """Plots the distribution of categories of labeled data of best results. Saves plot as pdf in images folder.
 
@@ -420,7 +433,7 @@ def plot_new_data_results_automated_label():
     plt.bar(r2, accuracy_eval, color='#2e8c37', width=barWidth, edgecolor='white', label='Evaluation')
 
     # Text on the top of each bar
-    label = [str(l) for l in r3_val]
+    label = [str(round(l,2)) for l in r3_val]
     for i in range(len(r3)):
         plt.text(x = r3[i]-barWidth/2, y = r3_val[i]+0.02, s = label[i], size = 10)  
     
@@ -454,7 +467,7 @@ def plot_new_data_results_classification():
     plt.bar(r2, accuracy_eval, color='#2e8c37', width=barWidth, edgecolor='white', label='Evaluation')
 
     # Text on the top of each bar
-    label = [str(l) for l in r3_val]
+    label = [str(round(l,2)) for l in r3_val]
     for i in range(len(r3)):
         plt.text(x = r3[i]-0.1, y = r3_val[i]+0.02, s = label[i], size = 10)  
     
@@ -500,3 +513,4 @@ def make_tarfile(output_filename:str, source_dir:str):
 # plot_new_data_results_classification()
 # calculate_runtime((2023,3,16,8,45,0,4,2,1),(2023,3,16,11,13,50,7,6,1))
 # make_tarfile("compressed_ml-classification-repo","ml-classification-repo")
+
