@@ -884,5 +884,6 @@ class Labeler:
         
         label_model = LabelModel(cardinality =7, verbose=False,device = DEVICE) 
         label_model.load(model_path)
-        Label = label_model.predict(L = df_l)
-        print(Label)
+        Label = label_model.predict(L = df_l)[0]
+        ag_labels = {0:"AUTONOMOUS",1:"CONNECTIVITY",2:"DIGITALISATION",3:"ELECTRIFICATION",4:"INDIVIDUALISATION",5:"SHARED",6:"SUSTAINABILITY"}
+        print(ag_labels[Label])
