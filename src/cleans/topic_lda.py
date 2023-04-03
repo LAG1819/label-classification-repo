@@ -33,7 +33,7 @@ import nltk
 import math
 import logging
 from datetime import datetime
-nltk.download('stopwords')
+nltk.download('stopwords', quiet=True)
 
 class TopicExtractor:
     """Class to identify topics of cleand texts (cleaned_texts.feather) based on LDA(LatentDirichletAllocation) algorithm. 
