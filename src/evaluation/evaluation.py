@@ -433,7 +433,7 @@ def plot_new_data_results_automated_label():
     plt.bar(r2, accuracy_eval, color='#2e8c37', width=barWidth, edgecolor='white', label='Evaluation')
 
     # Text on the top of each bar
-    label = [str(round(l,2)) for l in r3_val]
+    label = [str(round(l,2)) if l != 0 else " - " for l in r3_val]
     for i in range(len(r3)):
         plt.text(x = r3[i]-barWidth/2, y = r3_val[i]+0.02, s = label[i], size = 10)  
     
@@ -467,7 +467,7 @@ def plot_new_data_results_classification():
     plt.bar(r2, accuracy_eval, color='#2e8c37', width=barWidth, edgecolor='white', label='Evaluation')
 
     # Text on the top of each bar
-    label = [str(round(l,2)) for l in r3_val]
+    label = [str(round(l,2)) if l != 0 else " - " for l in r3_val]
     for i in range(len(r3)):
         plt.text(x = r3[i]-0.1, y = r3_val[i]+0.02, s = label[i], size = 10)  
     
