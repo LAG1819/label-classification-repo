@@ -23,7 +23,7 @@ import pandas as pd
 import os
 import nltk
 import pickle
-nltk.download('stopwords')
+nltk.download('stopwords', quiet=True)
 
 class TOPIC_KMeans:
     """Class to predict predefined clusters (topics/classes) with kMeans Algorithm based on predefined fixed centroids.
