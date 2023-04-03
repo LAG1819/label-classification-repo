@@ -1,4 +1,4 @@
-# Tutorial 02: DataCleansing and how to add additional cleansing
+# Tutorial 02: Data cleansing and and extension possibilities
 
 In this tutorial it will be shown how a text cleanup of texts can be done using the framework presented here.  
 **Note: The input data used here are sample data.**
