@@ -183,6 +183,6 @@ For the two model developments of the Automated Labeling and Classification phas
 - Google Bidirectional Encoder Representations from Transformers: [https://arxiv.org/abs/1810.04805](https://arxiv.org/abs/1810.04805)<br>
 - Hugging Face [English] Bert model:[https://huggingface.co/bert-base-uncased](https://huggingface.co/bert-base-uncased)<br>
 - Hugging Face [German] Bert model:[https://huggingface.co/dbmdz/bert-base-german-uncased](https://huggingface.co/dbmdz/bert-base-german-uncased)<br> 
-## Licence
+## License
 This work is licensed under a [Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/4.0/legalcode) and of the 
 [GNU General Public License](http://www.gnu.org/licenses/).
