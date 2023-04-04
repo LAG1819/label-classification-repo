@@ -162,7 +162,7 @@ For the two model developments of the Automated Labeling and Classification phas
 >A differentiation can be made between the language (German or English) and the text type (continuous text (URL_TEXT) or topics (TOPIC)) with which the models of the particular phase have been trained. 
 ### Automated Labeling
 |Language|Text           | Accuracy  | Matthews Correlation Coefficent || 
-|:------ |:-------------:|:---------:| :------------------------------:|| 
+|:------ |:-------------:|:---------:| :------------------------------:|:------ | 
 |DE      |TOPIC          | 0.59      | 0.55                            || 
 |DE      |TEXTS          | 0.47      | 0.35                            || 
 |EN      |TOPIC          | 0.59      | 0.5                             || 
