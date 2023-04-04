@@ -4,9 +4,7 @@ A text classificatior of industry-specific texts based on automated labeling and
 <!-- "Analysis and automated labeling of topics and trends in the German
 automotive industry using Deep Learning and Natural Language Processing based on of industry-specific website content.". -->
 
-## Description
-It is possible to select languages german and english. The general steps to develop the classifier are as follows:
-
+## Table of contents
 - [Framework for automated data labling and BERT-based text classification for the german industry.](#automated-labeling-framework-and-bert-based-text-classification-for-german-industry)
   - [Motivation](#motivation)
   - [Install](#install)
@@ -28,6 +26,7 @@ It is possible to select languages german and english. The general steps to deve
 This repository was generated and developed as part of the master thesis "Development and analysis of a framework for the classification of industry-specific texts by using Deep Learning and Automated Labeling for the application in the German industry based on the example of the automotive industry.."
 In the context of this work, a label model from Snorkel is trained to achive automated labeling of unlabeled data and a BERT-based text classification model is trained and developed based on the labeled data. 
 In combination, this should allow industry-specific problems from the field of Natural Language Processing to be solved in a specifiable and application-oriented manner.
+It is possible to select languages german and english.
 
 ## Install
 [0] Install [Python](https://www.python.org/downloads/release/python-3111/) or [Anaconda](https://www.anaconda.com/products/distribution).
