@@ -1,9 +1,6 @@
 # Automated Labeling Framework and BERT-based Text Classification for German Industry.
 A way to quickly and automatically label data and train supervised machine learning algorithms on it, such as text classification, suitable for industry-specific cases.
 
-<!-- "Analysis and automated labeling of topics and trends in the German
-automotive industry using Deep Learning and Natural Language Processing based on of industry-specific website content.". -->
-
 ## Table of contents
 - [Framework for automated data labling and BERT-based text classification for the german industry.](#automated-labeling-framework-and-bert-based-text-classification-for-german-industry)
   - [Motivation](#motivation)
