@@ -4,6 +4,26 @@ A text classificatior of industry-specific texts based on automated labeling and
 <!-- "Analysis and automated labeling of topics and trends in the German
 automotive industry using Deep Learning and Natural Language Processing based on of industry-specific website content.". -->
 
+## Description
+It is possible to select languages german and english. The general steps to develop the classifier are as follows:
+
+- [Framework for automated data labling and BERT-based text classification for the german industry.](#automated-labeling-framework-and-bert-based-text-classification-for-german-industry)
+  - [Motivation](#motivation)
+  - [Install](#install)
+  - [Usage](#usage)
+  - [Description](#description)
+      - [Text Mining](#text-mining-and-crawling)
+      - [Data Processing](#data-cleansing-and-topic-extraction)
+      - [Automated Labeling](#automated-labeling)
+      - [Classification](#classification-model)
+  - [Results](#results)
+    - [Automated Labeling](#automated-labeling-1)
+    - [Classification](#classification)
+  - [References](#references)
+  - [Licence](#licence)
+
+***
+
 ## Motivation
 This repository was generated and developed as part of the master thesis "Development and analysis of a framework for the classification of industry-specific texts by using Deep Learning and Automated Labeling for the application in the German industry based on the example of the automotive industry.."
 In the context of this work, a label model from Snorkel is trained to achive automated labeling of unlabeled data and a BERT-based text classification model is trained and developed based on the labeled data. 
@@ -92,25 +112,6 @@ predict(language,example_text)
 **What it offers:** A basic framwork to develop and adapt to industry specific labeling problems and using supervised machine-learning like classification on top.  
 **What it doesn't offer:** The framework is designed for user-specific requirements and must be adapted accordingly before it can be used!
 
-## Description
-It is possible to select languages german and english. The general steps to develop the classifier are as follows:
-
-- [Framework for automated data labling and BERT-based text classification for the german industry.](#automated-labeling-framework-and-bert-based-text-classification-for-german-industry)
-  - [Motivation](#motivation)
-  - [Install](#install)
-  - [Usage](#usage)
-  - [Description](#description)
-      - [Text Mining](#text-mining-and-crawling)
-      - [Data Processing](#data-cleansing-and-topic-extraction)
-      - [Automated Labeling](#automated-labeling)
-      - [Classification](#classification-model)
-  - [Results](#results)
-    - [Automated Labeling](#automated-labeling-1)
-    - [Classification](#classification)
-  - [References](#references)
-  - [Licence](#licence)
-
-***
 #### Text Mining and Crawling 
 
    At first one Excel Sheet is assigned: **Seed.xlsx.** This file contains the following sets of data:
