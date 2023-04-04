@@ -158,21 +158,21 @@ predict(language,example_text)
    - German Model extracted from Hugging Face: [MDZ Digital Library team (dbmdz) - bert-base-german-uncased](https://huggingface.co/dbmdz/bert-base-german-uncased). 
 
 ## Results
-For the two model developments of the Automated Labeling and Classification phases, the results of the best runs are shown below. 
+For the two model developments of the Automated Labeling and Classification phases, the results of the best runs are shown below for Accuracy (ACC) and Matthews Correlation Coefficent (MCC). 
 >A differentiation can be made between the language (German or English) and the text type (continuous text (URL_TEXT) or topics (TOPIC)) with which the models of the particular phase have been trained. 
 ### Automated Labeling
-|Language|Text           | Accuracy  | Matthews Correlation Coefficent | 
-|:------ |:-------------:|:---------:| :------------------------------:| 
-|DE      |TOPIC          | 0.59      | 0.55                            | 
-|DE      |TEXTS          | 0.47      | 0.35                            | 
-|EN      |TOPIC          | 0.59      | 0.5                             | 
-|EN      |TEXTS          | 0.47      | 0.35                            | 
+|Language|Text           | Accuracy  | MCC        | 
+|:------ |:-------------:|:---------:| :---------:| 
+|DE      |TOPIC          | 0.59      | 0.55       | 
+|DE      |TEXTS          | 0.47      | 0.35       | 
+|EN      |TOPIC          | 0.59      | 0.5        | 
+|EN      |TEXTS          | 0.47      | 0.35       | 
 
 ### Classification
-|Language|Text           | Accuracy   | Matthews Correlation Coefficent  | 
-|:------ |:-------------:|:----------:| :-------------------------------:| 
-|DE      |TOPIC          | 0.86       | 0.83                             |  
-|EN      |TOPIC          | 1.00       | 0.00                             | 
+|Language|Text           | Accuracy   | MCC        | 
+|:------ |:-------------:|:----------:| :---------:| 
+|DE      |TOPIC          | 0.86       | 0.83       |  
+|EN      |TOPIC          | 1.00       | 0.00       | 
 
 
 
