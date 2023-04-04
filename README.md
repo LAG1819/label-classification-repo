@@ -95,7 +95,7 @@ predict(language,example_text)
 ## Description
 It is possible to select languages german and english. The general steps to develop the classifier are as follows:
 
-- [BERT-based text classification framework for the german industry.](#bert-based-text-classification-framework-for-the-german-industry)
+- [Framework for automated data labling and BERT-based text classification for the german industry.](#bert-based-text-classification-framework-for-the-german-industry)
   - [Motivation](#motivation)
   - [Install](#install)
   - [Usage](#usage)
