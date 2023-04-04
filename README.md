@@ -17,9 +17,9 @@ In combination, this should allow industry-specific problems from the field of N
 ```python
 git clone https://github.com/LGHDM/ml-classification-repo.git
 ```
-[2.0] Start and install requirements
+[2.0] Start and install requirements:
 
-   [2.1] Install requirements directly:
+   >[2.1] Install requirements directly:
     ```python
     pip install -r environment/requirements.txt
     ```
