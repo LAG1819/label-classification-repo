@@ -19,22 +19,22 @@ git clone https://github.com/LGHDM/ml-classification-repo.git
 ```
 [2.0] Start and install requirements
 
-    [2.1] Install requirements directly:
+   [2.1] Install requirements directly:
     ```python
     pip install -r environment/requirements.txt
     ```
-    [2.2] Create virtual environment and install requirements on venv:
+   [2.2] Create virtual environment and install requirements on venv:
 
     Anaconda:
     ```python
     conda env create -f environment.yml
     source activate metal
-   ```
+    ```
     Windows:
     ```python
     py -3 -m venv .venv
     .venv\scripts\activate
-   ```
+    ```
 [3] Add Github Token in [GITHUB_TOKEN.json](https://github.com/LGHDM/ml-classification-repo/blob/main/files/GITHUB_TOKEN.json)
 ```console
 {"GITHUB_TOKEN": "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
