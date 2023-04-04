@@ -4,7 +4,7 @@ A way to quickly and automatically label data and train supervised machine learn
 ## Table of contents
 - [Framework for automated data labling and BERT-based text classification for the german industry.](#automated-labeling-framework-and-bert-based-text-classification-for-german-industry)
   - [Motivation](#motivation)
-  - [Install](#install)
+  - [Install](#installation)
   - [Usage](#usage)
   - [Description](#description)
       - [Text Mining](#text-mining-and-crawling)
@@ -23,7 +23,7 @@ In the context of this work, a label model from Snorkel is trained to achive aut
 In combination, this should allow industry-specific problems from the field of Natural Language Processing to be solved in a specifiable and application-oriented manner.
 It is possible to select languages german and english.
 
-## Install
+## Installation
 [0] Install [Python](https://www.python.org/downloads/release/python-3111/) or [Anaconda](https://www.anaconda.com/products/distribution).
 
 [1] Download Repository:
