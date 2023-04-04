@@ -6,7 +6,7 @@ A way to quickly and automatically label data and train supervised machine learn
   - [Motivation](#motivation)
   - [Install](#installation)
   - [Usage](#usage)
-  - [Description](#description)
+  - [Framework](#framework)
       - [Text Mining](#text-mining-and-crawling)
       - [Data Processing](#data-cleansing-and-topic-extraction)
       - [Automated Labeling](#automated-labeling)
@@ -105,7 +105,7 @@ predict(language,example_text)
 ```
 **What it offers:** A basic framwork to develop and adapt to industry specific labeling problems and using supervised machine-learning like classification on top.  
 **What it doesn't offer:** The framework is designed for user-specific requirements and must be adapted accordingly before it can be used!
-
+## Framework
 #### Text Mining and Crawling 
 
    At first one Excel Sheet is assigned: **Seed.xlsx.** This file contains the following sets of data:
