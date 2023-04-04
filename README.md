@@ -66,7 +66,7 @@ git clone https://github.com/LGHDM/ml-classification-repo.git
 >```
 >- "Manual" start of the menu:
 >```python
->py __main__.p
+>py __main__.py
 >```
 >[6.2] Customize framework:
 >Please follow the tutorials in the documentations for further help and information.
@@ -89,7 +89,7 @@ language = 'de'
 example_text = "Autonomes Fahren ermöglicht es, dass Fahrzeuge selbstständig und ohne menschliches Eingreifen sicher auf den Straßen unterwegs sind."
 predict(language,example_text)
 ```
-**What it offers:** A basic framwork to develop and adapt to industry specific text classification problems.  
+**What it offers:** A basic framwork to develop and adapt to industry specific labeling problems and using supervised machine-learning like classification on top.  
 **What it doesn't offer:** The framework is designed for user-specific requirements and must be adapted accordingly before it can be used!
 
 ## Description
@@ -100,10 +100,10 @@ It is possible to select languages german and english. The general steps to deve
   - [Install](#install)
   - [Usage](#usage)
   - [Description](#description)
-      - [Text Mining and Crawling](#text-mining-and-crawling)
-      - [Data Cleansing and Topic Extraction](#data-cleansing-and-topic-extraction)
+      - [Text Mining](#text-mining-and-crawling)
+      - [Data Processing](#data-cleansing-and-topic-extraction)
       - [Automated Labeling](#automated-labeling)
-      - [Classification Model](#classification-model)
+      - [Classification](#classification-model)
   - [Results](#results)
     - [Automated Labeling](#automated-labeling-1)
     - [Classification](#classification)
@@ -147,11 +147,17 @@ It is possible to select languages german and english. The general steps to deve
    - SUSTAINABILITY.<br>
      
 
-   In total there are number_classes * LF = 14 Labeling Functions generated.
+   In total there are number_classes * 2 LF-types = 14 Labeling Functions generated.
+
+   There are two ways to label a dataset with this framework:
+   1. Total data labeling:
+   Labeling Functions of type 1 and 2 are applied on the dataset. No data point in the data set is considered irrelevant.
+   2. Partial data labeling:
+   Labeling Functions of type 1 are applied on the dataset. Several data points in the data set might be considered as irrelevant.
  
 ***
 #### Classification Model
-   A classification model based on BERT [Bidirectional Encoder Representations from Transformers](https://arxiv.org/abs/1810.04805) is trained. A classifier layer is placed on top of the pretrained models.
+   A classification model based on BERT [Bidirectional Encoder Representations from Transformers](https://arxiv.org/abs/1810.04805) is trained on automatic labeled data. A classifier layer is placed on top of the pretrained models.
    The selected models are  not case-sensitive, because all cleaned texts are in lower case!
    - English Model extracted from Hugging Face: [Hugging Face team (hf-maintiners) - bert-base-uncased](https://huggingface.co/bert-base-uncased). 
    - German Model extracted from Hugging Face: [MDZ Digital Library team (dbmdz) - bert-base-german-uncased](https://huggingface.co/dbmdz/bert-base-german-uncased). 
