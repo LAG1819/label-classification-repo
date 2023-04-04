@@ -177,7 +177,7 @@ For the two model developments of the Automated Labeling and Classification phas
 
 
 ## References
-- Programmatic Labeling: [https://proceedings.neurips.cc/paper/2016/file/6709e8d64a5f47269ed5cea9f625f7ab-Paper.pdf](https://proceedings.neurips.cc/2016/file/Paper.pdf)<br>
+- Programmatic Labeling: [https://proceedings.neurips.cc/2016/file/Paper.pdf](https://proceedings.neurips.cc/paper/2016/file/6709e8d64a5f47269ed5cea9f625f7ab-Paper.pdf)<br>
 - Automated Labeling with Snorkel - Paper: [https://doi.org/10.1145/3035918.3056442](https://doi.org/10.1145/3035918.3056442)<br>
 - Snorkel Package: [https://www.snorkel.org/features/](https://www.snorkel.org/features/) <br>
 - Google Bidirectional Encoder Representations from Transformers: [https://arxiv.org/abs/1810.04805](https://arxiv.org/abs/1810.04805)<br>
