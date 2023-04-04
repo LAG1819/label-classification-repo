@@ -180,10 +180,9 @@ For the two model developments of the Automated Labeling and Classification phas
 - Programmatic Labeling: [https://proceedings.neurips.cc/paper/2016/file/6709e8d64a5f47269ed5cea9f625f7ab-Paper.pdf](https://proceedings.neurips.cc/2016/file/Paper.pdf)<br>
 - Automated Labeling with Snorkel - Paper: [https://doi.org/10.1145/3035918.3056442](https://doi.org/10.1145/3035918.3056442)<br>
 - Snorkel Package: [https://www.snorkel.org/features/](https://www.snorkel.org/features/) <br>
-<br>
-Google Bidirectional Encoder Representations from Transformers: [https://arxiv.org/abs/1810.04805](https://arxiv.org/abs/1810.04805)<br>
-Hugging Face [English] Bert model:[https://huggingface.co/bert-base-uncased](https://huggingface.co/bert-base-uncased)<br>
-Hugging Face [German] Bert model:[https://huggingface.co/dbmdz/bert-base-german-uncased](https://huggingface.co/dbmdz/bert-base-german-uncased)<br> 
+- Google Bidirectional Encoder Representations from Transformers: [https://arxiv.org/abs/1810.04805](https://arxiv.org/abs/1810.04805)<br>
+- Hugging Face [English] Bert model:[https://huggingface.co/bert-base-uncased](https://huggingface.co/bert-base-uncased)<br>
+- Hugging Face [German] Bert model:[https://huggingface.co/dbmdz/bert-base-german-uncased](https://huggingface.co/dbmdz/bert-base-german-uncased)<br> 
 ## Licence
 This work is licensed under a [Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/4.0/legalcode) and of the 
 [GNU General Public License](http://www.gnu.org/licenses/).
