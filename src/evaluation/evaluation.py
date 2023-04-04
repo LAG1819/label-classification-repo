@@ -109,7 +109,7 @@ def laod_eval_data_classification():
                     eval = metrics1[metrics1['Type'] == col]
                     plot_eval_metrics(eval,lang=lang, text_col=text_col, col = col, datatype = r'\images\classification'+experiment)
 
-def load_evaluation_and_validation_data():
+def load_test_validation_and_evaluation_data():
     for lang in ['de', 'en']:
         print("Language: ", lang)
         test_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\03_label\label_testset_"+lang+r".xlsx"
@@ -121,6 +121,12 @@ def load_evaluation_and_validation_data():
         validate = pd.read_excel(val_path, index_col = 0)
         validate = validate[validate['LABEL']!= -2]
         print("Valset Shape: ", validate.shape)
+
+        eval_path = str(os.path.dirname(__file__)).split("src")[0] + r"files\05_evaluation\evaluation_labeled_texts_"+lang+r".feather"
+        eval = pd.read_feather(eval_path)
+        eval = eval[eval['LABEL']!= -1]
+        eval = eval[eval['LABEL']!= -2]
+        print("Evalset Shape: ", eval.shape)
 
 def plot_eval_distribution(df:pd.DataFrame,lang:str,text_col:str,data_path:str):
     """Plots the distribution of categories of labeled data of best results. Saves plot as pdf in images folder.
@@ -507,6 +513,7 @@ def make_tarfile(output_filename:str, source_dir:str):
 # load_labeled_data()
 # load_eval_data_automated_label()
 # laod_eval_data_classification()
+# load_test_validation_and_evaluation_data()
 # plot_runtimes_automated_label()
 # plot_runtimes_classification()
 # plot_new_data_results_automated_label()
