@@ -158,7 +158,8 @@ predict(language,example_text)
    - German Model extracted from Hugging Face: [MDZ Digital Library team (dbmdz) - bert-base-german-uncased](https://huggingface.co/dbmdz/bert-base-german-uncased). 
 
 ## Results
-Two results each are reported for automated labeling and classification depending on the selected texts (Topics or Continuous texts) on which the models were trained.
+For the two model developments of the Automated Labeling and Classification phases, the results of the best runs are shown below. 
+>A differentiation can be made between the language (German or English) and the text type (continuous text (URL_TEXT) or topics (TOPIC)) with which the models of the particular phase have been trained. 
 ### Automated Labeling
 |Language|Text           | Accuracy  | Matthews Correlation Coefficent | 
 |:------ |:-------------:|:---------:| :------------------------------:| 
