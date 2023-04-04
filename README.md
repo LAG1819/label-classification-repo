@@ -59,17 +59,17 @@ git clone https://github.com/LGHDM/ml-classification-repo.git
 
 [6] Start main menu OR customize framework:
 
-[6.1] Start main menu and follow the instructions:
-- Automatic start of the menu:
-```console
-ml-classification-repo
-```
-- "Manual" start of the menu:
-```python
-py __main__.p
-```
-[6.2] Customize framework:
-Please follow the tutorials in the documentations for further help and information.
+>[6.1] Start main menu and follow the instructions:
+>- Automatic start of the menu:
+>```console
+>ml-classification-repo
+>```
+>- "Manual" start of the menu:
+>```python
+>py __main__.p
+>```
+>[6.2] Customize framework:
+>Please follow the tutorials in the documentations for further help and information.
 
 ## Usage
 The generated label modell and classification model can label and classify random industry-specifc texts into the dedicated classes and predicts the best fitting class.
