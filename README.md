@@ -4,7 +4,7 @@ A way to quickly and automatically label data and train supervised machine learn
 ## Table of contents
 - [Framework for automated data labling and BERT-based text classification for the german industry.](#automated-labeling-framework-and-bert-based-text-classification-for-german-industry)
   - [Motivation](#motivation)
-  - [Install](#installation)
+  - [Installation](#installation)
   - [Usage](#usage)
   - [Framework](#framework)
       - [Text Mining](#text-mining-and-crawling)
