@@ -20,8 +20,6 @@ automotive industry using Deep Learning and Natural Language Processing based on
   - [References](#references)
   - [Licence](#licence)
 
-***
-
 ## Motivation
 This repository was generated and developed as part of the master thesis "Development and analysis of a framework for the classification of industry-specific texts by using Deep Learning and Automated Labeling for the application in the German industry based on the example of the automotive industry.."
 In the context of this work, a label model from Snorkel is trained to achive automated labeling of unlabeled data and a BERT-based text classification model is trained and developed based on the labeled data. 
