@@ -18,8 +18,10 @@ A way to quickly and automatically label data and train supervised machine learn
   - [Licence](#licence)
 
 ## Motivation
-This repository was generated and developed as part of the master thesis "Development and analysis of a framework for the classification of industry-specific texts by using Deep Learning and Automated Labeling for the application in the German industry based on the example of the automotive industry."
-In the context of this work, a label model from Snorkel is trained to achive automated labeling of unlabeled data and a BERT-based text classification model is trained and developed based on the labeled data. 
+This repository was generated and developed as part of the master thesis "Development and analysis of a framework for the classification of industry-specific texts by using Deep Learning and Automated Labeling for the application in the German industry based on the example of the automotive industry."  
+
+In the context of this work, a label model from Snorkel is trained to achive automated labeling of unlabeled data and a BERT-based text classification model is trained and developed based on the labeled data.  
+
 In combination, this should allow industry-specific problems from the field of Natural Language Processing to be solved in a specifiable and application-oriented manner.
 It is possible to select languages german and english.
 
