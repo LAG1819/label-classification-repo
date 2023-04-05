@@ -228,6 +228,7 @@ def plot_coverage(df:pd.DataFrame, lang:str, text_col:str,datatype:str):
     ax.set_xlabel(f"Best Conflicts, Coverage and Overlaps in {df['k_fold'].tolist()[0]}-Fold Cross Validaiton", fontweight='bold', loc = "left")# and Fold {df['k_fold_split'].tolist()[0]}
 
     plt.subplots_adjust(left=0.28, bottom = 0.06, top = 0.99, right = 0.95)
+    plt.xlim(0,1.1)
     
     if not os.path.exists(str(os.path.dirname(__file__)).split("src")[0]+datatype):
         os.makedirs(str(os.path.dirname(__file__)).split("src")[0]+datatype)
