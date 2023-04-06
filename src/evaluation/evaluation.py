@@ -507,7 +507,9 @@ def make_tarfile(output_filename:str, source_dir:str):
         source_dir (str): Folder name of the folder to be compressed.
     """
     with tarfile.open(output_filename, "w:gz") as tar:
-        tar.add(source_dir, arcname=os.path.basename(source_dir))
+        for name in os.listdir(source_dir):
+            file = os.path.join(source_dir,name)
+            tar.add(file)
 
 # load_raw_data()
 # load_clean_data()
@@ -520,5 +522,5 @@ def make_tarfile(output_filename:str, source_dir:str):
 # plot_new_data_results_automated_label()
 # plot_new_data_results_classification()
 # calculate_runtime((2023,3,16,8,45,0,4,2,1),(2023,3,16,11,13,50,7,6,1))
-# make_tarfile("compressed_ml-classification-repo","ml-classification-repo")
+# make_tarfile("compressed_ml-classification-repo.tar.gz","ml-classification-repo")
 
