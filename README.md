@@ -115,6 +115,8 @@ predict(language,example_text)
       - seed  of website links (CLASS_K, KEYWORD, URL), manually selected.
       - seed of keywords (CLASS, KEYOWRD_DE, KEYWORD_EN), manualy selected.
    - A base of website links and classes (two per class) used as Centroids for K-Means Clustering for further labeling, manually selected.
+   
+   **[Tutorial01]{https://github.com/LAG1819/label-classification-repo/blob/main/doc/01Tutorial_WebCrawler.md} can provide further insight into this part.**
 ***
 #### Data Cleansing and Topic Extraction
 
@@ -128,6 +130,8 @@ predict(language,example_text)
    5. [Optional] Removal of city names in texts.
 
    After text cleaning a topic extraction is performed using the [Latent Dirichlet Allocation Algorithm](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.LatentDirichletAllocation.html)
+
+   **[Tutorial02]{https://github.com/LAG1819/label-classification-repo/blob/main/doc/02Tutorial_DataCleansing.md} can provide further insight into this part.**
 ***
 #### Automated Labeling
    A Label Model ist trained to automize the labeling of the whole dataset. Two types of Labeling Functions were generated. 
@@ -151,6 +155,8 @@ predict(language,example_text)
    Labeling Functions of type 1 and 2 are applied on the dataset. No data point in the data set is considered irrelevant.
    2. Partial data labeling:
    Labeling Functions of type 1 are applied on the dataset. Several data points in the data set might be considered as irrelevant.
+
+   **[Tutorial03]{https://github.com/LAG1819/label-classification-repo/blob/main/doc/03Tutorial_DataLabeling.md} can provide further insight into this part.**
  
 ***
 #### Classification Model
@@ -158,6 +164,8 @@ predict(language,example_text)
    The selected models are  not case-sensitive, because all cleaned texts are in lower case!
    - English Model extracted from Hugging Face: [Hugging Face team (hf-maintiners) - bert-base-uncased](https://huggingface.co/bert-base-uncased). 
    - German Model extracted from Hugging Face: [MDZ Digital Library team (dbmdz) - bert-base-german-uncased](https://huggingface.co/dbmdz/bert-base-german-uncased). 
+
+   **[Tutorial04]{https://github.com/LAG1819/label-classification-repo/blob/main/doc/04Tutorial_Textclassification.md} can provide further insight into this part.**
 
 ## Results
 For the two model developments of the Automated Labeling and Classification phases, the results of the best runs are shown below for Accuracy and Matthews Correlation Coefficent (MCC). 
